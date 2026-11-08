@@ -343,8 +343,8 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
     <p>Cette leçon parle de classes et de modules. Si ces deux mots sont flous, tout le reste l'est aussi. Deux petites manipulations pour les voir.</p>
 
     <div class="sub-section" style="margin-top:40px">
-      <h3>1. Une classe est un plan. Un objet est un exemplaire.</h3>
-      <p class="muted">Pense à un composant dans Figma : tu le dessines une fois, puis tu poses autant d'instances que tu veux. La <button class="term" data-term="classe">classe</button> est le composant, chaque <button class="term" data-term="objet">objet</button> est une instance, avec ses propres valeurs. Les données d'un objet s'appellent ses <button class="term" data-term="attribut">attributs</button>, ses actions ses <button class="term" data-term="methode">méthodes</button>.</p>
+      <h3>1. Une classe est un moule. Un objet est un gâteau.</h3>
+      <p class="muted">Pense à un moule à gâteau. On le fabrique une seule fois, puis on fait autant de gâteaux qu'on veut. Tous ont la même forme, mais chacun a son propre parfum et sa propre décoration. La <button class="term" data-term="classe">classe</button> est le moule, chaque <button class="term" data-term="objet">objet</button> est un gâteau sorti du moule. Ce que chaque gâteau a pour lui (son parfum, sa décoration) s'appelle ses <button class="term" data-term="attribut">attributs</button>. Ce qu'on peut faire avec (le décorer, le couper) s'appelle ses <button class="term" data-term="methode">méthodes</button>. Ici, le moule s'appelle <code>Post</code>, et chaque gâteau est un post.</p>
       <div class="card" style="margin-top:20px">
         <div class="predict inline" style="margin:0 0 22px" id="pred-obj" role="group" aria-labelledby="pred-obj-q" data-bilan="Avant : des objets indépendants">
           <p id="pred-obj-q">Prédis avant de cliquer : on crée p1 et p2, puis p1.liker() deux fois et p2.liker() une fois. Combien de likes pour chacun ?</p>
@@ -353,12 +353,12 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
             <button class="choice" data-ok="1">2 pour p1, 1 pour p2</button>
             <button class="choice" data-ok="0">3 pour p1, 0 pour p2</button>
           </div>
-          <div class="feedback" aria-live="polite" data-why="Chaque objet a ses propres valeurs : p1 et p2 sont fabriqués avec le même plan, mais chacun garde son compteur. Vérifie en cliquant sur les boutons."></div>
+          <div class="feedback" aria-live="polite" data-why="Chaque objet a ses propres valeurs : p1 et p2 sortent du même moule, mais chacun garde son compteur, comme deux gâteaux ont chacun leur décoration. Vérifie en cliquant sur les boutons."></div>
         </div>
         <div class="lab2">
           <div>
-            <div class="blueprint" id="bp" aria-label="La classe Post : le plan">
-              <span class="stamp">le plan</span>
+            <div class="blueprint" id="bp" aria-label="La classe Post : le moule">
+              <span class="stamp">🍰 le moule</span>
               <div class="bt">class Post</div>
               <div class="row">legende <span>attribut</span></div>
               <div class="row">likes <span>attribut</span></div>
@@ -369,7 +369,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
             </div>
           </div>
           <div>
-            <div class="objs" id="objs" aria-live="polite"><span class="empty">Aucun objet pour l'instant. Appuie sur « new Post() ».</span></div>
+            <div class="objs" id="objs" aria-live="polite"><span class="empty">Aucun gâteau pour l'instant. Appuie sur « new Post() ».</span></div>
             <div class="controls" style="margin-top:14px">
               <button class="btn" id="b-l1" disabled>p1.liker()</button>
               <button class="btn" id="b-l2" disabled>p2.liker()</button>
@@ -377,22 +377,22 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
             </div>
           </div>
         </div>
-        <p class="ctl-note" id="obj-note" aria-live="polite">Le plan ne contient aucun post : il dit seulement à quoi un post ressemble.</p>
+        <p class="ctl-note" id="obj-note" aria-live="polite">Le moule n’est pas un gâteau : il dit seulement quelle forme aura chaque post. Appuie sur « new Post() » pour en faire sortir un.</p>
       </div>
     </div>
 
     <div class="sub-section" style="margin-top:48px">
       <h3>2. Un module range les classes d'un même sujet.</h3>
-      <p class="muted">Une application a des dizaines de classes. Un <button class="term" data-term="module">module</button> les regroupe par sujet, comme une page d'un fichier Figma regroupe les composants d'un même sujet. En Java, un module est souvent un dossier, qu'on appelle un <button class="term" data-term="paquet">paquet</button>.</p>
+      <p class="muted">Une application a des dizaines de classes. Un <button class="term" data-term="module">module</button> les regroupe par sujet, comme les placards d'une cuisine : un placard pour la pâtisserie (les moules, le fouet), un autre pour la découpe (les couteaux, les planches). Quand tu fais un gâteau, tu ouvres un seul placard. En Java, un module est souvent un dossier, qu'on appelle un <button class="term" data-term="paquet">paquet</button>.</p>
       <div class="card" style="margin-top:20px">
-        <div class="controls"><button class="btn primary" id="b-sort">Ranger par sujet</button></div>
+        <div class="controls"><button class="btn primary" id="b-sort">Ranger dans les placards</button></div>
         <div class="pile" id="pile"></div>
         <div class="shelf">
           <div class="folder f1" id="f1"><div class="fh">📁 <code>likes</code></div><div class="cz"></div></div>
           <div class="folder f2" id="f2"><div class="fh">📁 <code>photos</code></div><div class="cz"></div></div>
           <div class="folder f3" id="f3"><div class="fh">📁 <code>notifications</code></div><div class="cz"></div></div>
         </div>
-        <p class="ctl-note" id="mod-note" aria-live="polite">Six classes en vrac : pour trouver ce qui touche aux likes, il faut tout lire.</p>
+        <p class="ctl-note" id="mod-note" aria-live="polite">Six classes en vrac sur le plan de travail : pour trouver ce qui touche aux likes, il faut tout fouiller.</p>
 <pre class="codebox tree" id="tree" aria-hidden="true">src/
 ├── likes/            <span class="c">← le module des likes</span>
 │   ├── Like.java
@@ -404,7 +404,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
     ├── EnvoiEmail.java
     └── EnvoiPush.java</pre>
       </div>
-      <p class="muted small" style="margin-top:14px">Une classe = un plan d'objet. Un module = un tiroir de classes qui parlent du même sujet. La cohésion, que tu vas voir juste après, mesure si chaque tiroir ne contient bien qu'un sujet.</p>
+      <p class="muted small" style="margin-top:14px">Une classe = un moule. Un objet = un gâteau sorti du moule. Un module = un placard qui range les classes d'un même sujet. La cohésion, que tu vas voir juste après, mesure si chaque tiroir ne contient bien qu'un sujet.</p>
     </div>
   </section>
 
@@ -799,11 +799,11 @@ void notifierParEmail(String msg) { ... }</pre>
 
   /* ---------- lexique ---------- */
   const TERMS = {
-    attribut:{t:'Attribut', d:'Une donnée que chaque objet garde pour lui : la légende d’un post, son nombre de likes. Elle est déclarée dans la classe.', s:'Dans Figma, ce serait une propriété du composant : chaque instance a sa propre valeur.'},
+    attribut:{t:'Attribut', d:'Une donnée que chaque objet garde pour lui : la légende d’un post, son nombre de likes. Elle est déclarée dans la classe.', s:'Le parfum et la décoration d’un gâteau : chaque gâteau sorti du même moule a les siens.'},
     paquet:{t:'Paquet (package)', d:'En Java, un dossier qui regroupe des classes. On l’écrit en haut de chaque fichier : package likes;', s:'C’est la forme la plus courante d’un module en Java.'},
-    module:{t:'Module', d:'Un ensemble de code rangé autour d’un seul sujet : parfois une seule classe, souvent un paquet (un dossier) de plusieurs classes qui travaillent ensemble.', s:'Si la classe est un composant Figma, le module est une page du fichier qui regroupe tous les composants d’un même sujet (par exemple tout ce qui touche aux likes).'},
-    classe:{t:'Classe', d:'Le plan d’une sorte d’objet : les données qu’il garde (ses attributs) et ce qu’il sait faire (ses méthodes). En Java, tout le code est rangé dans des classes.', s:'Comme un composant dans Figma : on le dessine une fois, puis on en pose autant d’instances qu’on veut. La classe Post est le plan ; chaque post publié est un objet.'},
-    objet:{t:'Objet', d:'Un exemplaire concret fabriqué à partir d’une classe, avec ses propres valeurs. En Java, on le crée avec new : new Post().', s:'Deux objets de la même classe sont indépendants : liker un post ne change pas les likes d’un autre post.'},
+    module:{t:'Module', d:'Un ensemble de code rangé autour d’un seul sujet : parfois une seule classe, souvent un paquet (un dossier) de plusieurs classes qui travaillent ensemble.', s:'Dans une cuisine, on range les ustensiles par usage : un placard pour la pâtisserie (moules, fouet, poche à douille), un autre pour la découpe. Le module, c’est ce placard : tout ce qui sert au même sujet est rangé ensemble.'},
+    classe:{t:'Classe', d:'Le plan d’une sorte d’objet : les données qu’il garde (ses attributs) et ce qu’il sait faire (ses méthodes). En Java, tout le code est rangé dans des classes.', s:'Comme un moule à gâteau : on le fabrique une fois, puis on fait autant de gâteaux qu’on veut, chacun avec son propre parfum et sa propre décoration. La classe Post est le moule ; chaque post publié est un gâteau sorti du moule.'},
+    objet:{t:'Objet', d:'Un exemplaire concret fabriqué à partir d’une classe, avec ses propres valeurs. En Java, on le crée avec new : new Post().', s:'Un gâteau sorti du moule. Deux gâteaux du même moule sont indépendants : décorer l’un ne décore pas l’autre, et liker un post ne change pas les likes d’un autre.'},
     methode:{t:'Méthode', d:'Une action qu’un objet sait faire, écrite dans sa classe : un bloc de code avec un nom, comme liker().', s:'On l’appelle avec un point : monPost.liker(). Les parenthèses peuvent recevoir des informations : notifier(message).'},
     dependance:{t:'Dépendance', d:'A dépend de B quand A utilise B : il l’appelle, il le crée, il lit ses données. Si B change, A risque de devoir changer.', s:'En Java, chaque import vers un autre paquet est un fil de dépendance.'},
     cohesion:{t:'Cohésion', d:'À quel point les éléments d’un module servent le même objectif. On la veut forte : un module, un sujet.', s:'Question à se poser : « est-ce que ça va ensemble ? »'},
@@ -980,7 +980,7 @@ void notifierParEmail(String msg) { ... }</pre>
   let objets = [];
   function noteObj(html) { $('obj-note').innerHTML = html; }
   function nouvelObjet() {
-    if (objets.length >= SAMPLES.length) return noteObj('Trois objets suffisent pour voir l’idée. Appuie sur « Recommencer » pour repartir à zéro.');
+    if (objets.length >= SAMPLES.length) return noteObj('Trois gâteaux suffisent pour voir l’idée. Appuie sur « Recommencer » pour repartir à zéro.');
     const i = objets.length, [lg, bg] = SAMPLES[i];
     const box = $('objs'); const empty = box.querySelector('.empty'); if (empty) empty.remove();
     const el = document.createElement('div'); el.className = 'obj';
@@ -988,7 +988,7 @@ void notifierParEmail(String msg) { ... }</pre>
     box.appendChild(el);
     objets.push({el, likes: 0});
     const bp = $('bp'); bp.classList.remove('flash'); if (!reduce) { void bp.offsetWidth; bp.classList.add('flash'); }
-    noteObj(`<code>Post p${i + 1} = new Post();</code> : un nouvel objet est fabriqué à partir du plan, avec ses propres valeurs.`);
+    noteObj(`<code>Post p${i + 1} = new Post();</code> : un nouveau gâteau sort du moule. Même forme que les autres, mais sa propre légende et sa propre photo.`);
     $('b-l1').disabled = objets.length < 1; $('b-l2').disabled = objets.length < 2;
   }
   function liker(i) {
@@ -997,15 +997,15 @@ void notifierParEmail(String msg) { ... }</pre>
     const lk = o.el.querySelector('.lk');
     lk.querySelector('span').textContent = 'likes = ' + o.likes;
     lk.classList.add('liked'); lk.classList.remove('beat'); if (!reduce) { void lk.offsetWidth; lk.classList.add('beat'); }
-    noteObj(`<code>p${i + 1}.liker();</code> : seul p${i + 1} change. ` + (objets.length > 1 ? 'Les autres objets gardent leur propre compteur.' : 'C’est la méthode écrite dans le plan, appliquée à cet objet-là.'));
+    noteObj(`<code>p${i + 1}.liker();</code> : seul p${i + 1} change. ` + (objets.length > 1 ? 'Les autres gâteaux gardent leur propre compteur : décorer l’un ne décore pas l’autre.' : 'C’est la méthode écrite dans le moule, appliquée à ce gâteau-là.'));
   }
   $('b-new').onclick = nouvelObjet;
   $('b-l1').onclick = () => liker(0);
   $('b-l2').onclick = () => liker(1);
   $('b-reset').onclick = () => {
-    objets = []; $('objs').innerHTML = '<span class="empty">Aucun objet pour l’instant. Appuie sur « new Post() ».</span>';
+    objets = []; $('objs').innerHTML = '<span class="empty">Aucun gâteau pour l’instant. Appuie sur « new Post() ».</span>';
     $('b-l1').disabled = true; $('b-l2').disabled = true;
-    noteObj('Le plan ne contient aucun post : il dit seulement à quoi un post ressemble.');
+    noteObj('Le moule n’est pas un gâteau : il dit seulement quelle forme aura chaque post. Appuie sur « new Post() » pour en faire sortir un.');
   };
   wire($('pred-obj'), $('pred-obj').querySelector('.feedback'));
 
@@ -1032,10 +1032,10 @@ void notifierParEmail(String msg) { ... }</pre>
     });
     ['f1','f2','f3'].forEach(id => $(id).classList.toggle('full', range));
     $('tree').classList.toggle('on', range);
-    $('b-sort').textContent = range ? 'Tout remettre en vrac' : 'Ranger par sujet';
+    $('b-sort').textContent = range ? 'Tout remettre en vrac' : 'Ranger dans les placards';
     $('mod-note').textContent = range
-      ? 'Trois modules, un par sujet. Pour changer les likes, tu ouvres le dossier likes, et seulement lui.'
-      : 'Six classes en vrac : pour trouver ce qui touche aux likes, il faut tout lire.';
+      ? 'Trois placards, un par sujet. Pour changer les likes, tu ouvres le placard likes, et seulement lui.'
+      : 'Six classes en vrac sur le plan de travail : pour trouver ce qui touche aux likes, il faut tout fouiller.';
   };
 
   /* ---------- monde réel 1 : le rayon d'un changement ---------- */
