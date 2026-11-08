@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client et serveur</title>
+<meta name="description" content="Qui demande, qui répond : suivre un like de ton doigt jusqu'au serveur, et retour.">
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#fbfbfd;
+  --text:#1d1d1f; --text-2:#6e6e73; --hairline:rgba(0,0,0,.08);
+  --accent:#0071e3; --accent-soft:rgba(0,113,227,.10);
+  --like:#d70015; --like-soft:rgba(215,0,21,.10);
+  --ok:#1e7e34; --ok-soft:rgba(30,126,52,.12);
+  --warn:#bf4800; --warn-soft:rgba(191,72,0,.10);
+  --line:#86868b; --dim:rgba(29,29,31,.22);
+  --shadow:0 2px 6px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06);
+  --radius:22px; --ease:cubic-bezier(.25,.1,.25,1); --spring:cubic-bezier(.34,1.32,.64,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#000000; --surface:#1c1c1e; --surface-2:#161618;
+    --text:#f5f5f7; --text-2:#a1a1a6; --hairline:rgba(255,255,255,.10);
+    --accent:#2997ff; --accent-soft:rgba(41,151,255,.16);
+    --like:#ff6961; --like-soft:rgba(255,105,97,.16);
+    --ok:#30d158; --ok-soft:rgba(48,209,88,.16);
+    --warn:#ff9f0a; --warn-soft:rgba(255,159,10,.14);
+    --line:#8e8e93; --dim:rgba(245,245,247,.20);
+    --shadow:0 0 0 1px rgba(255,255,255,.06);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+code,.code{font-family:"SF Mono",ui-monospace,Menlo,monospace}
+code{font-size:.88em;background:var(--accent-soft);padding:.1em .35em;border-radius:6px}
+b,strong{font-weight:600}
+
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--hairline)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.crumb{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb b{color:var(--text)}
+
+.seg{display:inline-flex;background:var(--hairline);border-radius:9px;padding:2px;position:relative;flex:none}
+.seg button{all:unset;cursor:pointer;font-size:13px;font-weight:500;padding:5px 14px;border-radius:7px;position:relative;z-index:1;color:var(--text)}
+.seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc(50% - 2px);background:var(--surface);border-radius:7px;
+  box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .35s var(--spring)}
+.seg[data-mode="fiche"] .thumb{transform:translateX(100%)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+main{max-width:980px;margin:0 auto;padding:0 22px 120px}
+section{margin-top:96px}
+.sub-section{margin-top:64px}
+.eyebrow{font-size:14px;font-weight:600;color:var(--accent);letter-spacing:-.01em;margin:0 0 8px}
+h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:72px 0 16px}
+h2{font-size:clamp(30px,4.6vw,44px);line-height:1.1;letter-spacing:-.03em;font-weight:700;margin:0 0 14px}
+h3{font-size:21px;line-height:1.25;letter-spacing:-.02em;font-weight:600;margin:0 0 6px}
+h4{font-size:28px;line-height:1.15;letter-spacing:-.025em;font-weight:700;margin:0 0 10px}
+.lede{font-size:clamp(19px,2.4vw,24px);line-height:1.38;color:var(--text-2);max-width:720px;margin:0;letter-spacing:-.02em}
+.lede strong{color:var(--text)}
+p{max-width:680px}
+.muted{color:var(--text-2)}
+.small{font-size:15px}
+
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+.grid{display:grid;gap:18px}
+@media (min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+.term{all:unset;cursor:help;border-bottom:1.5px dotted currentColor;color:inherit;transition:color .2s var(--ease)}
+.term:hover,.term[aria-expanded="true"]{color:var(--accent)}
+.term:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.pop{position:fixed;z-index:50;width:min(340px,calc(100vw - 32px));background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 0 0 1px var(--hairline);padding:16px 18px;
+  opacity:0;transform:translateY(6px) scale(.97);transform-origin:top left;pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--spring)}
+.pop.on{opacity:1;transform:none;pointer-events:auto}
+.pop .pt{font-weight:700;font-size:17px;margin:0 0 6px}
+.pop .pd{margin:0;font-size:15px;line-height:1.45}
+.pop .ps{margin:10px 0 0;font-size:14px;color:var(--text-2);line-height:1.45}
+.pop .ps:empty{display:none}
+
+.cast{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:28px}
+@media (min-width:900px){.cast{grid-template-columns:repeat(5,1fr)}}
+.cast .card{padding:20px}
+.cast .ico{font-size:26px;line-height:1;margin-bottom:10px}
+.cast h3{font-size:17px}
+.cast p{margin:4px 0 0;font-size:15px;color:var(--text-2)}
+
+/* ---------- le schéma animé ---------- */
+.stage{margin-top:28px;padding:0;overflow:hidden}
+.stage-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;border-bottom:1px solid var(--hairline)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:background .3s var(--ease),transform .3s var(--spring)}
+.dots i.done{background:var(--text-2)}
+.dots i.now{background:var(--accent);transform:scale(1.35)}
+.stepcount{font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.diagram-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+svg.seq{display:block;width:100%;min-width:720px;height:auto}
+.seq text{font-family:inherit;fill:var(--text)}
+.actor rect{fill:var(--surface-2);stroke:var(--hairline);stroke-width:1}
+.actor text{font-size:14px;font-weight:600;text-anchor:middle}
+.actor .sub{font-size:11.5px;font-weight:400;fill:var(--text-2)}
+.lifeline{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5;opacity:.6}
+.scene{font-size:11.5px;font-weight:700;fill:var(--text-2)}
+.msg{opacity:0;transition:opacity .45s var(--ease)}
+.msg.past{opacity:.38}
+.msg.now{opacity:1}
+.msg path{fill:none;stroke:var(--text);stroke-width:1.6}
+.msg.now path{stroke:var(--accent);stroke-width:2.2}
+.msg.ret path{stroke-dasharray:6 5}
+.msg .label{font-size:13px;text-anchor:middle}
+.msg.now .label{fill:var(--accent);font-weight:600}
+.seq .msg .label.st2{fill:var(--ok);font-weight:700}
+.seq .msg .label.st4{fill:var(--warn);font-weight:700}
+.seq .msg .label.st5{fill:var(--like);font-weight:700}
+.seq .msg circle.boom{fill:var(--like)}
+.seq .msg .boomx{fill:#fff;font-size:15px;font-weight:700;text-anchor:middle}
+.seq .msg .boomt{fill:var(--like);font-size:12px;font-weight:700;text-anchor:middle}
+.draw path.line{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw .7s var(--ease) forwards}
+.msg.ret.draw path.line{animation:drawRet .7s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes drawRet{from{stroke-dasharray:6 5;opacity:0}to{stroke-dasharray:6 5;opacity:1}}
+
+.stage-bottom{display:grid;border-top:1px solid var(--hairline)}
+@media (min-width:760px){.stage-bottom{grid-template-columns:1fr 230px}}
+.caption{padding:22px 24px}
+.caption .read{margin-top:12px;font-size:15px;color:var(--text-2);display:flex;gap:10px;align-items:flex-start}
+.caption .read b{color:var(--text);white-space:nowrap}
+.phone-col{padding:18px 24px;display:flex;flex-direction:column;align-items:center;border-left:1px solid var(--hairline)}
+@media (max-width:759px){.phone-col{border-left:0;border-top:1px solid var(--hairline)}}
+
+.phone{width:160px;min-height:220px;border-radius:26px;background:var(--surface-2);border:1px solid var(--hairline);padding:12px;display:flex;flex-direction:column;gap:8px}
+.phone .bar{font-size:11px;font-weight:600;color:var(--text-2);text-align:center}
+.screen{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;text-align:center;font-size:12.5px;line-height:1.35;transition:opacity .3s var(--ease)}
+.screen .photo{width:100%;height:96px;border-radius:12px;background:linear-gradient(135deg,#ff9f0a,#ff375f 55%,#bf5af2)}
+.screen .who{font-size:11.5px;color:var(--text-2)}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--hairline);border-top-color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chip{display:inline-block;font-size:12px;font-weight:700;border-radius:980px;padding:3px 10px;font-variant-numeric:tabular-nums}
+.chip.c2{background:var(--ok-soft);color:var(--ok)}
+.chip.c4{background:var(--warn-soft);color:var(--warn)}
+.chip.c5{background:var(--like-soft);color:var(--like)}
+.phone-label{font-size:11px;color:var(--text-2);text-align:center;margin-top:8px}
+
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-size:14px;font-weight:500;padding:8px 16px;border-radius:980px;background:var(--hairline);color:var(--text);
+  transition:transform .2s var(--ease),background .2s var(--ease);-webkit-user-select:none;user-select:none;text-align:center}
+.btn:hover{background:color-mix(in srgb,var(--hairline) 100%,var(--text) 6%)}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+@media (max-width:560px){.stage-top{flex-wrap:wrap}.stage-top .controls{width:100%}.stage-top .btn{flex:1}}
+.kbd{font-size:12px;color:var(--text-2);text-align:right;margin:12px 4px 0;max-width:none}
+
+.predict{margin:0 24px 22px;padding:18px;border-radius:16px;background:var(--accent-soft);display:none}
+.predict.on{display:block;animation:rise .5s var(--spring)}
+.predict p{margin:0 0 12px;font-weight:600}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+.choice{all:unset;cursor:pointer;background:var(--surface);border-radius:12px;padding:10px 14px;font-size:15px;border:1px solid var(--hairline);transition:all .25s var(--ease)}
+.choice:hover{border-color:var(--accent)}
+.choice.right{border-color:var(--ok);color:var(--ok);font-weight:600}
+.choice.wrong{border-color:var(--warn);color:var(--warn)}
+.choice:focus-visible{outline:2px solid var(--accent)}
+.feedback{margin-top:12px;font-size:15px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* grammaire : les familles */
+.fam{position:relative;overflow:hidden}
+.fam .big{font-size:52px;font-weight:700;letter-spacing:-.04em;line-height:1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.fam.f2 .big{color:var(--ok)} .fam.f4 .big{color:var(--warn)} .fam.f5 .big{color:var(--like)}
+.fam .who{font-size:13px;font-weight:600;color:var(--text-2);margin:0 0 12px}
+.fam ul{list-style:none;margin:14px 0 0;padding:0}
+.fam li{padding:8px 0;border-top:1px solid var(--hairline);font-size:15px;display:flex;gap:10px}
+.fam li code{flex:none;background:none;padding:0;font-weight:700}
+.codebox{background:var(--surface-2);border:1px solid var(--hairline);border-radius:16px;padding:18px 20px;font-size:13.5px;line-height:1.75;overflow-x:auto;white-space:pre;margin:0}
+.codebox .k{color:var(--accent);font-weight:600}
+.codebox .c{color:var(--text-2)}
+.codebox .s4{color:var(--warn);font-weight:700}
+.codebox .s2{color:var(--ok);font-weight:700}
+
+.q{padding:24px 28px}
+.q + .q{border-top:1px solid var(--hairline)}
+.q .choices{margin-top:12px}
+
+/* monde réel 1 : l'onglet Réseau */
+.net{border:1px solid var(--hairline);border-radius:14px;overflow:hidden;font-size:13.5px}
+.net .head,.net .row{display:grid;grid-template-columns:62px 1fr 64px;gap:10px;padding:9px 14px;align-items:center}
+.net .head{background:var(--surface-2);font-size:12px;font-weight:600;color:var(--text-2)}
+.net .row{border-top:1px solid var(--hairline);font-family:"SF Mono",ui-monospace,Menlo,monospace;animation:rise .4s var(--spring)}
+.net .row.hot{background:var(--like-soft)}
+.net .row.mid{background:var(--warn-soft)}
+.net .empty{padding:18px 14px;color:var(--text-2);font-size:14px;border-top:1px solid var(--hairline)}
+.notes{display:grid;gap:10px;margin-top:16px}
+.note{padding:14px 16px;border-radius:14px;font-size:15px;animation:rise .45s var(--spring)}
+.note.n5{background:var(--like-soft)} .note.n4{background:var(--warn-soft)}
+
+/* monde réel 2 : réessayer ou pas */
+.lanes{display:grid;gap:16px}
+.lane{border:1px solid var(--hairline);border-radius:14px;padding:14px 16px}
+.lane h3{font-size:16px;margin:0 0 10px}
+.track{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:30px}
+.wait{font-size:12px;color:var(--text-2);animation:rise .35s var(--spring)}
+.track .chip{animation:rise .35s var(--spring)}
+.verdict{margin-top:10px;font-size:15px;font-weight:600;animation:rise .45s var(--spring)}
+
+.tool{display:flex;flex-direction:column;gap:6px}
+.tool .tag{align-self:flex-start;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:980px;padding:3px 10px}
+.tool p{margin:0;font-size:15px}
+.tool .where{color:var(--text-2);font-size:14px;margin-top:6px}
+
+.answer{display:none;margin-top:14px;padding:16px 18px;border-radius:14px;background:var(--surface-2);border:1px solid var(--hairline);font-size:15px}
+.answer.on{display:block;animation:rise .45s var(--spring)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chips .term{border:0;background:var(--surface);box-shadow:var(--shadow);border-radius:980px;padding:8px 14px;font-size:15px}
+
+.fiche{display:none}
+body.mode-fiche .cours{display:none}
+body.mode-fiche .fiche{display:block}
+.fiche h1{margin-top:56px}
+.fiche .card + .card{margin-top:18px}
+.fiche ul{margin:8px 0 0;padding-left:20px}
+.fiche li{margin:6px 0}
+.pitfall{color:var(--warn);font-weight:600}
+
+.tally{list-style:none;margin:0;padding:0}
+.tally li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--hairline);font-size:15px}
+.tally li:first-child{border-top:0;padding-top:0}
+.pill{font-size:13px;font-weight:600;border-radius:980px;padding:4px 12px;background:var(--hairline);color:var(--text-2);white-space:nowrap;transition:background .3s var(--ease),color .3s var(--ease)}
+.pill.juste{background:var(--ok-soft);color:var(--ok)}
+.pill.fausse{background:var(--warn-soft);color:var(--warn)}
+.pill.bump{animation:bump .55s var(--spring)}
+@keyframes bump{from{transform:scale(.6);opacity:.2}to{transform:none;opacity:1}}
+.copied{margin:14px 0 0;font-size:15px;color:var(--ok);font-weight:600;min-height:1.4em;opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease),transform .45s var(--spring)}
+.copied.on{opacity:1;transform:none}
+.bilan-texte{display:block;width:100%;min-height:140px;margin-top:14px;border-radius:14px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);font:13.5px/1.6 "SF Mono",ui-monospace,Menlo,monospace;padding:14px 16px;resize:vertical}
+.bilan-texte[hidden]{display:none}
+
+footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color:var(--text-2);border-top:1px solid var(--hairline)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+  .spin{animation:none;border-top-color:var(--hairline)}
+}
+/* navigation entre étapes */
+.stepnav{display:grid;gap:12px;margin-top:28px}
+@media (min-width:760px){.stepnav{grid-template-columns:1fr 1fr}}
+.stepnav a,.stepnav span.off{display:block;padding:20px 22px;border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);color:var(--text);transition:transform .25s var(--spring)}
+.stepnav a:hover{transform:translateY(-2px)}
+.stepnav small{display:block;font-size:13px;color:var(--text-2);margin-bottom:4px}
+.stepnav b{font-size:17px}
+.stepnav .next{text-align:right}
+.stepnav span.off{opacity:.55}
+/* étape 1 : répartiteur et délai */
+.lb{display:grid;grid-template-columns:110px 1fr 140px;gap:10px;align-items:center}
+.lb .col{display:flex;flex-direction:column;gap:8px}
+.lb .box{border:1px solid var(--hairline);border-radius:12px;padding:10px;text-align:center;font-size:13px;background:var(--surface-2)}
+.lb .box b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.lb .lane2{position:relative;height:150px}
+.lb .dot{position:absolute;left:0;width:12px;height:12px;border-radius:50%;background:var(--accent);opacity:0}
+.lb .box.flash{border-color:var(--accent);background:var(--accent-soft)}
+.tmo{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tmo .bar2{flex:1;min-width:180px;height:10px;border-radius:980px;background:var(--hairline);overflow:hidden}
+.tmo .fill{height:100%;width:0;background:var(--accent);transition:width .1s linear}
+.tmo .fill.late{background:var(--warn)}
+.tmo .t{font-variant-numeric:tabular-nums;font-weight:600;min-width:52px}
+/* étape 2 : arbre des ressources */
+.urlbar{display:flex;flex-wrap:wrap;gap:4px;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:18px;padding:16px 24px;border-bottom:1px solid var(--hairline)}
+.urlbar span{padding:4px 8px;border-radius:8px;transition:background .3s var(--ease),color .3s var(--ease);color:var(--text-2)}
+.urlbar span.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.urlbar span.past{color:var(--text)}
+.urlbar span.verb.on{background:var(--like-soft);color:var(--like)}
+.seq .tnode rect{fill:var(--surface-2);stroke:var(--hairline);stroke-width:1;transition:fill .35s var(--ease),stroke .35s var(--ease)}
+.seq .tnode text{font-size:13px;text-anchor:middle}
+.seq .tnode .tk{font-size:10.5px;fill:var(--text-2)}
+.seq .tnode.hit rect{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.seq .tnode.gone{opacity:.25;transition:opacity .5s var(--ease)}
+.seq .tedge{stroke:var(--line);stroke-width:1.2;fill:none;transition:stroke .35s var(--ease)}
+.seq .tedge.hit{stroke:var(--accent);stroke-width:2.4}
+.meth{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px}
+.meth td{padding:11px 8px;border-top:1px solid var(--hairline);vertical-align:top}
+.meth tr:first-child td{border-top:0}
+.meth td:first-child{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-weight:700;color:var(--accent);white-space:nowrap;width:80px}
+.meth td:last-child{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--text-2)}
+.robot{display:grid;gap:8px}
+.robot .lk{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 14px;border:1px solid var(--hairline);border-radius:12px;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:13.5px;transition:all .35s var(--ease)}
+.robot .lk.visit{border-color:var(--accent);background:var(--accent-soft)}
+.robot .lk.bad{border-color:var(--like);background:var(--like-soft)}
+.posts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.posts i{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#ff9f0a,#ff375f 55%,#bf5af2);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.posts i.del{opacity:.12;transform:scale(.8)}
+@media (prefers-reduced-motion:reduce){.lb .dot{display:none}}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="crumb"><a href="../../">Cours animés</a> · <a href="../../cours/api-web/">API web</a> · <b>Client et serveur</b></div>
+    <div class="seg" id="seg" data-mode="cours" role="tablist" aria-label="Affichage">
+      <span class="thumb" aria-hidden="true"></span>
+      <button role="tab" aria-selected="true" data-mode="cours">Cours</button>
+      <button role="tab" aria-selected="false" data-mode="fiche">Fiche</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="cours">
+
+  <p class="eyebrow">API web · Étape 1 sur 5</p>
+  <h1 style="margin-top:24px">Tu touches un cœur.<br>Un serveur te répond.</h1>
+  <p class="lede">Ton téléphone ne contient pas les photos de tout le monde. <strong>Chaque action dans l'appli devient une demande envoyée à un autre ordinateur, qui répond.</strong></p>
+  <p class="muted small" style="margin-top:22px">Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
+
+  <section class="reveal" aria-labelledby="t-why">
+    <p class="eyebrow">Pourquoi ça existe</p>
+    <h2 id="t-why">Les données ne sont pas dans ton téléphone.</h2>
+    <p>Des millions de personnes publient et likent en même temps. Si chaque téléphone gardait sa propre copie, personne ne verrait la même chose. Alors les données sont rangées à un seul endroit, sur des ordinateurs d'Instagram, et chaque téléphone <strong>demande</strong> ce dont il a besoin.</p>
+    <p>Celui qui demande s'appelle le <button class="term" data-term="client">client</button>, celui qui répond le <button class="term" data-term="serveur">serveur</button>. Toute la suite du cours (HTTP, les codes, le JSON, ta première API) repose sur ce dialogue.</p>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-cast">
+    <p class="eyebrow">Les personnages</p>
+    <h2 id="t-cast">Quatre rôles, à ne pas mélanger.</h2>
+    <div class="cast">
+      <div class="card"><div class="ico">👆</div><h3>Toi</h3><p>Tu touches l'écran. Tu ne parles jamais directement au serveur.</p></div>
+      <div class="card"><div class="ico">📱</div><h3>Le client</h3><p>L'appli. Elle transforme ton geste en demande, puis affiche la réponse.</p></div>
+      <div class="card"><div class="ico">🖥️</div><h3>Le serveur</h3><p>Il reçoit la demande, fait le travail et renvoie une réponse. Il n'affiche rien.</p></div>
+      <div class="card"><div class="ico">🗄️</div><h3>La base de données</h3><p>Là où les likes et les posts sont rangés. Seul le serveur lui parle.</p></div>
+      <div class="card"><div class="ico">✉️</div><h3>Requête et réponse</h3><p>Les deux messages : la demande à l'aller, la réponse au retour.</p></div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-anim">
+    <p class="eyebrow">L'histoire, pas à pas</p>
+    <h2 id="t-anim">Le voyage d'un like.</h2>
+    <p class="muted">Suis le like de ton doigt jusqu'à la base de données, puis le chemin du retour. Avance à ton rythme.</p>
+
+    <div class="card stage">
+      <div class="stage-top">
+        <div>
+          <div class="stepcount" id="stepcount">Début</div>
+          <div class="dots" id="dots" aria-hidden="true"></div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="prev">Précédent</button>
+          <button class="btn primary" id="next">Suivant</button>
+          <button class="btn" id="play">Lecture</button>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <svg class="seq" id="seq" viewBox="0 0 900 420" role="img" aria-labelledby="seq-title">
+          <title id="seq-title">Le voyage d'un like : toi, l'appli, le serveur et la base de données, à l'aller puis au retour.</title>
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker>
+            <marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10" fill="none" stroke="context-stroke" stroke-width="1.6"/></marker>
+          </defs>
+          <g class="actor"><rect x="30" y="16" width="120" height="52" rx="12"/><text x="90" y="38">Toi</text><text class="sub" x="90" y="56">ton doigt</text></g>
+          <g class="actor"><rect x="260" y="16" width="140" height="52" rx="12"/><text x="330" y="38">L'appli</text><text class="sub" x="330" y="56">le client</text></g>
+          <g class="actor"><rect x="520" y="16" width="140" height="52" rx="12"/><text x="590" y="38">Le serveur</text><text class="sub" x="590" y="56">sur internet</text></g>
+          <g class="actor"><rect x="750" y="16" width="130" height="52" rx="12"/><text x="815" y="38">La base</text><text class="sub" x="815" y="56">les likes rangés</text></g>
+          <line class="lifeline" x1="90" y1="68" x2="90" y2="415"/>
+          <line class="lifeline" x1="330" y1="68" x2="330" y2="415"/>
+          <line class="lifeline" x1="590" y1="68" x2="590" y2="415"/>
+          <line class="lifeline" x1="815" y1="68" x2="815" y2="415"/>
+
+          <g data-step="0"><path class="line" d="M94 108 H324" marker-end="url(#arr)"/><text class="label" x="210" y="98">tu touches ♥</text></g>
+          <g data-step="1"><rect x="236" y="134" width="188" height="34" rx="9" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.4"/><text class="label" x="330" y="156">POST /posts/42/like</text></g>
+          <g data-step="2"><path class="line" d="M334 204 H584" marker-end="url(#arr)"/><text class="label" x="460" y="194">la requête part</text></g>
+          <g data-step="3"><path class="line" d="M594 244 H809" marker-end="url(#arr)"/><text class="label" x="702" y="234">enregistre le like</text></g>
+          <g data-step="3" class="ret"><path class="line" d="M811 276 H596" marker-end="url(#open)"/><text class="label" x="702" y="268">c'est fait</text></g>
+          <g data-step="4" class="ret"><path class="line" d="M586 320 H336" marker-end="url(#open)"/><text class="label st2" x="460" y="310">la réponse : 201 + { likes: 3 }</text></g>
+          <g data-step="5" class="ret"><path class="line" d="M326 366 H96" marker-end="url(#open)"/><text class="label" x="210" y="356">cœur rouge, 3 j'aime</text></g>
+        </svg>
+      </div>
+
+      <div class="predict" id="predict" role="group" aria-labelledby="predict-q" data-bilan="Prédiction : qui change l'écran">
+        <p id="predict-q">Avant de continuer : le like est enregistré dans la base. Comment le cœur va-t-il devenir rouge sur ton écran ?</p>
+        <div class="choices">
+          <button class="choice" data-ok="0">Le serveur colorie lui-même le cœur sur ton téléphone</button>
+          <button class="choice" data-ok="1">Le serveur renvoie une réponse, et c'est l'appli qui colorie le cœur</button>
+        </div>
+        <div class="feedback" id="predict-fb" aria-live="polite"></div>
+      </div>
+
+      <div class="stage-bottom">
+        <div class="caption" aria-live="polite">
+          <h3 id="cap-title">Prête ?</h3>
+          <div id="cap-text" class="muted">Appuie sur « Suivant », ou sur la flèche droite du clavier.</div>
+          <div class="read" id="cap-read" hidden><b>Comment lire</b><span id="cap-read-text"></span></div>
+        </div>
+        <div class="phone-col" aria-hidden="true">
+          <div class="phone">
+            <div class="bar">9:41</div>
+            <div class="screen" id="screen"></div>
+          </div>
+          <div class="phone-label">Ce que tu vois sur ton téléphone</div>
+        </div>
+      </div>
+    </div>
+    <p class="kbd">← → pour avancer · espace pour lancer ou mettre en pause</p>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-gram">
+    <p class="eyebrow">La grammaire</p>
+    <h2 id="t-gram">Deux messages, toujours dans cet ordre.</h2>
+    <div class="grid three" style="margin-top:28px">
+      <div class="card"><h3>1. Le client parle en premier</h3><p class="muted small" style="margin:0">Le serveur ne t'envoie rien de lui-même : il attend qu'on lui demande. (Les notifications passent par d'autres mécanismes, tu les verras plus tard.)</p></div>
+      <div class="card"><h3>2. Une requête, une réponse</h3><p class="muted small" style="margin:0">À chaque demande correspond exactement une réponse. Même pour dire « non » ou « introuvable ».</p></div>
+      <div class="card"><h3>3. Le serveur n'affiche rien</h3><p class="muted small" style="margin:0">Il envoie des données. C'est l'appli, sur ton téléphone, qui décide comment les afficher.</p></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card">
+        <h3>La requête, telle qu'elle part</h3>
+        <p class="muted small">Une méthode, une adresse, et le nom du serveur visé.</p>
+<pre class="codebox"><span class="k">POST</span> /posts/42/like HTTP/1.1
+Host: api.exemple.com</pre>
+      </div>
+      <div class="card">
+        <h3>La réponse, telle qu'elle revient</h3>
+        <p class="muted small">Un code de statut, puis les données en JSON.</p>
+<pre class="codebox"><span class="k">HTTP/1.1</span> <span class="s2">201 Created</span>
+Content-Type: application/json
+
+{ "likes": 3 }</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-quiz">
+    <p class="eyebrow">Vérifie-toi</p>
+    <h2 id="t-quiz">Trois questions, une minute.</h2>
+    <div class="card" style="padding:0;margin-top:28px" id="quiz">
+      <div class="q" data-bilan="Q1 Qui envoie la requête">
+        <h3>Tu ouvres ton fil. Qui envoie la requête ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="0">Toi</button>
+          <button class="choice" data-ok="1">L'appli</button>
+          <button class="choice" data-ok="0">Le serveur</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="Toi, tu touches l'écran. C'est l'appli, le client, qui transforme ton geste en requête et l'envoie."></div>
+      </div>
+      <div class="q" data-bilan="Q2 Qui parle en premier">
+        <h3>Un ami publie une photo. Le serveur l'envoie-t-il tout seul à ton téléphone, sans que l'appli ait rien demandé ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="0">Oui, dès que la photo est publiée</button>
+          <button class="choice" data-ok="1">Non : avec HTTP, le client demande toujours en premier</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="Le serveur attend les demandes. Ton appli verra la photo la prochaine fois qu'elle demandera le fil."></div>
+      </div>
+      <div class="q" data-bilan="Q3 Trouver l'erreur : le serveur affiche">
+        <h3>Trouve l'erreur : « Le serveur affiche les posts sur ton écran. »</h3>
+        <div class="choices">
+          <button class="choice" data-ok="1">Le serveur envoie les données, c'est l'appli qui les affiche</button>
+          <button class="choice" data-ok="0">Il n'y a pas d'erreur</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="Le serveur ne sait même pas à quoi ressemble ton écran. Il renvoie des données ; l'appli iPhone, l'appli Android et le site les affichent chacun à leur façon."></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-real">
+    <p class="eyebrow">Le monde réel</p>
+    <h2 id="t-real">Des millions de clients, et un réseau imparfait.</h2>
+    <p class="lede">En TP, un client parle à un serveur. <strong>En vrai, des millions de clients parlent en même temps, et le réseau peut lâcher.</strong></p>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Problème 1</p>
+      <h4>Un seul serveur ne suffit pas.</h4>
+      <p>Un serveur ne peut traiter qu'un certain nombre de requêtes à la fois. Les équipes en font tourner plusieurs, identiques, et placent devant eux un <button class="term" data-term="repartiteur">répartiteur de charge</button> qui distribue les requêtes. Pour le client, rien ne change : il parle toujours à « un » serveur.</p>
+      <div class="card" style="margin-top:24px">
+        <div class="lb">
+          <div class="box"><b id="lb-sent">0</b>requêtes envoyées</div>
+          <div class="box" id="lb-mid">Répartiteur</div>
+          <div class="col">
+            <div class="box" id="lb-s0">Serveur A · <span>0</span></div>
+            <div class="box" id="lb-s1">Serveur B · <span>0</span></div>
+            <div class="box" id="lb-s2">Serveur C · <span>0</span></div>
+          </div>
+        </div>
+        <p class="muted small" id="lb-note" style="margin-top:14px" aria-live="polite"></p>
+        <div class="controls" style="margin-top:16px"><button class="btn primary" id="demo-1">Envoyer 12 likes</button></div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Problème 2</p>
+      <h4>La réponse n'arrive jamais.</h4>
+      <p>Dans le métro, la requête part… et rien ne revient. Une appli bien faite n'attend pas pour toujours : elle se fixe un <button class="term" data-term="delai">délai d'attente</button>, puis affiche un message ou réessaie.</p>
+      <div class="card" style="margin-top:24px">
+        <div class="tmo"><span class="t" id="tmo-t">0,0 s</span><div class="bar2"><div class="fill" id="tmo-fill"></div></div><span class="muted small">délai : 5 s</span></div>
+        <p class="small" id="tmo-msg" style="margin:14px 0 0" aria-live="polite">La requête n'est pas encore partie.</p>
+        <div class="controls" style="margin-top:16px"><button class="btn primary" id="demo-2">Envoyer dans le métro</button></div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Les outils</p>
+      <h4>Les noms que tu entendras.</h4>
+      <div class="grid two" style="margin-top:22px">
+        <div class="card tool"><span class="tag">Navigateur</span><h3>L'onglet Réseau (Network)</h3><p>Montre chaque requête envoyée par la page, et la réponse reçue.</p><p class="where">Clic droit, « Inspecter », puis « Réseau ».</p></div>
+        <div class="card tool"><span class="tag">Terminal</span><h3>curl</h3><p>Envoie une requête à la main et affiche la réponse brute. Tu joues le rôle du client.</p><p class="where">Déjà installé sur Mac : <code>curl -i https://exemple.com</code></p></div>
+        <div class="card tool"><span class="tag">Infrastructure</span><h3>Répartiteurs de charge</h3><p>Nginx, ou ceux fournis par les hébergeurs (AWS, Google Cloud, Azure).</p><p class="where">Devant presque toute appli qui a beaucoup d'utilisateurs.</p></div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Avec l'IA</p>
+      <h4>Elle propose, tu vérifies.</h4>
+      <div class="grid two" style="margin-top:22px">
+        <div class="card"><h3>Ce qu'elle fait bien</h3><p class="muted small" style="margin:0">Expliquer le chemin d'une requête, écrire le code client qui l'envoie.</p></div>
+        <div class="card"><h3>Ce que tu dois vérifier</h3><p class="muted small" style="margin:0">Que les vérifications importantes (mot de passe, droits) sont faites côté serveur. Le client est entre les mains de l'utilisateur : on ne lui fait jamais confiance.</p></div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <p class="eyebrow" style="color:var(--text-2)">Question d'entretien</p>
+        <h3>« Que se passe-t-il quand tu tapes une adresse dans ton navigateur ? »</h3>
+        <div class="controls" style="margin-top:14px"><button class="btn" id="show-answer">Voir une bonne réponse</button></div>
+        <div class="answer" id="answer">Le navigateur, qui est le client, cherche d'abord l'adresse du serveur à partir du nom du site (c'est le rôle du <button class="term" data-term="dns">DNS</button>). Il se connecte à ce serveur, lui envoie une requête HTTP (<code>GET /</code>), le serveur répond avec un code de statut et la page, et le navigateur l'affiche. Puis il envoie d'autres requêtes pour les images et les styles.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-next">
+    <p class="eyebrow">La suite</p>
+    <h2 id="t-next">Où tu en es dans le cours.</h2>
+    <nav class="stepnav" aria-label="Étapes du cours">
+      <a href="../../cours/api-web/"><small>← Sommaire</small><b>La carte du cours API</b></a>
+      <a class="next" href="../http-methodes-url/"><small>Étape 2 →</small><b>HTTP : méthodes et URL</b></a>
+    </nav>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-lex">
+    <p class="eyebrow">Lexique de la page</p>
+    <h2 id="t-lex">Les mots à retenir.</h2>
+    <p class="muted">Clique sur un mot pour revoir son explication. Ils rejoindront ton lexique dans Notion.</p>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-bilan">
+    <p class="eyebrow">Ton bilan</p>
+    <h2 id="t-bilan">Ce que tu as réussi, prêt à coller.</h2>
+    <p class="muted">Ta première réponse à chaque question compte. Ce site n'enregistre rien : le bouton copie un court résumé, que tu colles à l'expert cours.</p>
+    <div class="card" style="margin-top:28px">
+      <ul class="tally" id="tally"></ul>
+      <div class="controls" style="margin-top:22px"><button class="btn primary" id="copier-bilan">Copier mon bilan</button></div>
+      <p class="copied" id="copie-msg" aria-live="polite"></p>
+      <textarea class="bilan-texte" id="bilan-texte" readonly hidden aria-label="Texte du bilan"></textarea>
+    </div>
+  </section>
+</div>
+
+<div class="fiche">
+  <h1>Fiche · Client et serveur</h1>
+  <p class="lede">L'essentiel sur un écran, à relire la veille.</p>
+  <div class="card" style="margin-top:32px">
+    <h3>L'essentiel</h3>
+    <ul>
+      <li>Le <b>client</b> (l'appli) demande, le <b>serveur</b> répond. Toi, tu touches l'écran : c'est l'appli qui envoie.</li>
+      <li>Deux messages : la <b>requête</b> à l'aller (méthode + URL), la <b>réponse</b> au retour (code de statut + données en JSON).</li>
+      <li>Le client parle toujours en premier ; une requête reçoit toujours une réponse.</li>
+      <li>Le serveur n'affiche rien : il envoie des données, l'appli les affiche.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Les pièges</h3>
+    <ul>
+      <li><span class="pitfall">Croire</span> que c'est l'utilisateur qui parle au serveur : c'est l'appli.</li>
+      <li><span class="pitfall">Croire</span> que le serveur affiche : il répond, l'appli affiche.</li>
+      <li><span class="pitfall">Faire confiance</span> au client pour une vérification importante : elle se fait sur le serveur.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>En vrai</h3>
+    <ul>
+      <li>Plusieurs serveurs identiques derrière un répartiteur de charge ; un délai d'attente côté appli quand le réseau lâche.</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<footer>API web · cours animé. Instagram sert ici d'exemple d'étude ; ce site n'y est pas lié.</footer>
+
+<div class="pop" id="pop" role="dialog" aria-labelledby="pop-t">
+  <p class="pt" id="pop-t"></p>
+  <p class="pd" id="pop-d"></p>
+  <p class="ps" id="pop-s"></p>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+  const SLUG = 'client-serveur';
+
+  /* ---------- lexique ---------- */
+  const TERMS = {
+    client:{t:'Client', d:'Le programme qui envoie la demande. Ici, l’appli sur ton téléphone.', s:'Toi, tu cliques ; c’est l’appli qui transforme ton clic en requête.'},
+    serveur:{t:'Serveur', d:'L’ordinateur qui reçoit les requêtes, fait le travail et renvoie une réponse.', s:'Il n’affiche rien : il envoie des données.'},
+    requete:{t:'Requête', d:'Le message envoyé par le client : une méthode (GET, POST…) et une URL.', s:'Le voyage aller.'},
+    reponse:{t:'Réponse', d:'Le message renvoyé par le serveur : un code de statut, puis souvent des données en JSON.', s:'Le voyage retour.'},
+    http:{t:'HTTP', d:'HyperText Transfer Protocol : la langue commune des clients et des serveurs sur le web.', s:'C’est l’étape 2 du cours.'},
+    base:{t:'Base de données', d:'Le logiciel où les données sont rangées durablement.', s:'Seul le serveur lui parle, jamais l’appli directement.'},
+    json:{t:'JSON', d:'Une façon d’écrire des données en texte, avec des objets { } et des listes [ ].', s:'C’est l’étape 4 du cours.'},
+    statut:{t:'Code de statut', d:'Les trois chiffres au début d’une réponse : 2 ça a marché, 4 la demande pose problème, 5 le serveur a un problème.', s:'C’est l’étape 3 du cours.'},
+    repartiteur:{t:'Répartiteur de charge', d:'Un programme placé devant plusieurs serveurs identiques, qui distribue les requêtes entre eux.', s:'En anglais : load balancer.'},
+    delai:{t:'Délai d’attente', d:'Le temps maximum qu’un client accepte d’attendre une réponse avant d’abandonner ou de réessayer.', s:'En anglais : timeout.'},
+    dns:{t:'DNS', d:'Domain Name System : l’annuaire d’internet, qui transforme un nom de site en adresse de serveur.', s:'Comme chercher un numéro de téléphone à partir d’un nom.'}
+  };
+
+
+  const pop = $('pop');
+  let openTerm = null;
+  function showTerm(btn) {
+    const k = TERMS[btn.dataset.term || btn.dataset.t]; if (!k) return;
+    if (openTerm === btn) return hideTerm();
+    if (openTerm) openTerm.setAttribute('aria-expanded', 'false');
+    $('pop-t').textContent = k.t; $('pop-d').textContent = k.d; $('pop-s').textContent = k.s;
+    const r = btn.getBoundingClientRect(), w = pop.offsetWidth || 340;
+    pop.style.left = Math.min(Math.max(16, r.left), innerWidth - w - 16) + 'px';
+    pop.classList.add('on');
+    const h = pop.offsetHeight;
+    pop.style.top = (r.bottom + 10 + h > innerHeight ? Math.max(12, r.top - h - 10) : r.bottom + 10) + 'px';
+    btn.setAttribute('aria-expanded', 'true'); openTerm = btn;
+  }
+  function hideTerm() { pop.classList.remove('on'); if (openTerm) openTerm.setAttribute('aria-expanded', 'false'); openTerm = null; }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { e.preventDefault(); showTerm(t); }
+    else if (!e.target.closest('.pop')) hideTerm();
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') hideTerm(); });
+  addEventListener('scroll', () => openTerm && hideTerm(), {passive:true});
+
+  const rich = s => s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, '<button class="term" data-t="$1">$2</button>');
+  const chips = $('chips');
+  Object.entries(TERMS).forEach(([k, v]) => { const b = document.createElement('button'); b.className = 'term'; b.dataset.t = k; b.textContent = v.t; chips.appendChild(b); });
+
+
+  /* ---------- les étapes de l'animation ---------- */
+  const STEPS = [
+    {t:'Tu touches le cœur.', d:'Ton doigt touche l’écran. Pour l’instant, rien n’est parti sur internet : seule l’appli sait que tu as touché.', r:'Cette flèche ne passe pas par internet : c’est entre toi et l’appli.'},
+    {t:'L’appli écrit la requête.', d:'L’appli, le [[client|client]], transforme ton geste en [[requete|requête]] : <code>POST /posts/42/like</code>, « ajoute un like au post 42 ».', r:'C’est l’appli qui parle, pas toi.'},
+    {t:'La requête part sur internet.', d:'La requête voyage jusqu’au [[serveur|serveur]] d’Instagram, dans la langue [[http|HTTP]].', r:'Flèche pleine : un message part, quelqu’un va devoir répondre.'},
+    {t:'Le serveur fait le travail.', d:'Le serveur demande à la [[base|base de données]] d’enregistrer le like. La base confirme.', r:'L’appli, elle, attend. Elle ne voit pas ce qui se passe ici.'},
+    {t:'Le serveur répond.', d:'Le serveur renvoie une [[reponse|réponse]] : le [[statut|code]] <b>201</b> (créé) et le nouveau nombre de likes en [[json|JSON]].', r:'Flèche en pointillés : c’est le retour. Une requête, une réponse.'},
+    {t:'L’appli affiche.', d:'L’appli lit la réponse et colorie le cœur en rouge, avec « 3 j’aime ». Le serveur n’a jamais touché à ton écran.', r:'L’affichage se fait sur ton téléphone, par l’appli.'}
+  ];
+  const PREDIRE_AVANT = 4;
+  const PRED_WHY = 'Le serveur ne connaît pas ton écran : il renvoie une réponse avec des données. C’est l’appli, sur ton téléphone, qui décide de colorier le cœur.';
+
+  const HEART = c => `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" style="fill:${c === 'on' ? 'var(--like)' : 'none'};stroke:${c === 'on' ? 'var(--like)' : c === 'wait' ? 'var(--accent)' : 'var(--text)'};stroke-width:1.8"/></svg>`;
+  const SCREENS = {
+    idle:`<div class="photo"></div><div style="display:flex;align-items:center;gap:6px">${HEART('')}<span class="who">2 j’aime</span></div>`,
+    tap:`<div class="photo"></div><div style="display:flex;align-items:center;gap:6px">${HEART('wait')}<span class="who">…</span></div>`,
+    wait:`<div class="photo"></div><div style="display:flex;align-items:center;gap:6px"><div class="spin"></div><span class="who">envoi…</span></div>`,
+    done:`<div class="photo"></div><div style="display:flex;align-items:center;gap:6px">${HEART('on')}<span class="who">3 j’aime</span></div>`
+  };
+  const SCREEN_AT = ['tap','wait','wait','wait','wait','done'];
+  let lastScreen = null;
+  function surEtape(cur) {
+    const k = cur < 0 ? 'idle' : SCREEN_AT[cur];
+    if (k === lastScreen) return;
+    lastScreen = k; $('screen').innerHTML = SCREENS[k];
+  }
+
+
+  /* ---------- moteur pas à pas ---------- */
+  let cur = -1, timer = null, predicted = false;
+  const dots = $('dots'); STEPS.forEach(() => dots.appendChild(document.createElement('i')));
+  const parts = [...document.querySelectorAll('#seq [data-step]')];
+  parts.forEach(p => p.classList.add('msg'));
+  requestAnimationFrame(() => parts.forEach(p => { const l = p.querySelector('.line'); if (l) try { p.style.setProperty('--len', l.getTotalLength()); } catch (e) {} }));
+  const gate = () => PREDIRE_AVANT !== null && cur === PREDIRE_AVANT - 1 && !predicted;
+  function render(animate) {
+    parts.forEach(g => {
+      const i = +g.dataset.step;
+      g.classList.toggle('past', i < cur); g.classList.toggle('now', i === cur); g.classList.remove('draw');
+      if (i === cur && animate && !reduce) { void g.getBBox(); g.classList.add('draw'); }
+    });
+    [...dots.children].forEach((d, i) => { d.className = i < cur ? 'done' : i === cur ? 'now' : ''; });
+    $('stepcount').textContent = cur < 0 ? 'Début' : `Étape ${cur + 1} sur ${STEPS.length}`;
+    const s = STEPS[cur];
+    $('cap-title').textContent = s ? s.t : 'Prête ?';
+    $('cap-text').innerHTML = s ? rich(s.d) : 'Appuie sur « Suivant », ou sur la flèche droite du clavier.';
+    $('cap-read').hidden = !s; if (s) $('cap-read-text').innerHTML = rich(s.r);
+    $('predict').classList.toggle('on', gate());
+    $('prev').disabled = cur < 0;
+    $('next').disabled = cur >= STEPS.length - 1 || gate();
+    surEtape(cur);
+  }
+  const go = (n, animate = true) => { cur = Math.max(-1, Math.min(STEPS.length - 1, n)); render(animate); };
+  function stop() { clearInterval(timer); timer = null; $('play').textContent = 'Lecture'; }
+  function next() { if (gate()) return stop(); if (cur < STEPS.length - 1) go(cur + 1); else stop(); }
+  function play() {
+    if (timer) return stop();
+    if (cur >= STEPS.length - 1) go(-1, false);
+    $('play').textContent = 'Pause'; next();
+    timer = setInterval(() => { next(); if (cur >= STEPS.length - 1 || gate()) stop(); }, 3200);
+  }
+  $('next').onclick = () => { stop(); next(); };
+  $('prev').onclick = () => { stop(); go(cur - 1); };
+  $('play').onclick = play;
+  addEventListener('keydown', e => {
+    if (document.body.classList.contains('mode-fiche')) return;
+    if (e.target.closest && e.target.closest('textarea')) return;
+    if (e.key === ' ' && e.target.closest && e.target.closest('button')) return;
+    if (e.key === 'ArrowRight') { stop(); next(); }
+    else if (e.key === 'ArrowLeft') { stop(); go(cur - 1); }
+    else if (e.key === ' ') { e.preventDefault(); play(); }
+  });
+
+  /* ---------- questions ---------- */
+  function wire(group, fb, onRight) {
+    group.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      const ok = b.dataset.ok === '1';
+      group.querySelectorAll('.choice').forEach(x => x.classList.remove('right', 'wrong'));
+      b.classList.add(ok ? 'right' : 'wrong');
+      fb.textContent = (ok ? 'Exact. ' : 'Pas tout à fait. ') + (fb.dataset.why || '');
+      if (ok && onRight) onRight();
+    }));
+  }
+  const pfb = $('predict-fb'); pfb.dataset.why = PRED_WHY;
+  wire($('predict'), pfb, () => { predicted = true; render(false); $('next').focus(); });
+  document.querySelectorAll('#quiz .q').forEach(q => wire(q, q.querySelector('.feedback')));
+
+  /* ---------- bilan ---------- */
+  const answers = new Map();
+  const bilanGroups = [...document.querySelectorAll('[data-bilan]')].filter(g => g.id !== 'predict' || PREDIRE_AVANT !== null);
+  bilanGroups.forEach(g => {
+    const li = document.createElement('li'), lab = document.createElement('span'), pill = document.createElement('span');
+    lab.textContent = g.dataset.bilan; pill.className = 'pill'; pill.textContent = 'non faite';
+    li.append(lab, pill); $('tally').appendChild(li);
+    g.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      if (answers.has(g)) return;
+      const v = b.dataset.ok === '1' ? 'juste' : 'fausse';
+      answers.set(g, v); pill.textContent = v; pill.className = 'pill ' + v;
+      if (!reduce) { void pill.offsetWidth; pill.classList.add('bump'); }
+    }));
+  });
+  function texteBilan() {
+    const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
+    return [`Bilan · ${document.title} · ${date}`, ...bilanGroups.map(g => `${g.dataset.bilan} : ${answers.get(g) || 'non faite'}`)].join('\n');
+  }
+  async function copierBilan() {
+    const txt = texteBilan(), msg = $('copie-msg'), ta = $('bilan-texte');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    if (!ok) { ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} }
+    msg.textContent = ok ? 'Copié. Colle-le à l’expert cours.' : 'Le texte est sélectionné ci-dessous : copie-le (⌘ C), puis colle-le à l’expert cours.';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+  }
+  window.copierBilan = copierBilan;
+  $('copier-bilan').onclick = copierBilan;
+
+
+  /* ---------- monde réel ---------- */
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; e.innerHTML = html; return e; };
+  /* 1. le répartiteur de charge */
+  let lbBusy = false;
+  $('demo-1').onclick = async () => {
+    if (lbBusy) return; lbBusy = true; $('demo-1').disabled = true;
+    const counts = [0, 0, 0]; $('lb-sent').textContent = '0'; $('lb-note').textContent = '';
+    for (let i = 0; i < 3; i++) $('lb-s' + i).querySelector('span').textContent = '0';
+    for (let n = 0; n < 12; n++) {
+      const k = n % 3;
+      $('lb-sent').textContent = n + 1;
+      $('lb-mid').classList.add('flash'); $('lb-s' + k).classList.add('flash');
+      counts[k]++; $('lb-s' + k).querySelector('span').textContent = counts[k];
+      await wait(320);
+      $('lb-mid').classList.remove('flash'); $('lb-s' + k).classList.remove('flash');
+      await wait(80);
+    }
+    $('lb-note').textContent = 'Chaque serveur a reçu 4 requêtes sur 12. Le client n’a rien remarqué : il a toujours parlé à la même adresse.';
+    lbBusy = false; $('demo-1').disabled = false; $('demo-1').textContent = 'Recommencer';
+  };
+
+  /* 2. le délai d'attente */
+  let tmoBusy = false;
+  $('demo-2').onclick = async () => {
+    if (tmoBusy) return; tmoBusy = true; $('demo-2').disabled = true;
+    const fill = $('tmo-fill'), t = $('tmo-t'), msg = $('tmo-msg');
+    fill.classList.remove('late'); msg.textContent = 'Requête envoyée… on attend la réponse.';
+    for (let i = 0; i <= 50; i++) {
+      fill.style.width = (i * 2) + '%'; t.textContent = (i / 10).toFixed(1).replace('.', ',') + ' s';
+      if (i === 35) fill.classList.add('late');
+      await wait(reduce ? 0 : 60);
+    }
+    msg.innerHTML = '⏱️ <b>Délai dépassé.</b> L’appli arrête d’attendre et affiche « Pas de connexion, réessaie ». Sans délai, elle tournerait dans le vide pour toujours.';
+    tmoBusy = false; $('demo-2').disabled = false; $('demo-2').textContent = 'Recommencer';
+  };
+
+
+  $('show-answer').onclick = () => { const on = $('answer').classList.toggle('on'); $('show-answer').textContent = on ? 'Masquer la réponse' : 'Voir une bonne réponse'; };
+
+  /* ---------- Cours / Fiche ---------- */
+  const seg = $('seg');
+  seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.mode; seg.dataset.mode = m;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.body.classList.toggle('mode-fiche', m === 'fiche');
+    hideTerm(); stop(); scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+    try { localStorage.setItem('mode-' + SLUG, m); } catch (e) {}
+  }));
+  try { if (location.hash === '#fiche' || localStorage.getItem('mode-' + SLUG) === 'fiche') seg.querySelector('[data-mode="fiche"]').click(); } catch (e) {}
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.08});
+  document.querySelectorAll('.reveal').forEach(s => io.observe(s));
+
+  render(false);
+})();
+</script>
+</body>
+</html>

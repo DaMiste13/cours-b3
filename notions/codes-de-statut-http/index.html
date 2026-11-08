@@ -252,13 +252,22 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   .reveal{opacity:1;transform:none}
   .spin{animation:none;border-top-color:var(--hairline)}
 }
+/* navigation entre étapes */
+.stepnav{display:grid;gap:12px;margin-top:28px}
+@media (min-width:760px){.stepnav{grid-template-columns:1fr 1fr}}
+.stepnav a,.stepnav span.off{display:block;padding:20px 22px;border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);color:var(--text);transition:transform .25s var(--spring)}
+.stepnav a:hover{transform:translateY(-2px)}
+.stepnav small{display:block;font-size:13px;color:var(--text-2);margin-bottom:4px}
+.stepnav b{font-size:17px}
+.stepnav .next{text-align:right}
+.stepnav span.off{opacity:.55}
 </style>
 </head>
 <body>
 
 <header class="nav">
   <div class="nav-in">
-    <div class="crumb"><a href="../../">Cours animés</a> · API web · <b>Les codes de statut HTTP</b></div>
+    <div class="crumb"><a href="../../">Cours animés</a> · <a href="../../cours/api-web/">API web</a> · <b>Les codes de statut HTTP</b></div>
     <div class="seg" id="seg" data-mode="cours" role="tablist" aria-label="Affichage">
       <span class="thumb" aria-hidden="true"></span>
       <button role="tab" aria-selected="true" data-mode="cours">Cours</button>
@@ -270,7 +279,8 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
 <main>
 <div class="cours">
 
-  <h1>Ça ne marche pas.<br>Qui est en faute ?</h1>
+  <p class="eyebrow">API web · Étape 3 sur 5</p>
+  <h1 style="margin-top:24px">Ça ne marche pas.<br>Qui est en faute ?</h1>
   <p class="lede">Tu ouvres un post et rien ne s'affiche. C'est ton téléphone ? Le serveur ? Le post lui-même ? <strong>Le serveur te le dit en trois chiffres.</strong></p>
   <p class="muted small" style="margin-top:22px">Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
 
@@ -549,6 +559,15 @@ Content-Type: application/json
         <div class="answer" id="answer">Le problème vient de la demande, pas du serveur : il faut répondre 400 (demande mal formée). Un 500 fait croire à une panne : l'équipe reçoit une alerte pour rien, et le client peut réessayer en boucle une demande qui échouera toujours. En général, la cause est une exception qui n'est pas attrapée : on l'intercepte et on la transforme en 400 avec un message clair.</div>
       </div>
     </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-next">
+    <p class="eyebrow">La suite</p>
+    <h2 id="t-next">Où tu en es dans le cours.</h2>
+    <nav class="stepnav" aria-label="Étapes du cours">
+      <a href="../http-methodes-url/"><small>← Étape 2</small><b>HTTP : méthodes et URL</b></a>
+      <span class="off next" style="text-align:right"><small>Étape 4 · bientôt</small><b>JSON : objets et listes</b></span>
+    </nav>
   </section>
 
   <section class="reveal" aria-labelledby="t-lex">
