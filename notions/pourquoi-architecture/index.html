@@ -448,7 +448,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   <section class="reveal" aria-labelledby="t-gram">
     <p class="eyebrow">La grammaire</p>
     <h2 id="t-gram">À quoi ressemble la boue.</h2>
-    <p>Voici la règle « on ne like pas deux fois le même post », écrite comme l'équipe Vite. Huit lignes, et elles marchent.</p>
+    <p>Voici la règle « on ne like pas deux fois le même post », écrite comme l'équipe Vite. Huit lignes, et elles marchent. Une <button class="term" data-term="methode">méthode</button>, c'est un bloc de code avec un nom, ici <code>liker</code>.</p>
     <pre class="codebox" style="margin-top:22px"><span class="c">// Équipe Vite : tout dans la méthode qui reçoit la demande web</span>
 <span class="k">@PostMapping</span>("/posts/{id}/likes")
 void liker(long id, long userId) {
@@ -460,7 +460,7 @@ void liker(long id, long userId) {
     <div class="layers" aria-label="Ce que cette méthode mélange"><span class="w">le web</span><span class="m">la règle</span><span class="d">la base de données</span><span class="d">l'e-mail</span></div>
     <p class="muted small" style="margin-top:14px">La <button class="term" data-term="regle">règle métier</button> est coincée entre le <button class="term" data-term="controleur">contrôleur</button> web, le <button class="term" data-term="sql">SQL</button> et l'envoi d'e-mail. Pour la tester, il faut démarrer un serveur, une base et une messagerie. Pour la réutiliser dans l'appli mobile, il faut la recopier.</p>
 
-    <p style="margin-top:28px">La même règle, rangée : elle vit dans la classe <code>Post</code>, qui ne connaît ni le web, ni la base, ni l'e-mail.</p>
+    <p style="margin-top:28px">La même règle, rangée : elle vit dans la <button class="term" data-term="classe">classe</button> <code>Post</code>, qui ne connaît ni le web, ni la base, ni l'e-mail.</p>
     <pre class="codebox"><span class="c">// Équipe Rangée : la règle vit avec la donnée qu'elle protège</span>
 class Post {
   private final Set&lt;Long&gt; likes = new HashSet&lt;&gt;();
@@ -469,7 +469,7 @@ class Post {
     likes.add(userId);
   }
 }</pre>
-    <p class="muted small" style="margin-top:14px">Elle se teste en une milliseconde, sans rien démarrer. Le site, l'appli mobile et les tests l'appellent tous au même endroit. Comment on relie ensuite cette classe au web et à la base, c'est tout le reste du cours.</p>
+    <p class="muted small" style="margin-top:14px">Elle se teste en une milliseconde, sans rien démarrer. Le site, l'appli mobile et les tests l'appellent tous au même endroit, sur chaque <button class="term" data-term="objet">objet</button> <code>Post</code>. Comment on relie ensuite cette classe au web et à la base, c'est tout le reste du cours.</p>
 
     <div class="sub-section">
       <h3>Les cinq symptômes de la boule de boue.</h3>
@@ -620,7 +620,7 @@ class Post {
         <div class="card tool">
           <span class="tag">Mesurer</span>
           <h3>SonarQube</h3>
-          <p>Analyse le code et estime la <button class="term" data-term="dette">dette technique</button> en temps de correction : « 3 jours de dette sur ce module ».</p>
+          <p>Analyse le code et estime la <button class="term" data-term="dette">dette technique</button> en temps de correction : « 3 jours de dette sur ce <button class="term" data-term="module">module</button> ».</p>
           <p class="where">Souvent branché à l'intégration continue, il commente chaque modification.</p>
         </div>
         <div class="card tool">
@@ -739,6 +739,10 @@ class Post {
 
   /* ---------- lexique ---------- */
   const TERMS = {
+    classe:{t:'Classe', d:'Le plan d’une sorte d’objet : les données qu’il garde (ses attributs) et ce qu’il sait faire (ses méthodes). En Java, tout le code est rangé dans des classes.', s:'Comme un composant dans Figma : on le dessine une fois, puis on en pose autant d’instances qu’on veut. La classe Post est le plan ; chaque post publié est un objet.'},
+    objet:{t:'Objet', d:'Un exemplaire concret fabriqué à partir d’une classe, avec ses propres valeurs. En Java, on le crée avec new : new Post().', s:'Deux objets de la même classe sont indépendants : liker un post ne change pas les likes d’un autre post.'},
+    methode:{t:'Méthode', d:'Une action qu’un objet sait faire, écrite dans sa classe : un bloc de code avec un nom, comme liker().', s:'On l’appelle avec un point : monPost.liker(). Les parenthèses peuvent recevoir des informations : notifier(message).'},
+    module:{t:'Module', d:'Un ensemble de code rangé autour d’un seul sujet : parfois une seule classe, souvent un paquet (un dossier) de plusieurs classes qui travaillent ensemble.', s:'Si la classe est un composant Figma, le module est une page du fichier qui regroupe tous les composants d’un même sujet (par exemple tout ce qui touche aux likes).'},
     archi:{t:'Architecture logicielle', d:'La façon dont on range le code d’une application : quels morceaux existent, ce que fait chacun, et qui a le droit de parler à qui.', s:'Comme le plan d’une maison : on peut déplacer un meuble facilement, pas un mur porteur. L’architecture, ce sont les murs porteurs.'},
     dette:{t:'Dette technique', d:'Le surcoût qu’on paie sur chaque changement parce que le code a été écrit trop vite ou mal rangé.', s:'Comme une dette d’argent : on gagne du temps tout de suite, puis on paie des intérêts à chaque modification, tant qu’on ne rembourse pas en rangeant le code.'},
     bascule:{t:'Point de bascule', d:'Le moment où le code écrit vite devient plus cher à changer que le code rangé.', s:'Souvent après quelques mois seulement, bien avant que l’équipe s’en rende compte.'},
@@ -797,7 +801,7 @@ class Post {
       r:'Le rond marque le croisement. Personne ne l’a vu passer : aucune alarme ne sonne.'},
     {t:'Mois 9 : l’appli mobile.', d:'Les règles de Vite vivent dans le [[controleur|contrôleur]] web, au milieu du [[sql|SQL]]. L’appli mobile ne peut pas les appeler : l’équipe les recopie. Trois semaines, et chaque bug devra être corrigé deux fois.',
       r:'La ligne orange part vers le haut. La bleue reste presque plate : Rangée appelle les mêmes classes depuis le mobile.'},
-    {t:'Mois 14 : changer de base de données.', d:'Le SQL de Vite est éparpillé dans des dizaines de méthodes. On parle de tout réécrire. Chez Rangée, seule la partie technique bouge : une semaine.',
+    {t:'Mois 14 : changer de base de données.', d:'Le SQL de Vite est éparpillé dans des dizaines de [[methode|méthodes]]. On parle de tout réécrire. Chez Rangée, seule la partie technique bouge : une semaine.',
       r:'La pente s’accentue : chaque nouvelle demande coûte plus cher que la précédente.'},
     {t:'L’écart, c’est la dette technique.', d:'La zone entre les deux courbes est la [[dette|dette technique]] : le surcoût payé sur chaque ticket parce que le code a été écrit trop vite. Elle a commencé à se creuser au point de bascule.',
       r:'La zone colorée grandit avec le temps : la dette a des intérêts.'},

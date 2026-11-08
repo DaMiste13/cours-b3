@@ -194,6 +194,49 @@ svg.seq{display:block;width:100%;min-width:660px;height:auto}
 
 
 
+
+/* ---------- avant de commencer : classe, objet, module ---------- */
+.lab2{display:grid;gap:18px;margin-top:22px}
+@media (min-width:760px){.lab2{grid-template-columns:260px 1fr}}
+.blueprint{border:1.5px dashed var(--accent);border-radius:18px;padding:16px 18px;background:var(--accent-soft);font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:13.5px;position:relative}
+.blueprint .bt{font-weight:700;color:var(--accent);margin-bottom:8px;font-size:14px}
+.blueprint .row{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--hairline)}
+.blueprint .row span{color:var(--text-2);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;font-size:12px}
+.blueprint .stamp{position:absolute;right:12px;top:12px;font-size:11px;font-weight:600;color:var(--accent);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+.blueprint.flash{animation:flash .5s var(--ease)}
+@keyframes flash{50%{box-shadow:0 0 0 6px var(--accent-soft)}}
+.objs{display:flex;gap:12px;flex-wrap:wrap;align-content:flex-start;min-height:150px;border-radius:18px;border:1px solid var(--hairline);padding:14px;background:var(--surface-2)}
+.objs .empty{color:var(--text-2);font-size:14px;align-self:center;margin:auto}
+.obj{width:150px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);padding:10px;animation:born .6s var(--spring)}
+@keyframes born{from{opacity:0;transform:translateX(-60px) scale(.6)}to{opacity:1;transform:none}}
+.obj .on{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px}
+.obj .ph{height:62px;border-radius:10px;margin-bottom:8px}
+.obj .lg{font-size:12.5px;line-height:1.3;min-height:2.6em}
+.obj .lk{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.obj .lk svg{width:18px;height:18px;transition:transform .4s var(--spring)}
+.obj .lk path{fill:none;stroke:var(--text);stroke-width:2}
+.obj .lk.liked path{fill:var(--like);stroke:var(--like)}
+.obj .lk.beat svg{transform:scale(1.35)}
+.ctl-note{font-size:14px;color:var(--text-2);margin:12px 0 0;min-height:1.4em}
+.ctl-note code{font-size:12.5px}
+.predict.inline{display:block;margin:20px 0 0}
+.shelf{display:grid;gap:12px;margin-top:22px}
+@media (min-width:760px){.shelf{grid-template-columns:repeat(3,1fr)}}
+.pile{display:flex;flex-wrap:wrap;gap:10px;min-height:58px;padding:14px;border-radius:18px;border:1px solid var(--hairline);background:var(--surface-2);margin-top:22px}
+.pile:empty::before{content:"(tout est rangé)";color:var(--text-2);font-size:14px}
+.folder{border-radius:18px;border:1.5px dashed var(--line);padding:12px 14px 14px;min-height:150px;transition:border-color .4s var(--ease),background .4s var(--ease)}
+.folder.full{border-style:solid}
+.folder.f1.full{border-color:var(--s1);background:var(--s1-soft)}
+.folder.f2.full{border-color:var(--s2);background:var(--s2-soft)}
+.folder.f3.full{border-color:var(--s3);background:var(--s3-soft)}
+.folder .fh{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.folder .fh code{font-size:12px}
+.folder .cz{display:flex;flex-direction:column;gap:8px}
+.ck{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:12.5px;font-weight:600;border-radius:10px;padding:8px 12px;background:var(--surface);border:1.5px solid;will-change:transform}
+.ck.c1{border-color:var(--s1);color:var(--s1)} .ck.c2{border-color:var(--s2);color:var(--s2)} .ck.c3{border-color:var(--s3);color:var(--s3)}
+.tree{margin-top:16px;opacity:0;transform:translateY(8px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.tree.on{opacity:1;transform:none}
+
 /* ---------- monde réel 1 : le rayon d'un changement ---------- */
 .graph{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
 .gn{border-radius:14px;padding:12px;text-align:center;background:var(--surface-2);border:1px solid var(--hairline);font-size:14px;font-weight:600;transition:background .4s var(--ease),border-color .4s var(--ease),color .4s var(--ease),transform .45s var(--spring)}
@@ -293,10 +336,82 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   <p class="lede">À l'étape 1, le code « résistait » au changement. Ici, on apprend à dire pourquoi, avec deux mesures. <strong>Est-ce que ce qui est rangé ensemble va ensemble ? Et à quel point chaque morceau dépend des autres ?</strong></p>
   <p class="muted small" style="margin-top:22px">Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
 
+
+  <section class="reveal" aria-labelledby="t-bricks">
+    <p class="eyebrow">Avant de commencer</p>
+    <h2 id="t-bricks">Classe, objet, module : les briques.</h2>
+    <p>Cette leçon parle de classes et de modules. Si ces deux mots sont flous, tout le reste l'est aussi. Deux petites manipulations pour les voir.</p>
+
+    <div class="sub-section" style="margin-top:40px">
+      <h3>1. Une classe est un plan. Un objet est un exemplaire.</h3>
+      <p class="muted">Pense à un composant dans Figma : tu le dessines une fois, puis tu poses autant d'instances que tu veux. La <button class="term" data-term="classe">classe</button> est le composant, chaque <button class="term" data-term="objet">objet</button> est une instance, avec ses propres valeurs. Les données d'un objet s'appellent ses <button class="term" data-term="attribut">attributs</button>, ses actions ses <button class="term" data-term="methode">méthodes</button>.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="predict inline" style="margin:0 0 22px" id="pred-obj" role="group" aria-labelledby="pred-obj-q" data-bilan="Avant : des objets indépendants">
+          <p id="pred-obj-q">Prédis avant de cliquer : on crée p1 et p2, puis p1.liker() deux fois et p2.liker() une fois. Combien de likes pour chacun ?</p>
+          <div class="choices">
+            <button class="choice" data-ok="0">3 et 3 : ils partagent le même compteur</button>
+            <button class="choice" data-ok="1">2 pour p1, 1 pour p2</button>
+            <button class="choice" data-ok="0">3 pour p1, 0 pour p2</button>
+          </div>
+          <div class="feedback" aria-live="polite" data-why="Chaque objet a ses propres valeurs : p1 et p2 sont fabriqués avec le même plan, mais chacun garde son compteur. Vérifie en cliquant sur les boutons."></div>
+        </div>
+        <div class="lab2">
+          <div>
+            <div class="blueprint" id="bp" aria-label="La classe Post : le plan">
+              <span class="stamp">le plan</span>
+              <div class="bt">class Post</div>
+              <div class="row">legende <span>attribut</span></div>
+              <div class="row">likes <span>attribut</span></div>
+              <div class="row">liker() <span>méthode</span></div>
+            </div>
+            <div class="controls" style="margin-top:14px">
+              <button class="btn primary" id="b-new">new Post()</button>
+            </div>
+          </div>
+          <div>
+            <div class="objs" id="objs" aria-live="polite"><span class="empty">Aucun objet pour l'instant. Appuie sur « new Post() ».</span></div>
+            <div class="controls" style="margin-top:14px">
+              <button class="btn" id="b-l1" disabled>p1.liker()</button>
+              <button class="btn" id="b-l2" disabled>p2.liker()</button>
+              <button class="btn" id="b-reset">Recommencer</button>
+            </div>
+          </div>
+        </div>
+        <p class="ctl-note" id="obj-note" aria-live="polite">Le plan ne contient aucun post : il dit seulement à quoi un post ressemble.</p>
+      </div>
+    </div>
+
+    <div class="sub-section" style="margin-top:48px">
+      <h3>2. Un module range les classes d'un même sujet.</h3>
+      <p class="muted">Une application a des dizaines de classes. Un <button class="term" data-term="module">module</button> les regroupe par sujet, comme une page d'un fichier Figma regroupe les composants d'un même sujet. En Java, un module est souvent un dossier, qu'on appelle un <button class="term" data-term="paquet">paquet</button>.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="controls"><button class="btn primary" id="b-sort">Ranger par sujet</button></div>
+        <div class="pile" id="pile"></div>
+        <div class="shelf">
+          <div class="folder f1" id="f1"><div class="fh">📁 <code>likes</code></div><div class="cz"></div></div>
+          <div class="folder f2" id="f2"><div class="fh">📁 <code>photos</code></div><div class="cz"></div></div>
+          <div class="folder f3" id="f3"><div class="fh">📁 <code>notifications</code></div><div class="cz"></div></div>
+        </div>
+        <p class="ctl-note" id="mod-note" aria-live="polite">Six classes en vrac : pour trouver ce qui touche aux likes, il faut tout lire.</p>
+<pre class="codebox tree" id="tree" aria-hidden="true">src/
+├── likes/            <span class="c">← le module des likes</span>
+│   ├── Like.java
+│   └── CompteurDeLikes.java
+├── photos/
+│   ├── Photo.java
+│   └── Redimensionneur.java
+└── notifications/
+    ├── EnvoiEmail.java
+    └── EnvoiPush.java</pre>
+      </div>
+      <p class="muted small" style="margin-top:14px">Une classe = un plan d'objet. Un module = un tiroir de classes qui parlent du même sujet. La cohésion, que tu vas voir juste après, mesure si chaque tiroir ne contient bien qu'un sujet.</p>
+    </div>
+  </section>
+
   <section class="reveal" aria-labelledby="t-why">
     <p class="eyebrow">Pourquoi ça existe</p>
     <h2 id="t-why">« C'est mal rangé » ne suffit pas.</h2>
-    <p>Dans l'appli de photos, on veut changer la façon de stocker les images. Une seule chose à changer. Pourtant tu dois ouvrir une classe de 600 lignes qui gère aussi les likes et les e-mails, et après ta modification les likes ne marchent plus.</p>
+    <p>Dans l'appli de photos, on veut changer la façon de stocker les images. Une seule chose à changer. Pourtant tu dois ouvrir une <button class="term" data-term="classe">classe</button> de 600 lignes qui gère aussi les likes et les e-mails, et après ta modification les likes ne marchent plus.</p>
     <p>Deux défauts différents se cachent là. Le premier : des choses sans rapport sont rangées ensemble, c'est un problème de <button class="term" data-term="cohesion">cohésion</button>. Le second : les likes allaient lire l'intérieur du code des photos, c'est un problème de <button class="term" data-term="couplage">couplage</button>. Ces deux mots servent à juger un découpage avec des critères, et toutes les étapes suivantes du cours (couches, SOLID, hexagone) sont des façons de les améliorer.</p>
   </section>
 
@@ -445,7 +560,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
         <li><i class="lv r" aria-hidden="true"></i><b>Par le contenu</b><p>Aller lire ou modifier l'intérieur d'un autre module : un champ privé, un attribut <code>public</code> qu'on bricole. Le pire.</p></li>
         <li><i class="lv r" aria-hidden="true"></i><b>Par des données globales</b><p>Deux modules qui lisent et écrivent la même table ou la même variable globale. Si l'un change le format, l'autre casse.</p></li>
         <li><i class="lv o" aria-hidden="true"></i><b>Par contrôle</b><p>Passer un <button class="term" data-term="booleen">booléen</button> qui change le comportement de l'autre : <code>notifier(msg, true)</code>. L'appelant décide à la place de l'appelé.</p></li>
-        <li><i class="lv y" aria-hidden="true"></i><b>Par structure</b><p>Passer un gros objet dont l'autre n'utilise qu'un champ : <code>envoyer(utilisateur)</code> alors qu'il ne lit que l'e-mail.</p></li>
+        <li><i class="lv y" aria-hidden="true"></i><b>Par structure</b><p>Passer un gros <button class="term" data-term="objet">objet</button> dont l'autre n'utilise qu'un champ : <code>envoyer(utilisateur)</code> alors qu'il ne lit que l'e-mail.</p></li>
         <li><i class="lv g" aria-hidden="true"></i><b>Par données simples</b><p>Passer seulement ce qui est nécessaire : <code>envoyer(email, message)</code>.</p></li>
         <li><i class="lv g" aria-hidden="true"></i><b>Par une interface</b><p>Ne connaître que le contrat, jamais le code qui le réalise. L'<button class="term" data-term="interface">interface</button> est l'outil principal de toute la suite du cours.</p></li>
       </ul>
@@ -684,7 +799,12 @@ void notifierParEmail(String msg) { ... }</pre>
 
   /* ---------- lexique ---------- */
   const TERMS = {
-    module:{t:'Module', d:'Un morceau de code qui s’occupe d’un sujet : une classe, ou un paquet de classes rangées ensemble.', s:'Comme un tiroir : on doit savoir ce qu’il contient sans l’ouvrir.'},
+    attribut:{t:'Attribut', d:'Une donnée que chaque objet garde pour lui : la légende d’un post, son nombre de likes. Elle est déclarée dans la classe.', s:'Dans Figma, ce serait une propriété du composant : chaque instance a sa propre valeur.'},
+    paquet:{t:'Paquet (package)', d:'En Java, un dossier qui regroupe des classes. On l’écrit en haut de chaque fichier : package likes;', s:'C’est la forme la plus courante d’un module en Java.'},
+    module:{t:'Module', d:'Un ensemble de code rangé autour d’un seul sujet : parfois une seule classe, souvent un paquet (un dossier) de plusieurs classes qui travaillent ensemble.', s:'Si la classe est un composant Figma, le module est une page du fichier qui regroupe tous les composants d’un même sujet (par exemple tout ce qui touche aux likes).'},
+    classe:{t:'Classe', d:'Le plan d’une sorte d’objet : les données qu’il garde (ses attributs) et ce qu’il sait faire (ses méthodes). En Java, tout le code est rangé dans des classes.', s:'Comme un composant dans Figma : on le dessine une fois, puis on en pose autant d’instances qu’on veut. La classe Post est le plan ; chaque post publié est un objet.'},
+    objet:{t:'Objet', d:'Un exemplaire concret fabriqué à partir d’une classe, avec ses propres valeurs. En Java, on le crée avec new : new Post().', s:'Deux objets de la même classe sont indépendants : liker un post ne change pas les likes d’un autre post.'},
+    methode:{t:'Méthode', d:'Une action qu’un objet sait faire, écrite dans sa classe : un bloc de code avec un nom, comme liker().', s:'On l’appelle avec un point : monPost.liker(). Les parenthèses peuvent recevoir des informations : notifier(message).'},
     dependance:{t:'Dépendance', d:'A dépend de B quand A utilise B : il l’appelle, il le crée, il lit ses données. Si B change, A risque de devoir changer.', s:'En Java, chaque import vers un autre paquet est un fil de dépendance.'},
     cohesion:{t:'Cohésion', d:'À quel point les éléments d’un module servent le même objectif. On la veut forte : un module, un sujet.', s:'Question à se poser : « est-ce que ça va ensemble ? »'},
     couplage:{t:'Couplage', d:'À quel point un module dépend des autres. On le veut faible, mais jamais nul : un programme sans fils ne fait rien.', s:'Question à se poser : « à quel point je dépends de toi ? »'},
@@ -725,7 +845,7 @@ void notifierParEmail(String msg) { ... }</pre>
 
   /* ---------- les étapes de l'animation ---------- */
   const STEPS = [
-    {t:'Une classe fait tout.', d:'AppService contient six méthodes sur trois sujets : les likes, les photos, les notifications. C’est un seul [[module|module]] pour trois sujets.',
+    {t:'Une classe fait tout.', d:'AppService contient six [[methode|méthodes]] sur trois sujets : les likes, les photos, les notifications. C’est un seul [[module|module]] pour trois sujets.',
       r:'Les couleurs mélangées dans une même boîte : c’est le signe d’une [[cohesion|cohésion]] faible.'},
     {t:'On veut changer le stockage des photos.', d:'Deux méthodes sont concernées, mais elles sont noyées au milieu des autres. Il faut ouvrir et relire toute la classe, et chaque modification risque de toucher un voisin.',
       r:'Le cadre orange : tout ce qu’on doit ouvrir pour un seul changement.'},
@@ -848,6 +968,75 @@ void notifierParEmail(String msg) { ... }</pre>
   }
   window.copierBilan = copierBilan;
   $('copier-bilan').onclick = copierBilan;
+
+
+  /* ---------- avant de commencer : classe et objets ---------- */
+  const SAMPLES = [
+    ['Coucher de soleil', 'linear-gradient(135deg,#ff9f0a,#ff375f)'],
+    ['Mon chat qui dort', 'linear-gradient(135deg,#64d2ff,#5e5ce6)'],
+    ['Brunch du dimanche', 'linear-gradient(135deg,#30d158,#ffd60a)']
+  ];
+  const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.3-9A5.4 5.4 0 0 1 12 6a5.4 5.4 0 0 1 9.3 6c-2.3 4.4-9.3 9-9.3 9z"/></svg>';
+  let objets = [];
+  function noteObj(html) { $('obj-note').innerHTML = html; }
+  function nouvelObjet() {
+    if (objets.length >= SAMPLES.length) return noteObj('Trois objets suffisent pour voir l’idée. Appuie sur « Recommencer » pour repartir à zéro.');
+    const i = objets.length, [lg, bg] = SAMPLES[i];
+    const box = $('objs'); const empty = box.querySelector('.empty'); if (empty) empty.remove();
+    const el = document.createElement('div'); el.className = 'obj';
+    el.innerHTML = `<div class="on">p${i + 1} : Post</div><div class="ph" style="background:${bg}"></div><div class="lg">legende = « ${lg} »</div><div class="lk">${HEART}<span>likes = 0</span></div>`;
+    box.appendChild(el);
+    objets.push({el, likes: 0});
+    const bp = $('bp'); bp.classList.remove('flash'); if (!reduce) { void bp.offsetWidth; bp.classList.add('flash'); }
+    noteObj(`<code>Post p${i + 1} = new Post();</code> : un nouvel objet est fabriqué à partir du plan, avec ses propres valeurs.`);
+    $('b-l1').disabled = objets.length < 1; $('b-l2').disabled = objets.length < 2;
+  }
+  function liker(i) {
+    const o = objets[i]; if (!o) return;
+    o.likes++;
+    const lk = o.el.querySelector('.lk');
+    lk.querySelector('span').textContent = 'likes = ' + o.likes;
+    lk.classList.add('liked'); lk.classList.remove('beat'); if (!reduce) { void lk.offsetWidth; lk.classList.add('beat'); }
+    noteObj(`<code>p${i + 1}.liker();</code> : seul p${i + 1} change. ` + (objets.length > 1 ? 'Les autres objets gardent leur propre compteur.' : 'C’est la méthode écrite dans le plan, appliquée à cet objet-là.'));
+  }
+  $('b-new').onclick = nouvelObjet;
+  $('b-l1').onclick = () => liker(0);
+  $('b-l2').onclick = () => liker(1);
+  $('b-reset').onclick = () => {
+    objets = []; $('objs').innerHTML = '<span class="empty">Aucun objet pour l’instant. Appuie sur « new Post() ».</span>';
+    $('b-l1').disabled = true; $('b-l2').disabled = true;
+    noteObj('Le plan ne contient aucun post : il dit seulement à quoi un post ressemble.');
+  };
+  wire($('pred-obj'), $('pred-obj').querySelector('.feedback'));
+
+  /* ---------- avant de commencer : les modules ---------- */
+  const CLASSES = [['Like',1],['Photo',2],['EnvoiEmail',3],['CompteurDeLikes',1],['Redimensionneur',2],['EnvoiPush',3]];
+  const chipsEls = CLASSES.map(([n, k]) => { const c = document.createElement('div'); c.className = 'ck c' + k; c.textContent = n; c.dataset.k = k; $('pile').appendChild(c); return c; });
+  let range = false;
+  function flip(move) {
+    const first = chipsEls.map(c => c.getBoundingClientRect());
+    move();
+    if (reduce) return;
+    chipsEls.forEach((c, i) => {
+      const last = c.getBoundingClientRect(), dx = first[i].left - last.left, dy = first[i].top - last.top;
+      c.style.transition = 'none'; c.style.transform = `translate(${dx}px,${dy}px)`;
+      void c.offsetWidth;
+      c.style.transition = `transform .7s var(--spring) ${i * 70}ms`; c.style.transform = '';
+    });
+  }
+  $('b-sort').onclick = () => {
+    range = !range;
+    flip(() => {
+      if (range) chipsEls.forEach(c => $('f' + c.dataset.k).querySelector('.cz').appendChild(c));
+      else { const order = [0, 1, 2, 3, 4, 5]; order.forEach(i => $('pile').appendChild(chipsEls[i])); }
+    });
+    ['f1','f2','f3'].forEach(id => $(id).classList.toggle('full', range));
+    $('tree').classList.toggle('on', range);
+    $('b-sort').textContent = range ? 'Tout remettre en vrac' : 'Ranger par sujet';
+    $('mod-note').textContent = range
+      ? 'Trois modules, un par sujet. Pour changer les likes, tu ouvres le dossier likes, et seulement lui.'
+      : 'Six classes en vrac : pour trouver ce qui touche aux likes, il faut tout lire.';
+  };
 
   /* ---------- monde réel 1 : le rayon d'un changement ---------- */
   const NODES = [['Fil','affiche les posts'],['Profil','la grille de photos'],['Stories','24 heures'],['Likes','les cœurs'],['Photos','stockage des images'],['Recherche','trouver un post']];
