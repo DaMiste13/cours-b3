@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Répétition de l'oral : la billetterie du cinéma</title>
+<meta name="description" content="Page temporaire pour répéter l'oral du projet de billetterie : chaque partie animée, la phrase à dire, les choix à justifier, les questions du jury et un QCM.">
+<style>
+
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#fbfbfd;
+  --text:#1d1d1f; --text-2:#6e6e73; --hairline:rgba(0,0,0,.08);
+  --accent:#0071e3; --accent-soft:rgba(0,113,227,.10);
+  --like:#ff375f; --ok:#28a745; --warn:#bf4800; --warn-soft:rgba(191,72,0,.10);
+  --line:#86868b; --dim:rgba(29,29,31,.22);
+  --shadow:0 2px 6px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06);
+  --radius:22px; --ease:cubic-bezier(.25,.1,.25,1); --spring:cubic-bezier(.34,1.32,.64,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#000000; --surface:#1c1c1e; --surface-2:#161618;
+    --text:#f5f5f7; --text-2:#a1a1a6; --hairline:rgba(255,255,255,.10);
+    --accent:#2997ff; --accent-soft:rgba(41,151,255,.16);
+    --like:#ff375f; --ok:#30d158; --warn:#ff9f0a; --warn-soft:rgba(255,159,10,.14);
+    --line:#8e8e93; --dim:rgba(245,245,247,.20);
+    --shadow:0 0 0 1px rgba(255,255,255,.06);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+code,.code{font-family:"SF Mono",ui-monospace,Menlo,monospace}
+code{font-size:.88em;background:var(--accent-soft);padding:.1em .35em;border-radius:6px}
+b,strong{font-weight:600}
+
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--hairline)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.crumb{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb b{color:var(--text)}
+
+.seg{display:inline-flex;background:var(--hairline);border-radius:9px;padding:2px;position:relative;flex:none}
+.seg button{all:unset;cursor:pointer;font-size:13px;font-weight:500;padding:5px 14px;border-radius:7px;position:relative;z-index:1;color:var(--text)}
+.seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc(50% - 2px);background:var(--surface);border-radius:7px;
+  box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .35s var(--spring)}
+.seg[data-mode="fiche"] .thumb{transform:translateX(100%)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+main{max-width:980px;margin:0 auto;padding:0 22px 120px}
+section{margin-top:96px}
+.sub-section{margin-top:64px}
+.eyebrow{font-size:14px;font-weight:600;color:var(--accent);letter-spacing:-.01em;margin:0 0 8px}
+h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:72px 0 16px}
+h2{font-size:clamp(30px,4.6vw,44px);line-height:1.1;letter-spacing:-.03em;font-weight:700;margin:0 0 14px}
+h3{font-size:21px;line-height:1.25;letter-spacing:-.02em;font-weight:600;margin:0 0 6px}
+h4{font-size:28px;line-height:1.15;letter-spacing:-.025em;font-weight:700;margin:0 0 10px}
+.lede{font-size:clamp(19px,2.4vw,24px);line-height:1.38;color:var(--text-2);max-width:720px;margin:0;letter-spacing:-.02em}
+.lede strong{color:var(--text)}
+p{max-width:680px}
+.muted{color:var(--text-2)}
+.small{font-size:15px}
+
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+.grid{display:grid;gap:18px}
+@media (min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+.term{all:unset;cursor:help;border-bottom:1.5px dotted currentColor;color:inherit;transition:color .2s var(--ease)}
+.term:hover,.term[aria-expanded="true"]{color:var(--accent)}
+.term:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.pop{position:fixed;z-index:50;width:min(340px,calc(100vw - 32px));background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 0 0 1px var(--hairline);padding:16px 18px;
+  opacity:0;transform:translateY(6px) scale(.97);transform-origin:top left;pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--spring)}
+.pop.on{opacity:1;transform:none;pointer-events:auto}
+.pop .pt{font-weight:700;font-size:17px;margin:0 0 6px}
+.pop .pd{margin:0;font-size:15px;line-height:1.45}
+.pop .ps{margin:10px 0 0;font-size:14px;color:var(--text-2);line-height:1.45}
+.pop .ps:empty{display:none}
+
+.cast{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:28px}
+@media (min-width:900px){.cast{grid-template-columns:repeat(4,1fr)}}
+.cast .card{padding:20px}
+.cast .ico{font-size:26px;line-height:1;margin-bottom:10px}
+.cast h3{font-size:17px}
+.cast p{margin:4px 0 0;font-size:15px;color:var(--text-2)}
+
+
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-size:14px;font-weight:500;padding:8px 16px;border-radius:980px;background:var(--hairline);color:var(--text);
+  transition:transform .2s var(--ease),background .2s var(--ease);-webkit-user-select:none;user-select:none;text-align:center}
+.btn:hover{background:color-mix(in srgb,var(--hairline) 100%,var(--text) 6%)}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+@media (max-width:560px){.stage-top{flex-wrap:wrap}.stage-top .controls{width:100%}.stage-top .btn{flex:1}}
+.kbd{font-size:12px;color:var(--text-2);text-align:right;margin:12px 4px 0;max-width:none}
+
+.predict{margin:0 24px 22px;padding:18px;border-radius:16px;background:var(--accent-soft);display:none}
+.predict.on{display:block;animation:rise .5s var(--spring)}
+.predict p{margin:0 0 12px;font-weight:600}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+.choice{all:unset;cursor:pointer;background:var(--surface);border-radius:12px;padding:10px 14px;font-size:15px;border:1px solid var(--hairline);transition:all .25s var(--ease)}
+.choice:hover{border-color:var(--accent)}
+.choice.right{border-color:var(--ok);color:var(--ok);font-weight:600}
+.choice.wrong{border-color:var(--warn);color:var(--warn)}
+.choice:focus-visible{outline:2px solid var(--accent)}
+.feedback{margin-top:12px;font-size:15px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+
+.q{padding:24px 28px}
+.q + .q{border-top:1px solid var(--hairline)}
+.q .choices{margin-top:12px}
+
+
+.tool{display:flex;flex-direction:column;gap:6px}
+.tool .tag{align-self:flex-start;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:980px;padding:3px 10px}
+.tool p{margin:0;font-size:15px}
+.tool .where{color:var(--text-2);font-size:14px;margin-top:6px}
+
+.answer{display:none;margin-top:14px;padding:16px 18px;border-radius:14px;background:var(--surface-2);border:1px solid var(--hairline);font-size:15px}
+.answer.on{display:block;animation:rise .45s var(--spring)}
+
+.stepnav{display:grid;gap:12px;margin-top:28px}
+@media (min-width:760px){.stepnav{grid-template-columns:1fr 1fr}}
+.stepnav a,.stepnav span.off{display:block;padding:20px 22px;border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);color:var(--text);transition:transform .25s var(--spring)}
+.stepnav a:hover{transform:translateY(-2px)}
+.stepnav small{display:block;font-size:13px;color:var(--text-2);margin-bottom:4px}
+.stepnav b{font-size:17px}
+.stepnav .next{text-align:right}
+.stepnav span.off{opacity:.55}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chips .term{border:0;background:var(--surface);box-shadow:var(--shadow);border-radius:980px;padding:8px 14px;font-size:15px}
+
+.fiche{display:none}
+body.mode-fiche .cours{display:none}
+body.mode-fiche .fiche{display:block}
+.fiche h1{margin-top:56px}
+.fiche .card + .card{margin-top:18px}
+.fiche ul{margin:8px 0 0;padding-left:20px}
+.fiche li{margin:6px 0}
+.pitfall{color:var(--warn);font-weight:600}
+
+.tally{list-style:none;margin:0;padding:0}
+.tally li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--hairline);font-size:15px}
+.tally li:first-child{border-top:0;padding-top:0}
+.pill{font-size:13px;font-weight:600;border-radius:980px;padding:4px 12px;background:var(--hairline);color:var(--text-2);white-space:nowrap;transition:background .3s var(--ease),color .3s var(--ease)}
+.pill.juste{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.pill.fausse{background:var(--warn-soft);color:var(--warn)}
+.pill.bump{animation:bump .55s var(--spring)}
+@keyframes bump{from{transform:scale(.6);opacity:.2}to{transform:none;opacity:1}}
+.copied{margin:14px 0 0;font-size:15px;color:var(--ok);font-weight:600;min-height:1.4em;opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease),transform .45s var(--spring)}
+.copied.on{opacity:1;transform:none}
+.bilan-texte{display:block;width:100%;min-height:140px;margin-top:14px;border-radius:14px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);font:13.5px/1.6 "SF Mono",ui-monospace,Menlo,monospace;padding:14px 16px;resize:vertical}
+.bilan-texte[hidden]{display:none}
+
+footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color:var(--text-2);border-top:1px solid var(--hairline)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+}
+
+/* ---------- page de répétition ---------- */
+.how ol{margin:8px 0 0;padding-left:22px}
+.how li{margin:6px 0;font-size:16px}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.toc a{font-size:14px;font-weight:500;border-radius:980px;padding:7px 14px;background:var(--surface);box-shadow:var(--shadow);color:var(--text)}
+.toc a.mine{background:var(--accent);color:#fff}
+.part{scroll-margin-top:70px}
+.part.mine > .eyebrow{display:inline-block;background:var(--accent-soft);border-radius:980px;padding:4px 12px}
+.ministage{margin-top:24px;padding:16px}
+.ministage svg{display:block;width:100%;height:auto}
+.ministage text{font-family:inherit;fill:var(--text)}
+.ministage [data-s]{opacity:0;transition:opacity .5s var(--ease)}
+.ministage [data-s].on{opacity:.55}
+.ministage [data-s].now{opacity:1}
+.ministage .nt{font-size:14px;text-anchor:middle}
+.ministage .nt.sm{font-size:12.5px}
+.ministage .nt.b,.ministage .cap.b{font-weight:700}
+.ministage .nt.l,.ministage .cap.l{text-anchor:start}
+.ministage .cap{font-size:12px;fill:var(--text-2);text-anchor:middle}
+.ministage .ok{fill:var(--ok)} .ministage .ko{fill:var(--warn)} .ministage .warn{fill:var(--warn)} .ministage .acc{fill:var(--accent)}
+.ministage .code{font-family:"SF Mono",ui-monospace,Menlo,monospace!important;font-size:13px;fill:var(--text)}
+.nb{fill:var(--surface-2);stroke:var(--line);stroke-width:1.2}
+.nb.ext{stroke-dasharray:5 4}
+.core{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+.ctx{fill:none;stroke:var(--text-2);stroke-width:1.4;stroke-dasharray:6 5}
+.ev{fill:#ffb347;stroke:#e08a00}
+@media (prefers-color-scheme:dark){.ev{fill:#9a5a00;stroke:#ffb347}}
+.word{fill:var(--surface-2);stroke:var(--accent);stroke-width:1.4}
+.bar{fill:var(--line);opacity:.5}
+.hi{fill:none;stroke-width:2.4}
+.hi.ok{stroke:var(--ok)} .hi.ko{stroke:var(--warn)}
+.pink{fill:rgba(255,55,95,.10);stroke:var(--like);stroke-width:1.4}
+.port{fill:var(--surface);stroke:var(--text);stroke-width:1.6}
+.half{fill:none;stroke:var(--text);stroke-width:1.6}
+.ln{fill:none;stroke:var(--text-2);stroke-width:1.6}
+.ln.acc{stroke:var(--accent);stroke-width:3}
+.ln.sq{stroke:var(--text);stroke-width:1.5}
+.ln.dash{stroke-dasharray:6 5}
+.tip{fill:var(--text)}
+.ministage .ln.sq,.ministage .tip{transition:stroke .3s,fill .3s}
+.ministage [data-s].now .ln.sq{stroke:var(--accent);stroke-width:2.2}
+.ministage [data-s].now .tip{fill:var(--accent)}
+.ministage [data-s].now .mt{fill:var(--accent);font-weight:600}
+.life{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5;fill:none}
+.ministage .mt{font-size:12.5px;text-anchor:middle}
+.altf{fill:none;stroke:var(--text-2);stroke-width:1.2}
+.altsep{stroke:var(--text-2);stroke-width:1;stroke-dasharray:6 5}
+.ministage .altt{font-size:13px;font-weight:700}
+.pyr{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4}
+.seat{fill:var(--surface-2);stroke:var(--line);stroke-width:1.4;transition:fill .4s var(--ease),stroke .4s var(--ease)}
+.seat.libre{fill:var(--surface-2)}
+.seat.bloquee{fill:rgba(255,159,10,.30);stroke:#e08a00}
+.seat.vendue{fill:var(--accent);stroke:var(--accent)}
+.ms-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--hairline)}
+.ms-cap{font-size:15px;flex:1;min-width:240px}
+.ms-cap b{color:var(--accent);margin-right:6px;font-variant-numeric:tabular-nums}
+.say,.trap{margin-top:14px}
+.say{background:var(--accent-soft);box-shadow:none}
+.say .eyebrow,.trap .eyebrow{margin-bottom:10px}
+.trap h3{font-size:18px;margin-bottom:12px}
+.hidden-txt{display:none;margin:14px 0 0;font-size:16px;line-height:1.55}
+.hidden-txt.on{display:block;animation:rise .45s var(--spring)}
+.say .hidden-txt{font-size:17px}
+.legend-seq{margin-top:24px}
+.legend-seq ul{list-style:none;margin:10px 0 0;padding:0}
+.legend-seq li{display:flex;align-items:center;gap:12px;padding:6px 0;font-size:15px}
+.legend-seq svg{width:80px;height:12px;flex:none}
+.altbox{display:inline-block;width:80px;flex:none;text-align:left;font-size:12px;font-weight:700;border:1.2px solid var(--text-2);border-radius:4px;padding:0 6px}
+.qa{display:grid;gap:10px;margin-top:22px}
+.qa details{background:var(--surface);box-shadow:var(--shadow);border-radius:16px;padding:16px 20px}
+.qa summary{cursor:pointer;font-weight:600;font-size:17px;list-style:none}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::before{content:"＋";color:var(--accent);margin-right:10px;font-weight:700}
+.qa details[open] summary::before{content:"－"}
+.qa details p{margin:12px 0 0;color:var(--text-2);font-size:16px}
+.qa summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}
+.cx{width:100%;border-collapse:collapse;font-size:15px;margin-top:10px}
+.cx td{padding:12px 14px;border-top:1px solid var(--hairline);vertical-align:top}
+.cx tr:first-child td{border-top:0}
+.cx td:first-child{width:34%;white-space:nowrap}
+@media (max-width:640px){.cx td{display:block;width:auto!important;white-space:normal}.cx td:first-child{padding-bottom:2px}.cx td:last-child{border-top:0;padding-top:0}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="crumb"><a href="../../">Cours animés</a> · <b>Répétition de l'oral · la billetterie du cinéma</b></div>
+    <div class="seg" id="seg" data-mode="cours" role="tablist" aria-label="Affichage">
+      <span class="thumb" aria-hidden="true"></span>
+      <button role="tab" aria-selected="true" data-mode="cours">Répéter</button>
+      <button role="tab" aria-selected="false" data-mode="fiche">Antisèche</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="cours">
+
+  <h1>On rejoue la présentation.<br>Étape par étape.</h1>
+  <p class="lede">Le projet : la billetterie d'un cinéma de 8 salles. <strong>Pour chaque partie : regarde l'animation, lis ce qu'on a fait, dis la phrase à voix haute, puis compare avec la phrase écrite.</strong></p>
+
+  <div class="card how" style="margin-top:28px">
+    <h3>Comment répéter</h3>
+    <ol>
+      <li>Avance dans l'animation de la partie avec « Suivant ».</li>
+      <li>Lis « Ce qu'on a fait » et « Pourquoi ce choix ».</li>
+      <li><b>À voix haute</b>, dis ce que tu dirais au jury. Puis clique « Voir la phrase » et compare.</li>
+      <li>Réponds dans ta tête à la question piège, puis vérifie.</li>
+    </ol>
+    <p class="muted small" style="margin:10px 0 0">La partie 4 est la tienne : prends-y le plus de temps. Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
+  </div>
+
+  <nav class="toc" aria-label="Les parties">
+    <a href="#p0">0 · Le projet</a><a href="#p1">1 · Le métier</a><a href="#p2">2 · Les choix</a><a href="#p3">3 · Le cœur</a><a href="#p4a" class="mine">4 · Ta partie : composants</a><a href="#p4b" class="mine">4 · Ta partie : séquence</a><a href="#p5">5 · Spring et partenaire</a><a href="#p6">6 · Tests et risques</a><a href="#questions">Questions du jury</a><a href="#qcm">QCM</a>
+  </nav>
+
+  <!-- ============ PARTIE 0 ============ -->
+  <section class="part reveal" id="p0" aria-labelledby="t-p0">
+    <p class="eyebrow">Partie 0 · en une minute</p>
+    <h2 id="t-p0">Une place ne doit jamais être vendue deux fois.</h2>
+    <div class="card ministage" data-stage="s0">
+      <svg viewBox="0 0 900 330" role="img" aria-label="Cinq canaux de vente et deux partenaires vendent les places d'une seule et même vente de places, qui passe par PayVia pour le paiement et envoie les billets">
+        <g data-s="0">
+          <rect class="nb" x="20" y="20" width="180" height="38" rx="10"/><text class="nt" x="110" y="44">Site web</text>
+          <rect class="nb" x="20" y="66" width="180" height="38" rx="10"/><text class="nt" x="110" y="90">Appli mobile</text>
+          <rect class="nb" x="20" y="112" width="180" height="38" rx="10"/><text class="nt" x="110" y="136">4 bornes dans le hall</text>
+          <rect class="nb" x="20" y="158" width="180" height="38" rx="10"/><text class="nt" x="110" y="182">3 guichets</text>
+          <rect class="nb ext" x="20" y="214" width="180" height="38" rx="10"/><text class="nt" x="110" y="238">SortiesFlash</text>
+          <rect class="nb ext" x="20" y="260" width="180" height="38" rx="10"/><text class="nt" x="110" y="284">CinéMalin</text>
+          <text class="cap" x="110" y="318">partenaires (ils vendent pour nous)</text>
+        </g>
+        <g data-s="1">
+          <path class="ln" d="M200 39 C280 39, 290 165, 340 165"/><path class="ln" d="M200 85 C280 85, 290 165, 340 165"/><path class="ln" d="M200 131 L340 165"/><path class="ln" d="M200 177 L340 165"/><path class="ln" d="M200 233 C280 233, 290 165, 340 165"/><path class="ln" d="M200 279 C280 279, 290 165, 340 165"/>
+        </g>
+        <g data-s="2">
+          <rect class="core" x="340" y="105" width="250" height="120" rx="18"/>
+          <text class="nt b" x="465" y="140">Vente de places</text>
+          <text class="nt" x="465" y="166">un seul plan de salle</text>
+          <text class="nt" x="465" y="186">par séance</text>
+          <text class="nt ok" x="465" y="210">0 place vendue deux fois</text>
+        </g>
+        <g data-s="3">
+          <path class="ln" d="M590 140 L680 90"/><path class="ln" d="M590 190 L680 240"/>
+          <rect class="nb ext" x="680" y="66" width="200" height="48" rx="10"/><text class="nt" x="780" y="88">PayVia</text><text class="cap" x="780" y="104">le paiement</text>
+          <rect class="nb ext" x="680" y="216" width="200" height="48" rx="10"/><text class="nt" x="780" y="238">Service d'envoi</text><text class="cap" x="780" y="254">billets par e-mail et SMS</text>
+        </g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce qu'on a fait</h3><p class="muted small">On a conçu la billetterie d'un cinéma de 8 salles qui remplace son vieux logiciel de caisse. Tous les canaux (site, appli, bornes, guichets, deux partenaires) vendent dans une seule vente de places. On a écrit le dossier d'architecture (le <button class="term" data-term="dat">DAT</button>, 11 sections) et codé le cœur : la vente de places, en Java.</p></div>
+      <div class="card"><h3>Pourquoi ce projet</h3><p class="muted small">En mars, pendant une avant-première, 14 places ont été vendues deux fois. C'est l'objectif de qualité n° 1 : <b>une place n'est jamais vendue deux fois, tous canaux confondus</b>. Ensuite : tenir le pic (420 places en 5 minutes), et rester simple à faire évoluer par une petite équipe (2 développeurs et un prestataire).</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« Le cinéma remplace son logiciel de caisse. Le problème de départ : en mars, 14 places ont été vendues deux fois. Notre billetterie a donc un objectif numéro un : une place n'est jamais vendue deux fois, quel que soit le canal, site, appli, bornes, guichets ou partenaires. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège</p><h3>« Pourquoi ne pas garder le site en marque blanche ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">Il coûte 0,35 € par billet, et c'est justement là que les doubles ventes de mars sont arrivées. Avoir sa propre vente de places permet de garantir la règle n° 1 sur tous les canaux à la fois.</p></div>
+  </section>
+
+  <!-- ============ PARTIE 1 ============ -->
+  <section class="part reveal" id="p1" aria-labelledby="t-p1">
+    <p class="eyebrow">Partie 1 · comprendre le métier (phase 1)</p>
+    <h2 id="t-p1">D'abord les événements, puis les contextes.</h2>
+    <div class="card ministage" data-stage="s1">
+      <svg viewBox="0 0 900 330" role="img" aria-label="Une frise d'événements orange est regroupée en contextes, et le mot séance a un sens différent dans deux contextes">
+        <g data-s="0">
+          <rect class="ev" x="20" y="60" width="128" height="56" rx="6"/><text class="nt sm" x="84" y="84">Séance</text><text class="nt sm" x="84" y="102">publiée</text>
+          <rect class="ev" x="166" y="60" width="128" height="56" rx="6"/><text class="nt sm" x="230" y="84">Places</text><text class="nt sm" x="230" y="102">bloquées</text>
+          <rect class="ev" x="312" y="60" width="128" height="56" rx="6"/><text class="nt sm" x="376" y="84">Paiement</text><text class="nt sm" x="376" y="102">reçu</text>
+          <rect class="ev" x="458" y="60" width="128" height="56" rx="6"/><text class="nt sm" x="522" y="84">Commande</text><text class="nt sm" x="522" y="102">payée</text>
+          <rect class="ev" x="604" y="60" width="128" height="56" rx="6"/><text class="nt sm" x="668" y="84">Billet</text><text class="nt sm" x="668" y="102">scanné</text>
+          <rect class="ev" x="750" y="60" width="128" height="56" rx="6"/><text class="nt sm" x="814" y="84">Déclaration</text><text class="nt sm" x="814" y="102">envoyée</text>
+          <text class="cap" x="450" y="30">L'Event Storming : tout ce qui se passe, au passé, dans l'ordre</text>
+        </g>
+        <g data-s="1">
+          <rect class="ctx" x="12" y="46" width="144" height="86" rx="12"/><text class="cap b" x="84" y="150">Programmation</text>
+          <rect class="ctx" x="158" y="46" width="436" height="86" rx="12"/><text class="cap b" x="376" y="150">Vente de places</text>
+          <rect class="ctx" x="596" y="46" width="144" height="86" rx="12"/><text class="cap b" x="668" y="150">Contrôle d'accès</text>
+          <rect class="ctx" x="742" y="46" width="144" height="86" rx="12"/><text class="cap b" x="814" y="150">Déclarations</text>
+        </g>
+        <g data-s="2">
+          <rect class="word" x="20" y="190" width="300" height="70" rx="12"/><text class="nt b" x="170" y="216">« Séance » en Programmation</text><text class="nt sm" x="170" y="240">un film, dans une salle, à une heure</text>
+          <rect class="word" x="440" y="190" width="300" height="70" rx="12"/><text class="nt b" x="590" y="216">« Séance » dans la Vente</text><text class="nt sm" x="590" y="240">un plan de salle : places libres, bloquées, vendues</text>
+          <text class="cap" x="450" y="290">Même mot, deux sens : c'est le signe de deux contextes différents</text>
+        </g>
+        <g data-s="3">
+          <path class="ln acc" d="M156 100 L176 100"/><path class="ln acc" d="M594 100 L612 100"/><path class="ln acc" d="M740 100 L756 100"/>
+          <text class="cap acc" x="450" y="318">Les liens entre contextes forment la context map (8 contextes au total)</text>
+        </g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce qu'on a fait</h3><p class="muted small">Un atelier d'<button class="term" data-term="eventstorming">Event Storming</button> : tous les événements du métier, au passé, dans l'ordre. En les regroupant là où les mots et le responsable restent les mêmes, on a trouvé 8 <button class="term" data-term="contexte">contextes</button>. On a écrit un glossaire (les mots du métier, contexte par contexte) et dessiné la context map (qui parle à qui).</p></div>
+      <div class="card"><h3>Pourquoi ce choix</h3><p class="muted small">Un même mot change de sens d'un endroit à l'autre : « séance », « billet », « réservation ». Si on met tout dans un seul modèle, ces sens se mélangent et le code devient faux. Un contexte par sens, et chacun garde ses mots.</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« On a commencé par un Event Storming : on a posé, dans l'ordre, tout ce qui se passe, de la séance publiée jusqu'à la déclaration au CNC. En regroupant les événements, on a trouvé 8 contextes. Le même mot n'y veut pas dire la même chose : une séance, c'est un film à une heure pour la programmation, mais un plan de salle à vendre pour la vente. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège</p><h3>« C'est quoi, une ACL, sur votre context map ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">Une <button class="term" data-term="acl">ACL</button> est un traducteur. Quand un système extérieur parle avec ses propres mots (PayVia dit « payment.succeeded », SortiesFlash dit « ADULT »), l'ACL les traduit dans nos mots avant qu'ils entrent chez nous. Si le fournisseur change son format, seule l'ACL change.</p></div>
+  </section>
+
+  <!-- ============ PARTIE 2 ============ -->
+  <section class="part reveal" id="p2" aria-labelledby="t-p2">
+    <p class="eyebrow">Partie 2 · choisir l'architecture de chaque contexte</p>
+    <h2 id="t-p2">Pas du DDD partout. Juste là où ça compte.</h2>
+    <div class="card ministage" data-stage="s2">
+      <svg viewBox="0 0 900 360" role="img" aria-label="Score sur 18 de chaque contexte. Seule la vente de places dépasse le seuil avec des experts disponibles et passe en DDD et hexagonal">
+        <g data-s="0">
+          <text class="nt l" x="20" y="44">Vente de places</text><rect class="bar" x="230" y="28" width="567" height="24" rx="6"/><text class="nt l" x="806" y="46">17</text>
+          <text class="nt l" x="20" y="82">Abonnements</text><rect class="bar" x="230" y="66" width="500" height="24" rx="6"/><text class="nt l" x="739" y="84">15</text>
+          <text class="nt l" x="20" y="120">Tarification</text><rect class="bar" x="230" y="104" width="400" height="24" rx="6"/><text class="nt l" x="639" y="122">12</text>
+          <text class="nt l" x="20" y="158">Contrôle d'accès</text><rect class="bar" x="230" y="142" width="367" height="24" rx="6"/><text class="nt l" x="606" y="160">11</text>
+          <text class="nt l" x="20" y="196">Déclarations</text><rect class="bar" x="230" y="180" width="333" height="24" rx="6"/><text class="nt l" x="572" y="198">10</text>
+          <text class="nt l" x="20" y="234">Programmation</text><rect class="bar" x="230" y="218" width="300" height="24" rx="6"/><text class="nt l" x="539" y="236">9</text>
+          <text class="nt l" x="20" y="272">Notification</text><rect class="bar" x="230" y="256" width="300" height="24" rx="6"/><text class="nt l" x="539" y="274">9</text>
+          <text class="nt l" x="20" y="310">Paiement</text><rect class="bar" x="230" y="294" width="233" height="24" rx="6"/><text class="nt l" x="472" y="312">7</text>
+          <text class="cap" x="500" y="348">chaque contexte noté de 1 à 3 sur 6 critères, total sur 18</text>
+        </g>
+        <g data-s="1">
+          <rect class="hi ok" x="226" y="24" width="575" height="32" rx="8"/><text class="nt ok b" x="640" y="20">→ DDD + architecture hexagonale</text>
+        </g>
+        <g data-s="2">
+          <rect class="hi ko" x="226" y="62" width="508" height="32" rx="8"/><text class="nt ko b l" x="750" y="70">mais l'experte n'est là</text><text class="nt ko b l" x="750" y="88">qu'une fois par mois → couches</text>
+        </g>
+        <g data-s="3">
+          <text class="nt acc b l" x="560" y="274">→ on achète</text><text class="nt acc b l" x="490" y="312">→ on achète (PayVia) + ACL</text>
+        </g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce qu'on a fait</h3><p class="muted small">Une grille de décision : chaque contexte est noté sur 6 critères (complexité, valeur, durée de vie, changements, accès à l'expert, nombre de canaux). Le score donne l'architecture : DDD + hexagonal, couches, CRUD (simple lecture-écriture), ou acheter. La décision est écrite dans un <button class="term" data-term="adr">ADR</button>, l'ADR-0001.</p></div>
+      <div class="card"><h3>Pourquoi ce choix</h3><p class="muted small">L'équipe est petite. Le DDD coûte cher : on le met seulement sur la Vente, le <button class="term" data-term="core">core domain</button>, là où est la valeur et le problème de mars. Le critère « expert disponible » est éliminatoire : un modèle riche se construit avec l'expert. Ce qui n'est pas propre au cinéma (paiement, envoi de SMS) s'achète.</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« On n'a pas mis du DDD partout. On a noté chaque contexte sur 6 critères. Seule la Vente de places, le cœur du métier, est en DDD avec une architecture hexagonale. Les abonnements avaient un bon score, mais l'experte n'est disponible qu'une fois par mois : sans expert, pas de modèle riche, donc une architecture en couches. Le paiement et les notifications, on les achète et on les isole derrière un traducteur. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège</p><h3>« Pourquoi la Tarification est-elle un contexte à part ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">Ses mots (opération, supplément) et son rythme (le marketing change les prix souvent) ne sont pas ceux de la Vente. À part, le marketing fait évoluer les prix sans toucher au cœur. Et pour ne pas dépendre d'elle au pic, la Vente garde une copie de la grille et fige le prix dans la commande.</p></div>
+  </section>
+
+  <!-- ============ PARTIE 3 ============ -->
+  <section class="part reveal" id="p3" aria-labelledby="t-p3">
+    <p class="eyebrow">Partie 3 · le cœur du code (étapes 1 à 6, phase 2)</p>
+    <h2 id="t-p3">La Séance protège les places. La Commande protège l'achat.</h2>
+    <div class="card ministage" data-stage="s3">
+      <svg viewBox="0 0 900 330" role="img" aria-label="Plan de salle : un client bloque deux places, un second client demande une place déjà bloquée et tout est refusé, puis le paiement rend les places vendues">
+        <g>
+          <text class="cap b" x="200" y="26">Séance S42 : le plan de salle</text>
+          <g class="seats">
+            <rect class="seat" id="A1" x="40" y="44" width="54" height="44" rx="10"/><text class="nt" x="67" y="72">A1</text>
+            <rect class="seat" id="A2" x="104" y="44" width="54" height="44" rx="10"/><text class="nt" x="131" y="72">A2</text>
+            <rect class="seat" id="A3" x="168" y="44" width="54" height="44" rx="10"/><text class="nt" x="195" y="72">A3</text>
+            <rect class="seat" id="A4" x="232" y="44" width="54" height="44" rx="10"/><text class="nt" x="259" y="72">A4</text>
+            <rect class="seat" id="A5" x="296" y="44" width="54" height="44" rx="10"/><text class="nt" x="323" y="72">A5</text>
+          </g>
+          <text class="cap" x="200" y="112">libre · bloquée 10 min · vendue</text>
+        </g>
+        <g data-s="1">
+          <text class="nt l" x="40" y="160">Client 1 : « A1 et A2 »</text><text class="nt ok l" x="40" y="182">✓ bloquées jusqu'à 20 h 10</text>
+          <rect class="core" x="470" y="40" width="400" height="120" rx="16"/>
+          <text class="nt b l" x="490" y="68">Commande C-1a2b</text>
+          <text class="nt l" x="490" y="94">2 billets : A1 plein, A2 réduit</text>
+          <text class="nt l" x="490" y="118">prix figé : 18,00 €</text>
+          <text class="nt warn l" x="490" y="142">en attente de paiement</text>
+        </g>
+        <g data-s="2">
+          <text class="nt l" x="40" y="218">Client 2 : « A2 et A3 »</text><text class="nt ko l" x="40" y="240">✕ refusé : A2 est déjà prise</text><text class="nt l" x="40" y="262">et A3 n'est pas bloquée : tout ou rien</text>
+        </g>
+        <g data-s="3">
+          <text class="nt ok b l" x="490" y="196">PayVia : « payé » → A1, A2 vendues,</text><text class="nt ok b l" x="490" y="218">commande payée, dans la même transaction</text>
+        </g>
+        <g data-s="4">
+          <text class="nt l" x="490" y="262">Sans paiement en 10 minutes :</text><text class="nt l" x="490" y="284">les places redeviennent libres toutes seules</text><text class="nt l" x="490" y="306">et la commande expire.</text>
+        </g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce qu'on a fait</h3><p class="muted small">Deux <button class="term" data-term="agregat">agrégats</button>. <b>Seance</b> garde le plan de salle : une place n'est vendue qu'une fois, et on bloque tout ou rien. <b>Commande</b> garde l'achat : 1 à 10 billets, prix figé, statut (en attente, payée, expirée). Des <button class="term" data-term="valueobject">value objects</button> comme Montant (en centimes) ou PlaceId (« G7 »). Des <button class="term" data-term="evenement">événements</button> au passé : CommandePayee, CommandeExpiree. À l'étape 6, on a vérifié que le centre ne dépend d'aucune technique.</p></div>
+      <div class="card"><h3>Pourquoi ce choix</h3><p class="muted small">Un seul agrégat « séance avec toutes ses commandes » serait trop gros : toutes les commandes se gêneraient. Deux agrégats, liés par leur numéro (leur identité). Exception assumée : au paiement, Seance et Commande changent ensemble, sinon une place pourrait être revendue entre les deux (ADR-0002). Les services n'ont aucune règle : ils chargent, font décider le domaine, enregistrent, puis publient.</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« Le cœur a deux agrégats. La Séance garde le plan de salle : c'est elle qui empêche de vendre une place deux fois, et elle bloque en tout ou rien. La Commande garde l'achat : 1 à 10 billets, au prix figé au moment du choix. Les services n'ont aucune règle : ils chargent, font décider le domaine, enregistrent, et seulement après, publient les événements. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège</p><h3>« Pourquoi publier l'événement après l'enregistrement, et pas avant ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">Si on annonce « commande payée » puis que l'enregistrement échoue, on a envoyé des billets pour une commande qui n'existe pas. En publiant après, on n'annonce que ce qui est vraiment enregistré. Le risque restant (une annonce perdue après l'enregistrement) se règle en production avec une « outbox » : l'annonce est écrite dans la même transaction, puis envoyée.</p></div>
+  </section>
+
+  <!-- ============ PARTIE 4a ============ -->
+  <section class="part mine reveal" id="p4a" aria-labelledby="t-p4a">
+    <p class="eyebrow">Partie 4 · ta partie (phase 3) · le diagramme de composants</p>
+    <h2 id="t-p4a">Le centre décide. Tout le reste se branche.</h2>
+    <div class="card ministage" data-stage="s4a">
+      <svg viewBox="0 0 900 400" role="img" aria-label="L'hexagone de la vente au centre, les adapters primaires à gauche qui l'appellent, les adapters secondaires à droite dont il a besoin, toutes les flèches vers le centre, et ApplicationVente dessinée dehors">
+        <g data-s="0">
+          <rect class="core" x="330" y="40" width="240" height="250" rx="22"/>
+          <text class="nt b" x="450" y="66">Vente de places</text>
+          <rect class="nb" x="350" y="84" width="200" height="80" rx="12"/><text class="nt b" x="450" y="108">Application</text><text class="nt sm" x="450" y="128">orchestre, ne décide rien</text><text class="nt sm" x="450" y="146">(les 4 services)</text>
+          <rect class="nb" x="350" y="190" width="200" height="84" rx="12"/><text class="nt b" x="450" y="214">Domaine</text><text class="nt sm" x="450" y="234">décide, protège les règles</text><text class="nt sm" x="450" y="252">Seance, Commande…</text>
+        </g>
+        <g data-s="1">
+          <text class="cap b" x="140" y="30">À gauche : ils appellent</text>
+          <rect class="nb" x="40" y="44" width="200" height="40" rx="10"/><text class="nt sm" x="140" y="69">API web (contrôleur)</text>
+          <rect class="nb" x="40" y="98" width="200" height="40" rx="10"/><text class="nt sm" x="140" y="123">Webhook PayVia (+ ACL)</text>
+          <rect class="nb" x="40" y="152" width="200" height="40" rx="10"/><text class="nt sm" x="140" y="177">Planificateur (chaque minute)</text>
+          <rect class="nb" x="40" y="206" width="200" height="40" rx="10"/><text class="nt sm" x="140" y="231">SortiesFlash (+ ACL)</text>
+          <path class="ln" d="M240 64 L312 64"/><path class="ln" d="M240 118 L312 118"/><path class="ln" d="M240 172 L312 172"/><path class="ln" d="M240 226 L312 226"/>
+          <circle class="port" cx="321" cy="64" r="9"/><circle class="port" cx="321" cy="118" r="9"/><circle class="port" cx="321" cy="172" r="9"/><circle class="port" cx="321" cy="226" r="9"/>
+        </g>
+        <g data-s="2">
+          <text class="cap b" x="740" y="30">À droite : il en a besoin</text>
+          <path class="half" d="M592 58 A9 9 0 0 1 592 76"/><path class="half" d="M592 108 A9 9 0 0 1 592 126"/><path class="half" d="M592 158 A9 9 0 0 1 592 176"/><path class="half" d="M592 208 A9 9 0 0 1 592 226"/><path class="half" d="M592 258 A9 9 0 0 1 592 276"/>
+          <path class="ln" d="M570 67 L583 67"/><path class="ln" d="M570 117 L583 117"/><path class="ln" d="M570 167 L583 167"/><path class="ln" d="M570 217 L583 217"/><path class="ln" d="M570 267 L583 267"/>
+          <rect class="nb" x="640" y="47" width="200" height="40" rx="10"/><text class="nt sm" x="740" y="72">ranger les séances</text>
+          <rect class="nb" x="640" y="97" width="200" height="40" rx="10"/><text class="nt sm" x="740" y="122">ranger les commandes</text>
+          <rect class="nb" x="640" y="147" width="200" height="40" rx="10"/><text class="nt sm" x="740" y="172">grille des prix</text>
+          <rect class="nb" x="640" y="197" width="200" height="40" rx="10"/><text class="nt sm" x="740" y="222">paiement (simulé)</text>
+          <rect class="nb" x="640" y="247" width="200" height="40" rx="10"/><text class="nt sm" x="740" y="272">publier les annonces</text>
+          <path class="ln" d="M601 67 L636 67"/><path class="ln" d="M601 117 L636 117"/><path class="ln" d="M601 167 L636 167"/><path class="ln" d="M601 217 L636 217"/><path class="ln" d="M601 267 L636 267"/>
+          <text class="cap" x="740" y="306">derrière, en pointillés : la vraie base, le vrai PayVia</text>
+        </g>
+        <g data-s="3">
+          <text class="nt ok b" x="450" y="22">Toutes les flèches vont vers le centre</text>
+        </g>
+        <g data-s="4">
+          <rect class="pink" x="40" y="292" width="230" height="64" rx="12"/><text class="nt b" x="155" y="318">ApplicationVente</text><text class="nt sm" x="155" y="340">branche tout au démarrage</text>
+          <rect class="pink" x="40" y="362" width="230" height="34" rx="10"/><text class="nt sm" x="155" y="384">VenteConfiguration (Spring)</text>
+          <text class="nt l" x="290" y="350">dessinée dehors : c'est la seule qui connaît</text><text class="nt l" x="290" y="372">à la fois les branchements et les services</text>
+        </g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce que j'ai fait</h3><p class="muted small">Le diagramme de composants de la Vente. Au centre, l'hexagone : l'application (les services) et le domaine. Autour, les <button class="term" data-term="port">ports</button> : des ronds à gauche (« je propose »), des demi-cercles à droite (« j'ai besoin »). Sur les ports se branchent les <button class="term" data-term="adapter">adapters</button>. J'ai ajouté ApplicationVente, les systèmes réels en pointillés et le contenu de l'hexagone, puis mis le diagramme à jour avec les étapes 7 et 8.</p></div>
+      <div class="card"><h3>Pourquoi ces choix</h3><p class="muted small"><b>Les noms du dessin sont ceux du code</b> : on peut passer de l'un à l'autre. <b>Les systèmes réels en pointillés</b> montrent ce que chaque adapter remplace : la mémoire aujourd'hui, PostgreSQL demain, sans toucher au centre. <b>ApplicationVente dehors</b> : c'est la <button class="term" data-term="compositionroot">composition root</button>, elle doit connaître tout le monde pour tout brancher. Si elle était dedans, le centre connaîtrait la technique.</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« Mon diagramme de composants montre l'hexagone de la Vente. Au centre, le domaine décide et l'application orchestre, sans aucune technique. À gauche, ce qui appelle l'hexagone : l'API web, le webhook de PayVia, le planificateur, le partenaire. À droite, ce dont il a besoin : ranger les données, payer, connaître les prix, publier. Toutes les flèches vont vers le centre. Seule ApplicationVente, qui branche tout au démarrage, est dessinée dehors. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège (dette D6)</p><h3>« Pourquoi ApplicationVente casse-t-elle la règle des flèches ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">Parce que quelqu'un doit brancher les câbles : créer les adapters et les donner aux services. C'est son seul travail, au démarrage. Elle connaît donc les deux côtés, c'est pour ça qu'on la dessine hors de l'hexagone. Comme ça, le centre, lui, ne connaît toujours personne. Avec Spring, VenteConfiguration annonce les ports d'ApplicationVente pour que les contrôleurs les reçoivent.</p></div>
+  </section>
+
+  <!-- ============ PARTIE 4b ============ -->
+  <section class="part mine reveal" id="p4b" aria-labelledby="t-p4b">
+    <p class="eyebrow">Partie 4 · ta partie (phase 3) · le diagramme de séquence</p>
+    <h2 id="t-p4b">Réserver, payer… ou ne pas payer. Trois actes.</h2>
+    <div class="card legend-seq">
+      <p><b>Lire le diagramme en 4 signes</b></p>
+      <ul>
+        <li><svg viewBox="0 0 80 12" aria-hidden="true"><path class="ln sq" d="M2 6 H74"/><path class="tip" d="M70 2 L78 6 L70 10 Z"/></svg> on demande, et on attend la réponse</li>
+        <li><svg viewBox="0 0 80 12" aria-hidden="true"><path class="ln sq dash" d="M78 6 H6"/><path class="ln sq" d="M10 2 L2 6 L10 10"/></svg> la réponse</li>
+        <li><svg viewBox="0 0 80 12" aria-hidden="true"><path class="ln sq" d="M2 6 H74"/><path class="ln sq" d="M70 2 L78 6 L70 10"/></svg> une annonce : on n'attend rien en retour</li>
+        <li><span class="altbox">alt</span> deux suites possibles : payé à temps, ou pas payé</li>
+      </ul>
+      <p class="muted small" style="margin:6px 0 0">On lit de haut en bas : c'est le temps qui passe. Les colonnes sont les personnages.</p>
+    </div>
+    <div class="card ministage" data-stage="s4b" style="margin-top:14px">
+      <svg viewBox="0 0 900 600" role="img" aria-label="Diagramme de séquence simplifié en trois actes : réserver, paiement reçu, ou pas de paiement en dix minutes">
+        <g class="seqhead">
+          <text class="nt b" x="60" y="26">Client</text>
+          <text class="nt b" x="170" y="26">PayVia</text>
+          <text class="nt b" x="290" y="20">Porte</text><text class="cap" x="290" y="34">contrôleur, webhook, minuteur</text>
+          <text class="nt b" x="440" y="20">Services</text><text class="cap" x="440" y="34">chefs d'orchestre</text>
+          <text class="nt b" x="580" y="26">Séance</text>
+          <text class="nt b" x="690" y="26">Commande</text>
+          <text class="nt b" x="820" y="20">Rangements</text><text class="cap" x="820" y="34">et paiement (ports)</text>
+          <path class="life" d="M60 44 V590"/><path class="life" d="M170 44 V590"/><path class="life" d="M290 44 V590"/><path class="life" d="M440 44 V590"/><path class="life" d="M580 44 V590"/><path class="life" d="M690 44 V590"/><path class="life" d="M820 44 V590"/>
+        </g>
+        <g data-s="0"><path class="ln sq" d="M60 70 H282"/><path class="tip" d="M280 66 L290 70 L280 74 Z"/><text class="mt" x="175" y="64">1. « je veux A1 et A2 »</text>
+          <path class="ln sq" d="M290 96 H432"/><path class="tip" d="M430 92 L440 96 L430 100 Z"/><text class="mt" x="365" y="90">2. réserver</text></g>
+        <g data-s="1"><path class="ln sq" d="M440 122 H812"/><path class="tip" d="M810 118 L820 122 L810 126 Z"/><text class="mt" x="630" y="116">3-4. quel prix ? quelle séance ?</text>
+          <path class="ln sq dash" d="M820 144 H448"/><path class="ln sq" d="M452 140 L440 144 L452 148"/><text class="mt" x="630" y="158">prix figés, séance S42</text></g>
+        <g data-s="2"><path class="ln sq" d="M440 184 H572"/><path class="tip" d="M570 180 L580 184 L570 188 Z"/><text class="mt" x="510" y="178">5. bloquer</text>
+          <path class="ln sq" d="M440 210 H682"/><path class="tip" d="M680 206 L690 210 L680 214 Z"/><text class="mt" x="640" y="204">6. créer</text></g>
+        <g data-s="3"><path class="ln sq" d="M440 238 H812"/><path class="tip" d="M810 234 L820 238 L810 242 Z"/><text class="mt" x="630" y="232">7-9. enregistrer, puis demander le paiement</text>
+          <path class="ln sq dash" d="M440 262 H68"/><path class="ln sq" d="M72 258 L60 262 L72 266"/><text class="mt" x="250" y="256">« 201 : voici ton lien de paiement »</text></g>
+        <g data-s="4"><path class="ln sq" d="M60 290 H162"/><path class="tip" d="M160 286 L170 290 L160 294 Z"/><text class="mt" x="115" y="284">10. paie</text>
+          <rect class="altf" x="20" y="304" width="870" height="286" rx="6"/><text class="altt" x="34" y="322">alt</text><text class="cap l" x="70" y="322">[payé avant la fin des 10 minutes]</text>
+          <line class="altsep" x1="20" y1="452" x2="890" y2="452"/><text class="cap l" x="70" y="470">[aucun paiement 10 minutes après]</text></g>
+        <g data-s="5"><path class="ln sq" d="M170 344 H282"/><path class="tip" d="M280 340 L290 344 L280 348 Z"/><text class="mt" x="230" y="338">11. « payé »</text>
+          <path class="ln sq" d="M290 368 H432"/><path class="tip" d="M430 364 L440 368 L430 372 Z"/><text class="mt" x="365" y="362">12. confirmer</text></g>
+        <g data-s="6"><path class="ln sq" d="M440 392 H572"/><path class="tip" d="M570 388 L580 392 L570 396 Z"/><text class="mt" x="510" y="386">15. vendre</text>
+          <path class="ln sq" d="M440 414 H682"/><path class="tip" d="M680 410 L690 414 L680 418 Z"/><text class="mt" x="640" y="408">16. payer</text>
+          <path class="ln sq" d="M440 438 H812"/><path class="ln sq" d="M808 434 L816 438 L808 442"/><text class="mt" x="740" y="432">17-19. enregistrer, annoncer « payée »</text></g>
+        <g data-s="7"><path class="ln sq" d="M290 494 H432"/><path class="tip" d="M430 490 L440 494 L430 498 Z"/><text class="mt" x="365" y="488">20. chaque minute</text>
+          <text class="cap l" x="196" y="512">le minuteur</text></g>
+        <g data-s="8"><path class="ln sq" d="M440 524 H572"/><path class="tip" d="M570 520 L580 524 L570 528 Z"/><text class="mt" x="510" y="518">22. libérer</text>
+          <path class="ln sq" d="M440 548 H682"/><path class="tip" d="M680 544 L690 548 L680 552 Z"/><text class="mt" x="640" y="542">25. expirer</text>
+          <path class="ln sq" d="M440 574 H812"/><path class="ln sq" d="M808 570 L816 574 L808 578"/><text class="mt" x="740" y="568">26-27. enregistrer, annoncer « expirée »</text></g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce que j'ai fait</h3><p class="muted small">Le diagramme de séquence « réserver et payer », en 27 messages. Il suit le code ligne à ligne : les trois services (réserver, confirmer le paiement, expirer les blocages). Les messages restent ceux du code, mais à l'oral, raconte-les en trois actes.</p></div>
+      <div class="card"><h3>Les trois pièges de lecture</h3><p class="muted small"><b>Qui déclenche l'acte 2 ?</b> PayVia, pas le client : il nous prévient par un <button class="term" data-term="webhook">webhook</button> (message 11). <b>La fin de l'acte 3</b> veut dire que les places <b>redeviennent libres</b>, pas qu'il n'y en a plus. <b>La flèche ouverte</b> (« annoncer ») : on publie l'événement sans attendre de réponse.</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« Mon diagramme de séquence raconte une réservation en trois actes. Un : le client demande deux places ; le service fige les prix, la séance bloque les places dix minutes, la commande est créée, tout est enregistré, et le client reçoit un lien de paiement. Deux : PayVia nous prévient que c'est payé ; les places deviennent vendues et la commande payée, dans la même transaction, puis on annonce “commande payée”. Trois : si personne ne paie en dix minutes, le minuteur libère les places, qui reviennent à la vente, et la commande expire. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège (dette D5)</p><h3>« Pourquoi enregistrer avant de demander le paiement à PayVia (messages 7 à 9) ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">Parce que si la réservation est refusée (une place déjà prise, plus de 10 places), on s'arrête avant : aucune place ne reste bloquée et on ne demande pas d'argent pour rien. On n'appelle PayVia que quand tout est bien enregistré.</p></div>
+  </section>
+
+  <!-- ============ PARTIE 5 ============ -->
+  <section class="part reveal" id="p5" aria-labelledby="t-p5">
+    <p class="eyebrow">Partie 5 · étapes 7 et 8</p>
+    <h2 id="t-p5">Spring autour, le partenaire traduit.</h2>
+    <div class="card ministage" data-stage="s5">
+      <svg viewBox="0 0 900 300" role="img" aria-label="Une commande du partenaire dans son format passe par l'ACL qui la traduit dans nos mots, puis entre dans la vente par un port">
+        <g data-s="0">
+          <rect class="nb ext" x="20" y="40" width="260" height="140" rx="12"/>
+          <text class="nt b l" x="36" y="66">SortiesFlash, dans ses mots</text>
+          <text class="code" x="36" y="94">show_ref : 812</text><text class="code" x="36" y="116">seats : [A4]</text><text class="code" x="36" y="138">ticket_types : [ADULT]</text><text class="code" x="36" y="160">paid_amount_cents : 1150</text>
+        </g>
+        <g data-s="1">
+          <path class="ln" d="M280 110 L340 110"/><path class="tip" d="M336 106 L346 110 L336 114 Z"/>
+          <rect class="pink" x="346" y="70" width="190" height="80" rx="12"/><text class="nt b" x="441" y="102">ACL SortiesFlash</text><text class="nt sm" x="441" y="124">le traducteur</text>
+        </g>
+        <g data-s="2">
+          <path class="ln" d="M536 110 L596 110"/><path class="tip" d="M592 106 L602 110 L592 114 Z"/>
+          <rect class="core" x="602" y="40" width="280" height="140" rx="12"/>
+          <text class="nt b l" x="618" y="66">Dans nos mots</text>
+          <text class="nt l" x="618" y="94">séance S42</text><text class="nt l" x="618" y="116">place A4</text><text class="nt l" x="618" y="138">tarif PLEIN</text><text class="nt l" x="618" y="160">payé chez eux : 11,50 €</text>
+        </g>
+        <g data-s="3">
+          <text class="nt ok b" x="450" y="226">Même règle « une place, une vente », mais sans blocage : c'est déjà payé.</text>
+          <text class="nt" x="450" y="252">On garde le montant payé chez le partenaire : la déclaration au CNC</text>
+          <text class="nt" x="450" y="274">se fait au prix payé, et le reversement en dépend.</text>
+        </g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3>Les erreurs deviennent des codes clairs</h3>
+      <p class="muted small">Une classe, GestionErreurs, traduit les refus du métier en codes <button class="term" data-term="http">HTTP</button>. Sans elle, une place déjà prise répondrait 500, comme un bug.</p>
+      <table class="cx">
+        <tr><td><b>409</b> conflit</td><td>La place vient d'être prise par quelqu'un d'autre.</td></tr>
+        <tr><td><b>404</b> introuvable</td><td>La séance ou la commande demandée n'existe pas.</td></tr>
+        <tr><td><b>422</b> refusé par une règle</td><td>La demande est bien écrite, mais une règle dit non : plus de 10 places, vente fermée.</td></tr>
+        <tr><td><b>400</b> mal écrit</td><td>La demande est mal formée : une place « 7G », une catégorie inconnue.</td></tr>
+      </table>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce qu'on a fait</h3><p class="muted small"><b>Étape 7</b> : brancher <button class="term" data-term="spring">Spring Boot</button> autour de l'hexagone, sans y toucher : un contrôleur REST pour réserver, un contrôleur pour le webhook de PayVia, un minuteur chaque minute, la gestion des erreurs. <b>Étape 8</b> : recevoir les ventes de SortiesFlash par une ACL et un nouveau port, EnregistrerVentePartenaire. 72 tests verts, et la documentation de l'API (Swagger) affiche les 3 routes.</p></div>
+      <div class="card"><h3>Pourquoi ces choix</h3><p class="muted small">Les contrôleurs ne connaissent que les ports : on pourrait remplacer Spring sans toucher au cœur. Le format de SortiesFlash reste enfermé dans son ACL : si le partenaire change un code, une seule classe bouge, et CinéMalin aura sa propre ACL. Brancher un partenaire en moins de 2 semaines, sans modifier le domaine : c'est l'objectif de qualité n° 3.</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« À l'étape 7, on a branché Spring Boot autour de l'hexagone sans y toucher : les contrôleurs ne connaissent que les ports. Les refus du métier deviennent des codes clairs : 409 si la place vient d'être prise, 404 si la séance n'existe pas, 422 si une règle refuse, 400 si la demande est mal écrite. À l'étape 8, les ventes de SortiesFlash passent par une ACL, un traducteur : leur format n'entre jamais dans notre domaine. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège (dette D7)</p><h3>« À quoi sert VenteConfiguration, puisque ApplicationVente branche déjà tout ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">ApplicationVente branche tout en Java pur. VenteConfiguration est la petite classe Spring (avec @Configuration) qui prend les ports d'ApplicationVente et les annonce à Spring, pour que Spring puisse les donner aux contrôleurs. Ainsi, Spring reste autour : il ne crée rien dans le cœur.</p></div>
+  </section>
+
+  <!-- ============ PARTIE 6 ============ -->
+  <section class="part reveal" id="p6" aria-labelledby="t-p6">
+    <p class="eyebrow">Partie 6 · qualité, tests, risques</p>
+    <h2 id="t-p6">Beaucoup de petits tests rapides. Un risque surveillé.</h2>
+    <div class="card ministage" data-stage="s6">
+      <svg viewBox="0 0 900 300" role="img" aria-label="Pyramide de tests : le domaine en bas avec beaucoup de tests rapides, puis l'application, le scénario complet, et l'API en haut">
+        <g data-s="0"><path class="pyr" d="M150 270 H750 L705 210 H195 Z"/><text class="nt b" x="450" y="236">Domaine seul : 24 tests</text><text class="nt sm" x="450" y="256">sans base ni serveur, en quelques millisecondes</text></g>
+        <g data-s="1"><path class="pyr" d="M195 205 H705 L660 150 H240 Z"/><text class="nt b" x="450" y="174">Application : 16 tests</text><text class="nt sm" x="450" y="193">avec des rangements en mémoire</text></g>
+        <g data-s="2"><path class="pyr" d="M240 145 H660 L615 95 H285 Z"/><text class="nt b" x="450" y="118">Scénario complet : la soirée du jeudi</text><text class="nt sm" x="450" y="136">réserver, payer… ou ne pas payer</text></g>
+        <g data-s="3"><path class="pyr" d="M285 90 H615 L560 40 H340 Z"/><text class="nt b" x="450" y="62">API : vraies requêtes HTTP</text><text class="nt sm" x="450" y="80">étapes 7 et 8</text><text class="nt ok b" x="450" y="24">72 tests verts</text></g>
+      </svg>
+      <div class="ms-bar"><div class="ms-cap" aria-live="polite"></div><div class="controls"><button class="btn ms-prev">Précédent</button><button class="btn primary ms-next">Suivant</button></div></div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card"><h3>Ce qu'on a fait</h3><p class="muted small">Chaque règle a son test (section 8 du dossier). La règle de dépendance est vérifiée à l'étape 6 par des recherches dans le code qui doivent revenir vides, par exemple : aucun <code>import org.springframework</code> dans le domaine ni l'application. Les risques sont listés avec leur parade (section 11).</p></div>
+      <div class="card"><h3>Le risque principal</h3><p class="muted small">Au pic d'une avant-première, deux ventes sur la même séance peuvent arriver en même temps : la deuxième trouve une séance « périmée » et réessaie (3 essais). Si plus de 1 % des clients sont refusés pour rien, on passera à un verrou par place dans PostgreSQL (ADR-0002).</p></div>
+    </div>
+    <div class="say card"><p class="eyebrow">La phrase à dire</p><button class="btn reveal-btn">Voir la phrase</button><p class="hidden-txt">« On a 72 tests verts. La plupart testent le domaine seul, sans base ni serveur, en quelques millisecondes. Le principal risque est au pic d'une avant-première : deux ventes sur la même séance peuvent entrer en conflit. On réessaie trois fois, on mesure, et si plus de 1 % des clients sont refusés pour rien, on passera à un verrou par place. »</p></div>
+    <div class="trap card"><p class="eyebrow">Question piège</p><h3>« Votre paiement est simulé et vos données sont en mémoire. Ça marche en vrai ? »</h3><button class="btn reveal-btn">Voir la réponse</button><p class="hidden-txt">C'est une simplification assumée du TP, écrite dans la section 11. Grâce aux ports, passer à PostgreSQL ou au vrai PayVia, c'est écrire un nouvel adapter à droite du diagramme, sans toucher au centre. Les règles et leurs tests restent les mêmes.</p></div>
+  </section>
+
+  <!-- ============ QUESTIONS DU JURY ============ -->
+  <section class="reveal" id="questions" aria-labelledby="t-qj">
+    <p class="eyebrow">Les questions du jury</p>
+    <h2 id="t-qj">Réponds à voix haute, puis ouvre la carte.</h2>
+    <p class="muted">Les plus probables d'abord : celles sur ta partie et sur les étapes 7 et 8.</p>
+    <div class="qa">
+      <details><summary>Que se passe-t-il si le client ne paie pas ?</summary><p>Ses places sont bloquées 10 minutes. Chaque minute, le minuteur demande à chaque séance de libérer les blocages dépassés : les places redeviennent libres, la commande passe « expirée », et on annonce « commande expirée ». Personne n'a besoin d'intervenir.</p></details>
+      <details><summary>Qui déclenche la confirmation du paiement ?</summary><p>PayVia. Quand le client a payé sur sa page, PayVia nous envoie un message (le webhook). Notre ACL traduit « payment.succeeded » et appelle le service qui confirme le paiement.</p></details>
+      <details><summary>Et si PayVia envoie deux fois la même notification ?</summary><p>Ça arrive : PayVia garantit « au moins une fois ». La Commande sait qu'elle est déjà payée, donc la deuxième notification ne change rien (règle B14).</p></details>
+      <details><summary>Pourquoi ApplicationVente est-elle hors de l'hexagone ?</summary><p>C'est la composition root : la seule qui crée les adapters et les branche dans les services. Elle connaît les deux côtés, donc elle est dehors. Le centre, lui, ne connaît toujours personne.</p></details>
+      <details><summary>Pourquoi les contrôleurs ne connaissent-ils que les ports ?</summary><p>Pour que le web reste un simple branchement. Le contrôleur reçoit la demande, appelle le port (le menu de l'hexagone) et renvoie la réponse. Changer de framework ne toucherait pas les règles.</p></details>
+      <details><summary>Pourquoi 409 et pas 500 quand la place est prise ?</summary><p>500 veut dire « bug du serveur ». Une place prise n'est pas un bug, c'est une règle du métier : 409 dit au client « conflit, quelqu'un l'a prise avant toi », et l'appli peut lui proposer d'autres places.</p></details>
+      <details><summary>C'est quoi une ACL, et pourquoi une par partenaire ?</summary><p>Un traducteur entre le format d'un autre système et nos mots. Chaque partenaire a son format et ne le changera pas : une ACL chacun, et notre domaine reste propre.</p></details>
+      <details><summary>Pourquoi garder le montant payé chez le partenaire ?</summary><p>La déclaration au CNC se fait au prix payé par le spectateur, et le partenaire nous reverse un montant qui en dépend. Sans ce montant, la déclaration serait fausse.</p></details>
+      <details><summary>Pourquoi publier les événements après l'enregistrement ?</summary><p>Pour n'annoncer que ce qui est vraiment enregistré. Sinon, si l'enregistrement échoue, on aurait envoyé des billets pour une commande qui n'existe pas.</p></details>
+      <details><summary>Pourquoi deux agrégats, Séance et Commande ?</summary><p>Un seul gros agrégat « séance avec toutes ses commandes » ferait se gêner toutes les commandes. Deux agrégats liés par leur numéro. Seule exception : au paiement, les deux changent ensemble, pour qu'une place ne soit pas revendue entre les deux.</p></details>
+      <details><summary>Comment vérifiez-vous la règle de dépendance ?</summary><p>À l'étape 6, par des recherches dans le code qui doivent revenir vides : pas de Spring dans le domaine ni l'application, pas d'adapter dans l'application. On pourrait l'automatiser avec un test ArchUnit.</p></details>
+      <details><summary>Pourquoi PayVia est-il derrière une ACL ?</summary><p>Le contrat dure 4 ans : il faut pouvoir changer de fournisseur sans toucher au domaine. Et ses mots (centimes, payment.succeeded) ne doivent pas entrer chez nous.</p></details>
+    </div>
+  </section>
+
+  <!-- ============ QCM ============ -->
+  <section class="reveal" id="qcm" aria-labelledby="t-qcm">
+    <p class="eyebrow">QCM d'entraînement</p>
+    <h2 id="t-qcm">Quinze questions pour demain.</h2>
+    <p class="muted">DDD, dossier d'architecture, ADR, UML. Ta première réponse compte dans le bilan.</p>
+    <div class="card" style="padding:0;margin-top:22px" id="quiz">
+      <div class="q" data-bilan="Q1 Agrégat"><h3>Un agrégat, c'est…</h3><div class="choices"><button class="choice" data-ok="1">Un groupe d'objets qu'on modifie en passant par un gardien, qui protège les règles</button><button class="choice" data-ok="0">Une table de la base de données</button><button class="choice" data-ok="0">Un service qui orchestre</button></div><div class="feedback" aria-live="polite" data-why="Exemple : Seance est le gardien du plan de salle. Pour bloquer une place, on passe par elle, et elle vérifie qu'aucune place n'est vendue deux fois."></div></div>
+      <div class="q" data-bilan="Q2 Value object"><h3>Un value object, c'est…</h3><div class="choices"><button class="choice" data-ok="0">Un objet avec une identité qui dure</button><button class="choice" data-ok="1">Une valeur sans identité, qu'on ne modifie pas : on la remplace</button></div><div class="feedback" aria-live="polite" data-why="Montant, PlaceId, Tarif : deux montants de 18 € sont le même montant. On ne le modifie pas, on en crée un nouveau."></div></div>
+      <div class="q" data-bilan="Q3 Entité"><h3>Lequel est une entité ?</h3><div class="choices"><button class="choice" data-ok="1">La Commande C-1a2b, suivie de « en attente » à « payée »</button><button class="choice" data-ok="0">Le montant 18,00 €</button></div><div class="feedback" aria-live="polite" data-why="La commande garde la même identité pendant que son statut change. Le montant n'est qu'une valeur."></div></div>
+      <div class="q" data-bilan="Q4 Événement"><h3>Un événement de domaine se nomme…</h3><div class="choices"><button class="choice" data-ok="0">À l'impératif : PayerCommande</button><button class="choice" data-ok="1">Au passé : CommandePayee</button></div><div class="feedback" aria-live="polite" data-why="Un événement est un fait qui s'est déjà produit. L'impératif, c'est une commande (une demande d'action)."></div></div>
+      <div class="q" data-bilan="Q5 Contexte délimité"><h3>Un contexte délimité (bounded context), c'est…</h3><div class="choices"><button class="choice" data-ok="1">Une zone où chaque mot du métier a un seul sens</button><button class="choice" data-ok="0">Un dossier de code Java</button></div><div class="feedback" aria-live="polite" data-why="« Séance » veut dire un film à une heure en Programmation, un plan de salle dans la Vente : deux contextes."></div></div>
+      <div class="q" data-bilan="Q6 ACL"><h3>Dans une context map, une ACL sert à…</h3><div class="choices"><button class="choice" data-ok="0">Accepter le modèle de l'autre tel quel</button><button class="choice" data-ok="1">Traduire le modèle de l'autre pour protéger le nôtre</button></div><div class="feedback" aria-live="polite" data-why="Anti-Corruption Layer : la couche qui empêche les mots de l'autre de « corrompre » notre modèle. Accepter tel quel, c'est Conformist."></div></div>
+      <div class="q" data-bilan="Q7 Conformist"><h3>Face au CNC, qui impose un format de 40 pages et ne négociera pas, la relation est…</h3><div class="choices"><button class="choice" data-ok="1">Conformist</button><button class="choice" data-ok="0">Customer/Supplier</button></div><div class="feedback" aria-live="polite" data-why="On s'y conforme tel quel. Customer/Supplier suppose qu'on peut négocier, comme entre deux équipes internes."></div></div>
+      <div class="q" data-bilan="Q8 Core domain"><h3>Le core domain, c'est…</h3><div class="choices"><button class="choice" data-ok="1">Le sous-domaine qui fait la valeur de l'entreprise, où on met le plus d'effort</button><button class="choice" data-ok="0">Le sous-domaine le plus gros</button></div><div class="feedback" aria-live="polite" data-why="Ici, la Vente de places : c'est elle qui garantit qu'une place n'est vendue qu'une fois."></div></div>
+      <div class="q" data-bilan="Q9 Générique"><h3>Pour un sous-domaine générique comme le paiement, on…</h3><div class="choices"><button class="choice" data-ok="0">Le construit en DDD complet</button><button class="choice" data-ok="1">L'achète et on l'isole derrière une ACL</button></div><div class="feedback" aria-live="polite" data-why="Il n'a rien de propre au cinéma : on achète PayVia et on le cache derrière un port et une ACL."></div></div>
+      <div class="q" data-bilan="Q10 ADR"><h3>Un ADR contient…</h3><div class="choices"><button class="choice" data-ok="1">Le contexte, les options envisagées, la décision et ses conséquences</button><button class="choice" data-ok="0">Le code de la décision</button></div><div class="feedback" aria-live="polite" data-why="Architecture Decision Record : la trace écrite du « pourquoi », avec le bon et le moins bon de la décision."></div></div>
+      <div class="q" data-bilan="Q11 DAT"><h3>Le DAT sert à…</h3><div class="choices"><button class="choice" data-ok="0">Lister les bugs</button><button class="choice" data-ok="1">Expliquer l'architecture à quelqu'un qui ne la connaît pas : contexte, vues, décisions, risques</button></div><div class="feedback" aria-live="polite" data-why="Document d'Architecture Technique : nos 11 sections, du produit jusqu'aux risques."></div></div>
+      <div class="q" data-bilan="Q12 Diagramme de séquence"><h3>Un diagramme de séquence montre…</h3><div class="choices"><button class="choice" data-ok="1">Qui parle à qui, dans quel ordre, au fil du temps</button><button class="choice" data-ok="0">Les composants et leurs branchements</button></div><div class="feedback" aria-live="polite" data-why="Le temps descend de haut en bas. Les branchements, c'est le diagramme de composants."></div></div>
+      <div class="q" data-bilan="Q13 Rond et demi-cercle"><h3>Sur un diagramme de composants, le rond et le demi-cercle veulent dire…</h3><div class="choices"><button class="choice" data-ok="1">Rond : « je propose ». Demi-cercle : « j'ai besoin »</button><button class="choice" data-ok="0">Rond : une base de données. Demi-cercle : un utilisateur</button></div><div class="feedback" aria-live="polite" data-why="Le rond est une interface fournie, le demi-cercle une interface requise. Quand le demi-cercle entoure le rond, ils sont branchés."></div></div>
+      <div class="q" data-bilan="Q14 Fragment alt"><h3>Le cadre « alt » dans un diagramme de séquence…</h3><div class="choices"><button class="choice" data-ok="0">Répète les messages</button><button class="choice" data-ok="1">Montre deux suites possibles selon une condition</button></div><div class="feedback" aria-live="polite" data-why="Dans le tien : [payé à temps] ou [aucun paiement 10 minutes après]. Une boucle, ce serait « loop »."></div></div>
+      <div class="q" data-bilan="Q15 Référence par identité"><h3>Pourquoi Commande garde-t-elle seulement le numéro de sa séance, pas la séance entière ?</h3><div class="choices"><button class="choice" data-ok="1">Pour que chaque agrégat se modifie seul, sans traîner l'autre</button><button class="choice" data-ok="0">Pour économiser de la mémoire</button></div><div class="feedback" aria-live="polite" data-why="Deux agrégats se référencent par leur identité. Ainsi, modifier une commande ne verrouille pas tout le plan de salle."></div></div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-lex">
+    <p class="eyebrow">Les mots à savoir</p>
+    <h2 id="t-lex">Clique pour revoir.</h2>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-bilan">
+    <p class="eyebrow">Ton bilan</p>
+    <h2 id="t-bilan">Le QCM, prêt à coller.</h2>
+    <p class="muted">Ta première réponse à chaque question compte. Ce site n'enregistre rien : le bouton copie un court résumé, que tu colles à l'expert cours.</p>
+    <div class="card" style="margin-top:28px">
+      <ul class="tally" id="tally"></ul>
+      <div class="controls" style="margin-top:22px"><button class="btn primary" id="copier-bilan">Copier mon bilan</button></div>
+      <p class="copied" id="copie-msg" aria-live="polite"></p>
+      <textarea class="bilan-texte" id="bilan-texte" readonly hidden aria-label="Texte du bilan"></textarea>
+    </div>
+  </section>
+</div>
+
+<div class="fiche">
+  <h1>Antisèche · l'oral</h1>
+  <p class="lede">Une ligne par partie, à relire juste avant de passer.</p>
+  <div class="card" style="margin-top:32px">
+    <h3>Le fil de la présentation</h3>
+    <ul>
+      <li><b>0 · Le projet</b> : une place n'est jamais vendue deux fois, tous canaux confondus (14 doubles ventes en mars).</li>
+      <li><b>1 · Le métier</b> : Event Storming → 8 contextes ; « séance » a deux sens → deux contextes.</li>
+      <li><b>2 · Les choix</b> : grille sur 18 ; DDD + hexagonal seulement pour la Vente ; Abonnements en couches (experte une fois par mois) ; paiement acheté + ACL.</li>
+      <li><b>3 · Le cœur</b> : Seance protège les places (tout ou rien, 10 min), Commande protège l'achat (1 à 10 billets, prix figé) ; on publie après l'enregistrement.</li>
+      <li><b>4 · Composants (moi)</b> : centre sans technique ; à gauche ils appellent, à droite il a besoin ; flèches vers le centre ; ApplicationVente dehors.</li>
+      <li><b>4 · Séquence (moi)</b> : 1 réserver → lien de paiement ; 2 PayVia prévient → vendue, payée, annoncée ; 3 rien en 10 min → places libres, commande expirée.</li>
+      <li><b>5 · Spring et partenaire</b> : contrôleurs → ports ; 409 / 404 / 422 / 400 ; ACL SortiesFlash, montant payé gardé pour le CNC.</li>
+      <li><b>6 · Tests et risques</b> : 72 tests verts ; conflit au pic → 3 essais, puis verrou par place si plus de 1 %.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Les pièges</h3>
+    <ul>
+      <li><span class="pitfall">Dire</span> que c'est le client qui confirme le paiement : c'est PayVia, par le webhook.</li>
+      <li><span class="pitfall">Dire</span> que la fin de l'acte 3 veut dire « plus de places » : les places redeviennent libres.</li>
+      <li><span class="pitfall">Oublier</span> pourquoi ApplicationVente est dehors : elle branche tout, donc elle connaît tout.</li>
+    </ul>
+  </div>
+</div>
+</main>
+
+<footer>Page de répétition temporaire, à retirer après l'oral. Les noms de systèmes (PayVia, SortiesFlash, CinéMalin) viennent d'un cas d'étude fictif.</footer>
+
+<div class="pop" id="pop" role="dialog" aria-labelledby="pop-t">
+  <p class="pt" id="pop-t"></p>
+  <p class="pd" id="pop-d"></p>
+  <p class="ps" id="pop-s"></p>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+  const SLUG = 'oral-billetterie';
+
+  const TERMS = {
+    dat:{t:'DAT', d:'Document d’Architecture Technique : le dossier qui explique l’architecture à quelqu’un qui ne la connaît pas.', s:'Le nôtre a 11 sections : du produit jusqu’aux risques.'},
+    eventstorming:{t:'Event Storming', d:'Un atelier où l’on colle au mur, dans l’ordre, tout ce qui se passe dans le métier, sous forme de faits au passé.', s:'Post-it orange : « places bloquées », « commande payée »…'},
+    contexte:{t:'Contexte délimité', d:'Une partie du métier où chaque mot a un seul sens, avec ses propres règles et son propre modèle.', s:'Comme les rayons d’un magasin : chacun a ses étiquettes.'},
+    acl:{t:'ACL', d:'Anti-Corruption Layer : un traducteur entre le format d’un autre système et nos mots, pour que les siens n’entrent pas chez nous.', s:'Un interprète à la frontière : si l’autre change de langue, seul l’interprète change.'},
+    adr:{t:'ADR', d:'Architecture Decision Record : une fiche par grande décision, avec le contexte, les options, la décision et ses conséquences.', s:'Elle répond plus tard à « pourquoi avez-vous fait ça ? ».'},
+    core:{t:'Core domain', d:'Le sous-domaine qui fait la valeur de l’entreprise : c’est là qu’on met le plus de soin.', s:'Ici, la Vente de places.'},
+    agregat:{t:'Agrégat', d:'Un groupe d’objets qu’on modifie en passant par un gardien (la racine), qui vérifie les règles.', s:'Seance est le gardien du plan de salle : on ne bloque une place qu’en passant par elle.'},
+    valueobject:{t:'Value object', d:'Une valeur sans identité, qu’on ne modifie pas : on la remplace par une nouvelle.', s:'Deux montants de 18 € sont le même montant.'},
+    evenement:{t:'Événement de domaine', d:'Un fait du métier qui vient de se produire, nommé au passé, que d’autres parties peuvent écouter.', s:'CommandePayee : les billets partent, la douchette les connaît.'},
+    port:{t:'Port', d:'Une prise de l’hexagone : la liste de ce qu’on peut lui demander (à gauche) ou de ce dont il a besoin (à droite). En Java, une interface.', s:'Le menu du restaurant.'},
+    adapter:{t:'Adapter', d:'Le code technique branché sur un port : le contrôleur web, le rangement en mémoire, le paiement simulé…', s:'Le câble branché sur la prise.'},
+    compositionroot:{t:'Composition root', d:'Le seul endroit qui crée les adapters et les branche dans les services, au démarrage.', s:'Ici, ApplicationVente : elle connaît tout le monde, donc elle est hors de l’hexagone.'},
+    webhook:{t:'Webhook', d:'Un message qu’un autre système nous envoie de lui-même quand quelque chose se passe chez lui.', s:'PayVia nous écrit « payé » : on ne lui a rien demandé à ce moment-là.'},
+    http:{t:'Code HTTP', d:'Un nombre renvoyé avec chaque réponse web pour dire comment ça s’est passé.', s:'2xx : ça marche. 4xx : la demande pose problème. 5xx : le serveur a un bug.'},
+    spring:{t:'Spring Boot', d:'Un outil Java qui démarre l’application, reçoit les requêtes web et branche les objets entre eux.', s:'Ici, il reste autour de l’hexagone : il ne crée rien dans le cœur.'}
+  };
+
+  const pop = $('pop');
+  let openTerm = null;
+  function showTerm(btn) {
+    const k = TERMS[btn.dataset.term || btn.dataset.t]; if (!k) return;
+    if (openTerm === btn) return hideTerm();
+    if (openTerm) openTerm.setAttribute('aria-expanded', 'false');
+    $('pop-t').textContent = k.t; $('pop-d').textContent = k.d; $('pop-s').textContent = k.s;
+    const r = btn.getBoundingClientRect(), w = pop.offsetWidth || 340;
+    pop.style.left = Math.min(Math.max(16, r.left), innerWidth - w - 16) + 'px';
+    pop.classList.add('on');
+    const h = pop.offsetHeight;
+    pop.style.top = (r.bottom + 10 + h > innerHeight ? Math.max(12, r.top - h - 10) : r.bottom + 10) + 'px';
+    btn.setAttribute('aria-expanded', 'true'); openTerm = btn;
+  }
+  function hideTerm() { pop.classList.remove('on'); if (openTerm) openTerm.setAttribute('aria-expanded', 'false'); openTerm = null; }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { e.preventDefault(); showTerm(t); }
+    else if (!e.target.closest('.pop')) hideTerm();
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') hideTerm(); });
+  addEventListener('scroll', () => openTerm && hideTerm(), {passive:true});
+  const chips = $('chips');
+  Object.entries(TERMS).forEach(([k, v]) => { const b = document.createElement('button'); b.className = 'term'; b.dataset.t = k; b.textContent = v.t; chips.appendChild(b); });
+
+  /* ---------- les petites animations pas à pas ---------- */
+  const CAPS = {
+    s0: ['Le cinéma vend par 5 canaux, plus 2 partenaires.', 'Tous vendent les mêmes places, en même temps.', 'Une seule vente de places, un seul plan de salle par séance : la règle n° 1 est tenue au même endroit.', 'Le paiement passe par PayVia, les billets partent par e-mail et SMS.'],
+    s1: ['L’Event Storming : tout ce qui se passe, au passé, dans l’ordre.', 'On regroupe là où les mots et le responsable restent les mêmes : ce sont les contextes.', 'Le même mot a deux sens : c’est le signe de deux contextes.', 'Les liens entre contextes forment la context map.'],
+    s2: ['Chaque contexte reçoit une note sur 18.', 'La Vente de places, le cœur du métier : DDD et hexagonal.', 'Les Abonnements ont 15, mais l’experte n’est disponible qu’une fois par mois : architecture en couches.', 'Ce qui n’est pas propre au cinéma s’achète.'],
+    s3: ['Le plan de salle de la séance S42 : tout est libre.', 'Le client 1 demande A1 et A2 : la Séance les bloque 10 minutes, la Commande garde l’achat au prix figé.', 'Le client 2 demande A2 et A3 : A2 est prise, donc rien n’est bloqué. Tout ou rien.', 'PayVia confirme : les places deviennent vendues et la commande payée, en même temps.', 'Autre suite possible : personne ne paie, et tout se libère seul au bout de 10 minutes.'],
+    s4a: ['Au centre, l’hexagone : l’application orchestre, le domaine décide.', 'À gauche, ceux qui appellent l’hexagone, chacun par un port (un rond).', 'À droite, ce dont l’hexagone a besoin (demi-cercles), et l’adapter branché dessus.', 'Toutes les flèches vont vers le centre : c’est la règle de dépendance.', 'ApplicationVente branche tout : elle est dessinée dehors, en rose.'],
+    s4b: ['Acte 1 · Le client demande deux places ; la porte d’entrée passe la demande au service.', 'Le service fige les prix et charge la séance.', 'Le domaine décide : la Séance bloque, la Commande est créée.', 'Tout est enregistré, puis on demande le paiement. Le client reçoit son lien.', 'Le client paie chez PayVia. Ensuite, deux suites possibles : le cadre « alt ».', 'Acte 2 · PayVia prévient que c’est payé (le webhook) ; le service confirme.', 'Les places sont vendues, la commande payée, tout est enregistré, puis on annonce « payée ».', 'Acte 3 · Personne n’a payé. Le minuteur appelle le service chaque minute.', 'Les blocages dépassés sont libérés, la commande expire, on annonce « expirée ». Les places reviennent à la vente.'],
+    s5: ['SortiesFlash envoie une vente déjà payée, avec ses propres mots.', 'L’ACL la traduit.', 'Dans nos mots : séance, place, tarif, montant payé.', 'Même règle « une place, une vente », sans blocage, et le montant payé est gardé.'],
+    s6: ['La base : beaucoup de petits tests du domaine, très rapides.', 'Puis les services, avec des rangements en mémoire.', 'Puis un scénario complet.', 'En haut, quelques tests de l’API par de vraies requêtes. 72 tests verts.']
+  };
+  document.querySelectorAll('.ministage').forEach(st => {
+    const key = st.dataset.stage, caps = CAPS[key];
+    const groups = [...st.querySelectorAll('[data-s]')];
+    let cur = 0;
+    const seats = st.querySelectorAll('.seat');
+    function draw() {
+      groups.forEach(g => { const s = +g.dataset.s; g.classList.toggle('on', s <= cur); g.classList.toggle('now', s === cur); });
+      st.querySelector('.ms-cap').innerHTML = `<b>${cur + 1} / ${caps.length}</b> ${caps[cur]}`;
+      st.querySelector('.ms-prev').disabled = cur === 0;
+      st.querySelector('.ms-next').disabled = cur === caps.length - 1;
+      if (seats.length) {
+        const state = {A1: 'libre', A2: 'libre', A3: 'libre', A4: 'libre', A5: 'libre'};
+        if (cur >= 1 && cur <= 3) { state.A1 = state.A2 = 'bloquee'; }
+        if (cur === 3) { state.A1 = state.A2 = 'vendue'; }
+        if (cur === 4) { state.A1 = state.A2 = 'libre'; }
+        seats.forEach(s => { s.setAttribute('class', 'seat ' + state[s.id]); });
+      }
+    }
+    st.querySelector('.ms-next').onclick = () => { if (cur < caps.length - 1) { cur++; draw(); } };
+    st.querySelector('.ms-prev').onclick = () => { if (cur > 0) { cur--; draw(); } };
+    draw();
+  });
+
+  /* ---------- phrases et réponses cachées ---------- */
+  document.querySelectorAll('.reveal-btn').forEach(b => b.addEventListener('click', () => {
+    const t = b.nextElementSibling; const on = t.classList.toggle('on');
+    b.textContent = on ? 'Cacher' : (b.closest('.say') ? 'Voir la phrase' : 'Voir la réponse');
+  }));
+
+  /* ---------- QCM et bilan ---------- */
+  function wire(group, fb) {
+    group.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      const ok = b.dataset.ok === '1';
+      group.querySelectorAll('.choice').forEach(x => x.classList.remove('right', 'wrong'));
+      b.classList.add(ok ? 'right' : 'wrong');
+      fb.textContent = (ok ? 'Exact. ' : 'Pas tout à fait. ') + (fb.dataset.why || '');
+    }));
+  }
+  document.querySelectorAll('#quiz .q').forEach(q => wire(q, q.querySelector('.feedback')));
+  const answers = new Map();
+  const bilanGroups = [...document.querySelectorAll('[data-bilan]')];
+  bilanGroups.forEach(g => {
+    const li = document.createElement('li'), lab = document.createElement('span'), pill = document.createElement('span');
+    lab.textContent = g.dataset.bilan; pill.className = 'pill'; pill.textContent = 'non faite';
+    li.append(lab, pill); $('tally').appendChild(li);
+    g.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      if (answers.has(g)) return;
+      const v = b.dataset.ok === '1' ? 'juste' : 'fausse';
+      answers.set(g, v); pill.textContent = v; pill.className = 'pill ' + v;
+      if (!reduce) { void pill.offsetWidth; pill.classList.add('bump'); }
+    }));
+  });
+  async function copierBilan() {
+    const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
+    const txt = [`Bilan · QCM d'entraînement de l'oral · ${date}`, ...bilanGroups.map(g => `${g.dataset.bilan} : ${answers.get(g) || 'non faite'}`)].join('\n');
+    const msg = $('copie-msg'), ta = $('bilan-texte');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    if (!ok) { ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} }
+    msg.textContent = ok ? 'Copié. Colle-le à l’expert cours.' : 'Le texte est sélectionné ci-dessous : copie-le (⌘ C), puis colle-le à l’expert cours.';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+  }
+  window.copierBilan = copierBilan;
+  $('copier-bilan').onclick = copierBilan;
+
+  /* ---------- Répéter / Antisèche ---------- */
+  const seg = $('seg');
+  seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.mode; seg.dataset.mode = m;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.body.classList.toggle('mode-fiche', m === 'fiche');
+    hideTerm(); scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+    try { localStorage.setItem('mode-' + SLUG, m); } catch (e) {}
+  }));
+  try { if (location.hash === '#fiche' || localStorage.getItem('mode-' + SLUG) === 'fiche') seg.querySelector('[data-mode="fiche"]').click(); } catch (e) {}
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.04});
+  document.querySelectorAll('.reveal').forEach(s => io.observe(s));
+})();
+</script>
+</body>
+</html>
