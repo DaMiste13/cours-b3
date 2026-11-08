@@ -314,6 +314,27 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   .reveal{opacity:1;transform:none}
 }
 
+
+/* ---------- version simple : mots du quotidien ---------- */
+.seq .pf{font-size:13px;text-anchor:middle}
+.seq .small-t{font-size:11.5px;fill:var(--text-2)}
+.ways{display:grid;gap:14px}
+@media (min-width:860px){.ways{grid-template-columns:repeat(3,1fr)}}
+.way{display:flex;flex-direction:column;gap:8px;border-top:4px solid var(--line)}
+.way.ko{border-top-color:var(--warn)} .way.mid{border-top-color:#e8b400} .way.ok{border-top-color:var(--ok)}
+.way-ico{font-size:30px;line-height:1}
+.way h3{font-size:18px;margin:0}
+.way p{margin:0;font-size:15px}
+.way .in-code{margin-top:auto;padding-top:10px;border-top:1px solid var(--hairline);color:var(--text-2);font-size:14px}
+.tag{display:inline-block;align-self:flex-start;font-size:12px;font-weight:600;border-radius:980px;padding:2px 10px;background:var(--hairline);color:var(--text-2)}
+.tag.mid{background:rgba(232,180,0,.16);color:#a07800}
+@media (prefers-color-scheme:dark){.tag.mid{color:#ffd60a}}
+.cx{width:100%;border-collapse:collapse;font-size:15px}
+.cx td{padding:14px 18px;border-top:1px solid var(--hairline);vertical-align:top}
+.cx tr:first-child td{border-top:0}
+.cx td:first-child{width:46%;white-space:nowrap}
+.cx td:first-child code{background:none;padding:0;font-size:13.5px;color:var(--accent);font-weight:600}
+@media (max-width:640px){.cx td{display:block;width:auto!important;white-space:normal}.cx td:first-child{padding-bottom:4px}.cx td:last-child{border-top:0;padding-top:0}}
 </style>
 </head>
 <body>
@@ -332,10 +353,9 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
 <main>
 <div class="cours">
 
-  <h1>Un sujet par tiroir.<br>Peu de fils entre eux.</h1>
-  <p class="lede">À l'étape 1, le code « résistait » au changement. Ici, on apprend à dire pourquoi, avec deux mesures. <strong>Est-ce que ce qui est rangé ensemble va ensemble ? Et à quel point chaque morceau dépend des autres ?</strong></p>
+  <h1>Un sujet par placard.<br>On commande, on ne fouille pas.</h1>
+  <p class="lede">À l'étape 1, on a vu qu'un code mal rangé coûte de plus en plus cher. Ici, on apprend à juger un rangement avec deux questions simples. <strong>Est-ce que ce qui est rangé ensemble va ensemble ? Et est-ce qu'une boîte va se servir chez les autres ?</strong></p>
   <p class="muted small" style="margin-top:22px">Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
-
 
   <section class="reveal" aria-labelledby="t-bricks">
     <p class="eyebrow">Avant de commencer</p>
@@ -408,28 +428,29 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
     </div>
   </section>
 
+
   <section class="reveal" aria-labelledby="t-why">
     <p class="eyebrow">Pourquoi ça existe</p>
-    <h2 id="t-why">« C'est mal rangé » ne suffit pas.</h2>
-    <p>Dans l'appli de photos, on veut changer la façon de stocker les images. Une seule chose à changer. Pourtant tu dois ouvrir une <button class="term" data-term="classe">classe</button> de 600 lignes qui gère aussi les likes et les e-mails, et après ta modification les likes ne marchent plus.</p>
-    <p>Deux défauts différents se cachent là. Le premier : des choses sans rapport sont rangées ensemble, c'est un problème de <button class="term" data-term="cohesion">cohésion</button>. Le second : les likes allaient lire l'intérieur du code des photos, c'est un problème de <button class="term" data-term="couplage">couplage</button>. Ces deux mots servent à juger un découpage avec des critères, et toutes les étapes suivantes du cours (couches, SOLID, hexagone) sont des façons de les améliorer.</p>
+    <h2 id="t-why">Deux défauts, deux mots.</h2>
+    <p>Dans l'appli de photos, on veut changer la façon de ranger les images. Une seule chose à changer. Pourtant tu dois ouvrir une énorme <button class="term" data-term="classe">classe</button> qui s'occupe aussi des likes et des e-mails. Et après ton changement, les likes ne marchent plus.</p>
+    <p>Il y a deux défauts. D'abord, des choses sans rapport sont rangées dans la même boîte : c'est un problème de <button class="term" data-term="cohesion">cohésion</button>. Ensuite, les likes allaient se servir directement à l'intérieur de la boîte des photos : c'est un problème de <button class="term" data-term="couplage">couplage</button>. Toute la suite du cours sert à corriger ces deux défauts.</p>
   </section>
 
   <section class="reveal" aria-labelledby="t-cast">
     <p class="eyebrow">Les personnages</p>
-    <h2 id="t-cast">Quatre personnages, un rôle chacun.</h2>
+    <h2 id="t-cast">Quatre mots, une image chacun.</h2>
     <div class="cast">
-      <div class="card"><div class="ico">🗄️</div><h3>Le module</h3><p>Un tiroir de code : une classe, ou un paquet de classes. <button class="term" data-term="module">C'est quoi ?</button></p></div>
-      <div class="card"><div class="ico">🧵</div><h3>La dépendance</h3><p>Un fil entre deux modules : A utilise B. <button class="term" data-term="dependance">C'est quoi ?</button></p></div>
-      <div class="card"><div class="ico">🧲</div><h3>La cohésion</h3><p>« Est-ce que ça va ensemble ? » On la veut forte.</p></div>
-      <div class="card"><div class="ico">🔗</div><h3>Le couplage</h3><p>« À quel point je dépends de toi ? » On le veut faible.</p></div>
+      <div class="card"><div class="ico">🗄️</div><h3>Le module</h3><p>Un placard : une boîte de code qui ne s'occupe que d'un sujet. <button class="term" data-term="module">C'est quoi ?</button></p></div>
+      <div class="card"><div class="ico">🧵</div><h3>La dépendance</h3><p>Un fil entre deux boîtes : l'une a besoin de l'autre pour travailler. <button class="term" data-term="dependance">C'est quoi ?</button></p></div>
+      <div class="card"><div class="ico">🧲</div><h3>La cohésion</h3><p>« Est-ce que ce qui est dans ce placard va ensemble ? » On la veut forte.</p></div>
+      <div class="card"><div class="ico">🔗</div><h3>Le couplage</h3><p>« À quel point cette boîte a besoin de l'intérieur des autres ? » On le veut faible.</p></div>
     </div>
   </section>
 
   <section class="reveal" aria-labelledby="t-anim">
     <p class="eyebrow">L'histoire, pas à pas</p>
-    <h2 id="t-anim">On range une classe fourre-tout.</h2>
-    <p class="muted">Chaque couleur est un sujet : rose pour les likes, violet pour les photos, bleu-vert pour les notifications. Avance à ton rythme.</p>
+    <h2 id="t-anim">On range une boîte qui fait tout.</h2>
+    <p class="muted">Une couleur par sujet : rose pour les likes, violet pour les photos, bleu-vert pour les notifications. Avance à ton rythme.</p>
 
     <div class="card stage">
       <div class="stage-top">
@@ -446,86 +467,94 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
 
       <div class="diagram-wrap">
         <svg class="seq" id="seq" viewBox="0 0 900 420" role="img" aria-labelledby="seq-title seq-desc">
-          <title id="seq-title">Une classe fourre-tout découpée en trois modules, puis les fils entre eux remplacés par un contrat</title>
-          <desc id="seq-desc">D'abord une seule classe mélange trois sujets. Elle est découpée en trois modules, un par sujet. Les modules restent reliés par des fils forts : le module des likes lit un champ privé des photos et passe un booléen aux notifications. Quand on renomme le champ privé, les likes cassent. On remplace ces fils par un contrat et par des méthodes claires.</desc>
+          <title id="seq-title">Une boîte qui fait tout est rangée en trois boîtes, puis la boîte des likes arrête de fouiller chez les photos et passe par un menu</title>
+          <desc id="seq-desc">D'abord une seule boîte mélange trois sujets. On la range en trois boîtes, une par sujet. La boîte des likes va se servir dans le rangement interne de la boîte des photos ; quand les photos se rangent autrement, les likes ne marchent plus. Les photos affichent alors un menu de ce qu'on peut leur demander, et les likes passent par ce menu. Les photos peuvent ensuite se ranger comme elles veulent sans rien casser.</desc>
           <defs>
             <marker id="arr-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker>
             <marker id="arr-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)"/></marker>
-            <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="var(--surface)" stroke="var(--ok)" stroke-width="1.4"/></marker>
           </defs>
 
-          <!-- étape 0 : la classe fourre-tout -->
+          <!-- étape 0 : une boîte qui fait tout -->
           <g data-step="0" data-until="1">
             <rect class="box" x="250" y="40" width="400" height="290" rx="18"/>
-            <text class="box-t" x="450" y="72" text-anchor="middle">AppService</text>
-            <rect class="pill-1" x="275" y="95" width="165" height="40" rx="12"/><text class="pl" x="357" y="120">liker()</text>
-            <rect class="pill-2" x="460" y="95" width="165" height="40" rx="12"/><text class="pl" x="542" y="120">enregistrerPhoto()</text>
-            <rect class="pill-3" x="275" y="155" width="165" height="40" rx="12"/><text class="pl" x="357" y="180">envoyerEmail()</text>
-            <rect class="pill-1" x="460" y="155" width="165" height="40" rx="12"/><text class="pl" x="542" y="180">compterLikes()</text>
-            <rect class="pill-2" x="275" y="215" width="165" height="40" rx="12"/><text class="pl" x="357" y="240">redimensionner()</text>
-            <rect class="pill-3" x="460" y="215" width="165" height="40" rx="12"/><text class="pl" x="542" y="240">envoyerPush()</text>
-            <text class="note" x="450" y="300" text-anchor="middle">une classe, trois sujets mélangés</text>
+            <text class="box-t" x="450" y="72" text-anchor="middle">AppService : une seule boîte</text>
+            <rect class="pill-1" x="275" y="95" width="165" height="40" rx="12"/><text class="pf" x="357" y="120">liker</text>
+            <rect class="pill-2" x="460" y="95" width="165" height="40" rx="12"/><text class="pf" x="542" y="120">ranger une photo</text>
+            <rect class="pill-3" x="275" y="155" width="165" height="40" rx="12"/><text class="pf" x="357" y="180">envoyer un e-mail</text>
+            <rect class="pill-1" x="460" y="155" width="165" height="40" rx="12"/><text class="pf" x="542" y="180">compter les likes</text>
+            <rect class="pill-2" x="275" y="215" width="165" height="40" rx="12"/><text class="pf" x="357" y="240">réduire une photo</text>
+            <rect class="pill-3" x="460" y="215" width="165" height="40" rx="12"/><text class="pf" x="542" y="240">envoyer une notif</text>
+            <text class="note" x="450" y="300" text-anchor="middle">trois sujets mélangés dans la même boîte</text>
           </g>
-          <!-- étape 1 : le changement touche tout le fichier -->
+          <!-- étape 1 : tout ouvrir pour un seul changement -->
           <g data-step="1" data-until="1">
             <rect class="hot line" x="458" y="93" width="169" height="44" rx="13"/>
             <rect class="hot line" x="273" y="213" width="169" height="44" rx="13"/>
             <rect class="hot" x="246" y="36" width="408" height="298" rx="20" stroke-dasharray="7 6"/>
-            <text class="lab-bad" x="450" y="370" text-anchor="middle">Changer le stockage des photos : on ouvre toute la classe, likes et e-mails compris</text>
+            <text class="lab-bad" x="450" y="370" text-anchor="middle">Pour changer les photos, il faut ouvrir toute la boîte</text>
           </g>
-          <!-- étape 2 : un module par sujet -->
+          <!-- étape 2 : une boîte par sujet -->
           <g data-step="2">
             <rect class="box" x="40" y="40" width="210" height="220" rx="18"/>
             <text class="box-t" x="145" y="72" text-anchor="middle">Likes</text>
-            <rect class="pill-1" x="60" y="95" width="170" height="40" rx="12"/><text class="pl" x="145" y="120">liker()</text>
-            <rect class="pill-1" x="60" y="150" width="170" height="40" rx="12"/><text class="pl" x="145" y="175">compterLikes()</text>
+            <rect class="pill-1" x="60" y="95" width="170" height="40" rx="12"/><text class="pf" x="145" y="120">liker</text>
+            <rect class="pill-1" x="60" y="150" width="170" height="40" rx="12"/><text class="pf" x="145" y="175">compter les likes</text>
 
             <rect class="box" x="345" y="40" width="210" height="220" rx="18"/>
             <text class="box-t" x="450" y="72" text-anchor="middle">Photos</text>
-            <rect class="pill-2" x="365" y="95" width="170" height="40" rx="12"/><text class="pl" x="450" y="120">enregistrer()</text>
-            <rect class="pill-2" x="365" y="150" width="170" height="40" rx="12"/><text class="pl" x="450" y="175">redimensionner()</text>
-            <rect class="pill-p" x="365" y="205" width="170" height="36" rx="12"/><text class="pl" x="450" y="228">dossier (privé)</text>
+            <rect class="pill-2" x="365" y="95" width="170" height="40" rx="12"/><text class="pf" x="450" y="120">ranger une photo</text>
+            <rect class="pill-2" x="365" y="150" width="170" height="40" rx="12"/><text class="pf" x="450" y="175">réduire une photo</text>
+            <rect class="pill-p" x="365" y="203" width="170" height="40" rx="12"/>
 
             <rect class="box" x="650" y="40" width="210" height="220" rx="18"/>
             <text class="box-t" x="755" y="72" text-anchor="middle">Notifications</text>
-            <rect class="pill-3" x="670" y="95" width="170" height="40" rx="12"/><text class="pl" x="755" y="120">envoyerEmail()</text>
-            <rect class="pill-3" x="670" y="150" width="170" height="40" rx="12"/><text class="pl" x="755" y="175">envoyerPush()</text>
+            <rect class="pill-3" x="670" y="95" width="170" height="40" rx="12"/><text class="pf" x="755" y="120">envoyer un e-mail</text>
+            <rect class="pill-3" x="670" y="150" width="170" height="40" rx="12"/><text class="pf" x="755" y="175">envoyer une notif</text>
           </g>
-          <!-- étape 3 : des fils trop forts -->
+          <g data-step="2" data-until="3">
+            <text class="pf small-t" x="450" y="222">rangement interne :</text>
+            <text class="pf small-t" x="450" y="237">dossier « images »</text>
+          </g>
+          <!-- étape 3 : Likes va fouiller -->
           <g data-step="3" data-until="4">
-            <path class="bad line" d="M230 223 L363 223" marker-end="url(#arr-bad)"/>
-            <text class="lab-bad" x="296" y="214" text-anchor="middle">lit le privé</text>
-            <path class="bad line" d="M145 262 C145 345, 755 345, 755 266" marker-end="url(#arr-bad)"/>
-            <text class="lab-bad" x="450" y="338" text-anchor="middle">notifier(msg, true)  ← que veut dire true ?</text>
+            <path class="bad line" d="M230 223 L361 223" marker-end="url(#arr-bad)"/>
+            <text class="lab-bad" x="297" y="212" text-anchor="middle">fouille</text>
+            <text class="lab-bad" x="300" y="300" text-anchor="middle">Likes va se servir lui-même dans le rangement de Photos</text>
           </g>
-          <!-- étape 4 : ça casse -->
+          <!-- étape 4 : Photos se range autrement -->
+          <g data-step="4" data-until="5">
+            <text class="pf small-t" x="450" y="222">rangement interne :</text>
+            <text class="pf small-t" x="450" y="237">dossier « photos-2024 »</text>
+          </g>
           <g data-step="4" data-until="4">
             <rect class="hot" x="34" y="34" width="222" height="232" rx="22" stroke-dasharray="7 6"/>
-            <text class="lab-bad" x="145" y="290" text-anchor="middle">✕ Likes casse</text>
-            <text class="note" x="450" y="290" text-anchor="middle">« dossier » renommé en « repertoire »</text>
+            <text class="lab-bad" x="145" y="335" text-anchor="middle">✕ Likes ne trouve plus rien</text>
+            <text class="note" x="450" y="335" text-anchor="middle">Photos a rangé ses images ailleurs</text>
           </g>
-          <!-- étape 5 : un contrat et des méthodes claires -->
+          <!-- étape 5 : le menu -->
           <g data-step="5">
-            <rect class="contract" x="262" y="96" width="76" height="40" rx="10"/>
-            <text class="pl" x="300" y="113" style="font-size:10px">contrat</text>
-            <text class="pl" x="300" y="127" style="font-size:10px">existe(id)</text>
-            <path class="good line" d="M230 116 L258 116" marker-end="url(#arr-good)"/>
-            <path class="good line" d="M363 116 L342 116" stroke-dasharray="5 4" marker-end="url(#tri)"/>
-            <path class="good line" d="M145 262 C145 345, 755 345, 755 266" marker-end="url(#arr-good)"/>
-            <text class="lab-good" x="450" y="338" text-anchor="middle">notifierParPush(msg)</text>
+            <rect class="contract" x="300" y="290" width="300" height="56" rx="14"/>
+            <text class="box-t" x="450" y="312" text-anchor="middle" style="font-size:13px">🧾 Le menu de Photos</text>
+            <text class="pf" x="450" y="333">« cette photo existe-t-elle ? »</text>
+            <path class="good line" d="M145 262 C145 318, 220 318, 296 318" marker-end="url(#arr-good)"/>
+            <path class="good line" d="M450 288 L450 266" marker-end="url(#arr-good)"/>
+            <text class="lab-good" x="450" y="378" text-anchor="middle">Likes commande sur le menu, sans entrer chez Photos</text>
           </g>
-          <!-- étape 6 : le bilan -->
+          <!-- étape 6 : Photos change encore, rien ne casse -->
           <g data-step="6">
-            <text class="lab-good" x="450" y="390" text-anchor="middle">Des fils, il en faut. On les attache à ce qui change peu : un contrat.</text>
+            <text class="pf small-t" x="450" y="222">rangement interne :</text>
+            <text class="pf small-t" x="450" y="237">dossier « archives »</text>
+            <text class="lab-good" x="145" y="30" text-anchor="middle">✓ Likes marche toujours</text>
+            <text class="lab-good" x="450" y="404" text-anchor="middle">Photos range comme elle veut : le menu, lui, n'a pas changé</text>
           </g>
         </svg>
       </div>
 
-      <div class="predict" id="predict" role="group" aria-labelledby="predict-q" data-bilan="Prédiction : qui casse ?">
-        <p id="predict-q">Avant de continuer : dans Photos, on renomme le champ privé « dossier » en « repertoire ». Qui casse ?</p>
+      <div class="predict" id="predict" role="group" aria-labelledby="predict-q" data-bilan="Prédiction : qui a un problème ?">
+        <p id="predict-q">Avant de continuer : Photos décide de ranger ses images dans un autre dossier. Qui a un problème ?</p>
         <div class="choices">
-          <button class="choice" data-ok="0">Personne : c'est un champ privé</button>
-          <button class="choice" data-ok="1">Likes, qui allait lire ce champ</button>
+          <button class="choice" data-ok="0">Personne : c'est son rangement à elle</button>
+          <button class="choice" data-ok="1">Likes, qui allait fouiller dans ce dossier</button>
           <button class="choice" data-ok="0">Notifications</button>
         </div>
         <div class="feedback" id="predict-fb" aria-live="polite"></div>
@@ -539,12 +568,12 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
         </div>
         <div class="side-col" aria-hidden="true">
           <div class="gauge">
-            <small>Les deux mesures</small>
-            <div class="g-row"><span>Cohésion</span><b class="g-val" id="g-coh">?</b></div>
-            <div class="g-row"><span>Couplage</span><b class="g-val" id="g-cou">?</b></div>
-            <div class="g-row"><span>Changer les photos touche</span><b class="g-val" id="g-imp">?</b></div>
+            <small>Les deux questions</small>
+            <div class="g-row"><span>Ce qui est rangé ensemble va ensemble ?</span><b class="g-val" id="g-coh">?</b></div>
+            <div class="g-row"><span>Une boîte fouille chez une autre ?</span><b class="g-val" id="g-cou">?</b></div>
+            <div class="g-row"><span>Si Photos se range autrement</span><b class="g-val" id="g-imp">?</b></div>
           </div>
-          <div class="side-label">Le tableau de bord du découpage</div>
+          <div class="side-label">Le tableau de bord du rangement</div>
         </div>
       </div>
     </div>
@@ -552,48 +581,57 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   </section>
 
   <section class="reveal" aria-labelledby="t-gram">
-    <p class="eyebrow">La grammaire</p>
-    <h2 id="t-gram">Reconnaître un couplage dans le code.</h2>
-    <p>Le couplage a des degrés. Du plus dangereux au plus sain, voici ceux que tu croiseras. Plus on descend, plus un module peut changer sans casser les autres.</p>
-    <div class="card" style="margin-top:22px">
-      <ul class="ladder">
-        <li><i class="lv r" aria-hidden="true"></i><b>Par le contenu</b><p>Aller lire ou modifier l'intérieur d'un autre module : un champ privé, un attribut <code>public</code> qu'on bricole. Le pire.</p></li>
-        <li><i class="lv r" aria-hidden="true"></i><b>Par des données globales</b><p>Deux modules qui lisent et écrivent la même table ou la même variable globale. Si l'un change le format, l'autre casse.</p></li>
-        <li><i class="lv o" aria-hidden="true"></i><b>Par contrôle</b><p>Passer un <button class="term" data-term="booleen">booléen</button> qui change le comportement de l'autre : <code>notifier(msg, true)</code>. L'appelant décide à la place de l'appelé.</p></li>
-        <li><i class="lv y" aria-hidden="true"></i><b>Par structure</b><p>Passer un gros <button class="term" data-term="objet">objet</button> dont l'autre n'utilise qu'un champ : <code>envoyer(utilisateur)</code> alors qu'il ne lit que l'e-mail.</p></li>
-        <li><i class="lv g" aria-hidden="true"></i><b>Par données simples</b><p>Passer seulement ce qui est nécessaire : <code>envoyer(email, message)</code>.</p></li>
-        <li><i class="lv g" aria-hidden="true"></i><b>Par une interface</b><p>Ne connaître que le contrat, jamais le code qui le réalise. L'<button class="term" data-term="interface">interface</button> est l'outil principal de toute la suite du cours.</p></li>
-      </ul>
-    </div>
-
-    <div class="grid two duo" style="margin-top:28px">
-      <div class="card">
-        <span class="tag ko">couplage par contrôle</span>
-        <h3>Le booléen mystère</h3>
-<pre class="codebox">notifier(msg, <span class="hl">true</span>);   <span class="c">// true = par push ?</span>
-
-void notifier(String msg, boolean push) {
-  if (push) envoyerPush(msg);
-  else envoyerEmail(msg);
-}</pre>
+    <p class="eyebrow">L'essentiel à retenir</p>
+    <h2 id="t-gram">Trois façons de demander quelque chose.</h2>
+    <p>Imagine que tu veux un plat dans un restaurant. Il y a trois façons de l'obtenir. Les boîtes de code ont exactement les mêmes trois façons de demander quelque chose à une autre boîte.</p>
+    <div class="ways" style="margin-top:22px">
+      <div class="card way ko">
+        <div class="way-ico" aria-hidden="true">🍳</div>
+        <span class="tag ko">couplage fort</span>
+        <h3>Entrer dans la cuisine et se servir.</h3>
+        <p>Tu vas toi-même chercher le plat dans le frigo du restaurant. Le jour où le chef range son frigo autrement, tu ne trouves plus rien.</p>
+        <p class="in-code"><b>Dans le code</b> : une boîte va lire le rangement interne d'une autre boîte.</p>
       </div>
-      <div class="card">
-        <span class="tag ok">données simples</span>
-        <h3>Deux méthodes qui disent ce qu'elles font</h3>
-<pre class="codebox">notifierParPush(msg);
-
-void notifierParPush(String msg) { ... }
-void notifierParEmail(String msg) { ... }</pre>
+      <div class="card way mid">
+        <div class="way-ico" aria-hidden="true">🗣️</div>
+        <span class="tag mid">couplage moyen</span>
+        <h3>Dire au cuisinier comment cuisiner.</h3>
+        <p>« Fais-le, mais version 2. » Pour savoir quoi dire, il faut connaître sa recette. Si sa recette change, ta demande n'a plus de sens.</p>
+        <p class="in-code"><b>Dans le code</b> : envoyer un réglage (par exemple vrai ou faux) qui change ce que fait l'autre boîte.</p>
+      </div>
+      <div class="card way ok">
+        <div class="way-ico" aria-hidden="true">🧾</div>
+        <span class="tag ok">couplage faible</span>
+        <h3>Commander sur le menu.</h3>
+        <p>Tu choisis dans la liste de ce qu'on a le droit de demander. La cuisine peut changer tous les jours : tant que le menu reste le même, tu reçois ton plat.</p>
+        <p class="in-code"><b>Dans le code</b> : passer par une <button class="term" data-term="interface">interface</button>, le menu d'une boîte.</p>
       </div>
     </div>
-    <p class="muted small" style="margin-top:14px">À gauche, Likes doit savoir comment Notifications choisit son canal. À droite, chacun garde sa décision, et le nom de la méthode suffit à comprendre l'appel.</p>
+
+    <div class="sub-section">
+      <h3>Le menu, en Java.</h3>
+      <p class="muted">C'est nouveau pour toi, alors chaque ligne est traduite à côté. Tu n'as rien à retenir par cœur : l'idée, c'est le menu.</p>
+      <div class="card" style="margin-top:18px;padding:0">
+        <table class="cx">
+          <tr><td><code>interface MenuPhotos {</code></td><td>Voici un menu. Il s'appelle MenuPhotos.</td></tr>
+          <tr><td><code>&nbsp;&nbsp;boolean existe(long idPhoto);</code></td><td>Sur ce menu, une seule question : « cette photo existe-t-elle ? ». On donne le numéro de la photo, on reçoit oui ou non.</td></tr>
+          <tr><td><code>}</code></td><td>Fin du menu. Il dit ce qu'on peut demander, pas comment Photos fait pour répondre.</td></tr>
+        </table>
+      </div>
+      <div class="card" style="margin-top:12px;padding:0">
+        <table class="cx">
+          <tr><td><code>menuPhotos.existe(42)</code></td><td>Dans la boîte Likes : « menu de Photos, la photo 42 existe-t-elle ? ». Likes pose la question et attend la réponse, sans regarder comment Photos est rangée.</td></tr>
+        </table>
+      </div>
+      <p class="muted small" style="margin-top:12px">Deux mots de Java dans ces lignes : <code>boolean</code> veut dire « une réponse oui ou non », et <code>long</code> veut dire « un nombre entier ».</p>
+    </div>
 
     <div class="sub-section">
       <h3>Le test de la cohésion : une phrase, sans « et ».</h3>
-      <p class="muted">Décris ce que fait le module en une phrase. Si tu as besoin de « et » pour relier des sujets différents, la cohésion est faible.</p>
+      <p class="muted">Décris ce que fait la boîte en une phrase. Si tu as besoin de « et » pour relier des sujets différents, elle mélange trop de choses.</p>
       <div class="grid two" style="margin-top:18px">
-        <div class="card"><span class="tag ko" style="display:inline-block;font-size:12px;font-weight:600;border-radius:980px;padding:2px 10px;margin-bottom:10px">faible</span><p style="margin:0">« AppService gère les likes <b>et</b> stocke les photos <b>et</b> envoie les e-mails. »</p></div>
-        <div class="card"><span class="tag ok" style="display:inline-block;font-size:12px;font-weight:600;border-radius:980px;padding:2px 10px;margin-bottom:10px">forte</span><p style="margin:0">« Photos enregistre et prépare les images d'un post. » Ici le « et » relie deux actions du même sujet : ça va.</p></div>
+        <div class="card"><span class="tag ko">mélangé</span><p style="margin:10px 0 0">« Cette boîte gère les likes <b>et</b> range les photos <b>et</b> envoie les e-mails. » Trois sujets : la cohésion est faible.</p></div>
+        <div class="card"><span class="tag ok">bien rangé</span><p style="margin:10px 0 0">« Cette boîte s'occupe des photos d'un post. » Un seul sujet : la cohésion est forte.</p></div>
       </div>
     </div>
   </section>
@@ -603,29 +641,28 @@ void notifierParEmail(String msg) { ... }</pre>
     <h2 id="t-quiz">Trois questions, une minute.</h2>
     <div class="card" style="padding:0;margin-top:28px" id="quiz">
       <div class="q" data-bilan="Q1 Juger une cohésion">
-        <h3>La classe <code>PostService</code> contient <code>publier()</code>, <code>liker()</code>, <code>envoyerEmail()</code> et <code>redimensionnerPhoto()</code>. Sa cohésion est…</h3>
+        <h3>Une boîte publie les posts, envoie les e-mails et réduit la taille des photos. Sa cohésion est…</h3>
         <div class="choices">
-          <button class="choice" data-ok="1">Faible</button>
+          <button class="choice" data-ok="1">Faible : trois sujets mélangés</button>
           <button class="choice" data-ok="0">Forte</button>
         </div>
-        <div class="feedback" aria-live="polite" data-why="Quatre sujets dans un seul tiroir : publier, liker, envoyer des e-mails, traiter les images. Pour la décrire, il faut trois « et ». Changer l'envoi d'e-mails obligera à rouvrir le code des posts."></div>
+        <div class="feedback" aria-live="polite" data-why="Pour la décrire, il faut deux « et » : publier, et envoyer des e-mails, et réduire les photos. C'est un placard où tout est mélangé. Changer les e-mails obligera à rouvrir la boîte des posts."></div>
       </div>
-      <div class="q" data-bilan="Q2 Nommer un couplage">
-        <h3><code>afficherProfil(utilisateur, true)</code>, où <code>true</code> veut dire « version courte ». Quel couplage ?</h3>
+      <div class="q" data-bilan="Q2 Reconnaître un couplage fort">
+        <h3>Pour trouver l'adresse e-mail d'un compte, la boîte Notifications va lire directement dans le rangement interne de la boîte Profil. C'est…</h3>
         <div class="choices">
-          <button class="choice" data-ok="0">Par données simples</button>
-          <button class="choice" data-ok="1">Par contrôle</button>
-          <button class="choice" data-ok="0">Par une interface</button>
+          <button class="choice" data-ok="1">Un couplage fort : elle se sert dans la cuisine</button>
+          <button class="choice" data-ok="0">Un couplage faible : elle commande sur le menu</button>
         </div>
-        <div class="feedback" aria-live="polite" data-why="Le booléen pilote le comportement de l'autre module : c'est un couplage par contrôle. Deux méthodes nommées, afficherProfilCourt et afficherProfilComplet, le feraient disparaître."></div>
+        <div class="feedback" aria-live="polite" data-why="Notifications entre chez Profil au lieu de lui demander. Le jour où Profil range ses données autrement, Notifications casse. Il faudrait que Profil propose un menu, par exemple « donne-moi l'e-mail de ce compte »."></div>
       </div>
       <div class="q" data-bilan="Q3 Le bon objectif">
-        <h3>Le but, c'est d'arriver à zéro couplage ?</h3>
+        <h3>Le but, c'est qu'aucune boîte ne parle aux autres ?</h3>
         <div class="choices">
-          <button class="choice" data-ok="0">Oui, aucun module ne doit dépendre d'un autre</button>
-          <button class="choice" data-ok="1">Non : on se couple à ce qui change peu</button>
+          <button class="choice" data-ok="0">Oui, chaque boîte doit travailler seule</button>
+          <button class="choice" data-ok="1">Non : elles se parlent, mais par le menu</button>
         </div>
-        <div class="feedback" aria-live="polite" data-why="Un programme sans aucun fil ne fait rien : les modules doivent bien s'appeler. L'objectif est un couplage faible, attaché à ce qui est stable, comme un contrat (une interface) plutôt que l'intérieur d'un autre module."></div>
+        <div class="feedback" aria-live="polite" data-why="Une appli dont les boîtes ne se parlent jamais ne ferait rien : les likes ont besoin de savoir qu'une photo existe. Le but est que les boîtes se parlent par le menu, qui change rarement, au lieu de fouiller les unes chez les autres."></div>
       </div>
     </div>
   </section>
@@ -633,91 +670,79 @@ void notifierParEmail(String msg) { ... }</pre>
   <!-- ===================== MONDE RÉEL ===================== -->
   <section class="reveal" aria-labelledby="t-real">
     <p class="eyebrow">Le monde réel</p>
-    <h2 id="t-real">En équipe, chaque fil coûte des heures.</h2>
-    <p class="lede">En TP, tu connais tout le code. En entreprise, chaque module a son équipe, et personne ne connaît tout. <strong>Un fil caché entre deux modules, c'est un bug qui arrive chez quelqu'un d'autre.</strong></p>
+    <h2 id="t-real">En entreprise, personne ne connaît tout le code.</h2>
+    <p class="lede">Chaque boîte a souvent sa propre équipe. <strong>Si une boîte fouille chez une autre, le jour où l'autre se range autrement, ça casse chez quelqu'un qui n'a rien touché.</strong></p>
 
     <div class="sub-section">
       <p class="eyebrow" style="color:var(--text-2)">Problème 1</p>
-      <h4>Le rayon d'un changement.</h4>
-      <p>Quand on modifie un module, tous ceux qui dépendent de son intérieur doivent être revus et retestés. Les équipes regardent donc combien de modules dépendent de chacun, et protègent les plus utilisés derrière un contrat. Choisis un découpage, puis change le module Photos.</p>
+      <h4>Combien de boîtes casse un seul changement ?</h4>
+      <p>Choisis comment les autres boîtes parlent à Photos, puis demande à Photos de se ranger autrement. Compte les boîtes qu'il faut réparer.</p>
       <div class="card" style="margin-top:24px">
         <div class="controls" style="justify-content:space-between">
-          <div class="seg2" role="group" aria-label="Découpage">
-            <button id="mode-fort" aria-pressed="true">Couplage fort</button>
-            <button id="mode-contrat" aria-pressed="false">Via un contrat</button>
+          <div class="seg2" role="group" aria-label="Comment les autres parlent à Photos">
+            <button id="mode-fort" aria-pressed="true">Tout le monde fouille</button>
+            <button id="mode-contrat" aria-pressed="false">Tout le monde passe par le menu</button>
           </div>
-          <button class="btn primary" id="demo-1">Changer le module Photos</button>
+          <button class="btn primary" id="demo-1">Photos se range autrement</button>
         </div>
         <div class="graph" id="graph" style="margin-top:20px"></div>
-        <div class="count" aria-live="polite"><b id="impact">0</b><span id="impact-txt">module à revoir</span></div>
+        <div class="count" aria-live="polite"><b id="impact">0</b><span id="impact-txt">boîte à réparer</span></div>
       </div>
     </div>
 
     <div class="sub-section">
       <p class="eyebrow" style="color:var(--text-2)">Problème 2</p>
-      <h4>Deux équipes dans le même fichier.</h4>
-      <p>Si deux équipes modifient le même module fourre-tout, leurs changements se marchent dessus : Git signale des <button class="term" data-term="conflit">conflits</button> qu'il faut résoudre à la main. Quand chaque sujet a son module, chaque équipe travaille chez elle. Melvin Conway l'a remarqué dès 1968 : les systèmes finissent par copier la façon dont les équipes communiquent. On l'appelle la <button class="term" data-term="conway">loi de Conway</button>.</p>
+      <h4>Deux équipes dans la même boîte.</h4>
+      <p>Les équipes enregistrent leur travail avec <button class="term" data-term="git">Git</button>. Si deux équipes modifient en même temps la même boîte fourre-tout, Git signale des <button class="term" data-term="conflit">conflits</button> : il faut choisir à la main quelle version garder. Quand chaque sujet a sa boîte, chaque équipe travaille chez elle. On remarque d'ailleurs que le rangement du code finit par ressembler à l'organisation des équipes : c'est la <button class="term" data-term="conway">loi de Conway</button>.</p>
       <div class="card" style="margin-top:24px">
         <div class="week">
           <div>
-            <h3>Un module fourre-tout</h3>
+            <h3>Une boîte pour tout</h3>
             <div class="mods"><div class="mod" id="w-shared"><span>AppService</span></div></div>
             <div class="count"><b id="conf-a">0</b><span id="conf-a-t">conflit à résoudre</span></div>
           </div>
           <div>
-            <h3>Un module par sujet</h3>
+            <h3>Une boîte par sujet</h3>
             <div class="mods"><div class="mod" id="w-fil"><span>Fil</span></div><div class="mod" id="w-msg"><span>Messages</span></div></div>
             <div class="count"><b id="conf-b">0</b><span>conflit à résoudre</span></div>
           </div>
         </div>
-        <div class="legend" aria-hidden="true"><span><i style="background:var(--s1)"></i>une modification de l'équipe Fil</span><span><i style="background:var(--s3)"></i>une modification de l'équipe Messages</span><span><i style="background:var(--warn)"></i>un conflit</span></div>
+        <div class="legend" aria-hidden="true"><span><i style="background:var(--s1)"></i>un changement de l'équipe Fil</span><span><i style="background:var(--s3)"></i>un changement de l'équipe Messages</span><span><i style="background:var(--warn)"></i>un conflit</span></div>
         <div class="controls" style="margin-top:18px"><button class="btn primary" id="demo-2">Lancer une semaine</button></div>
       </div>
     </div>
 
     <div class="sub-section">
       <p class="eyebrow" style="color:var(--text-2)">Les outils</p>
-      <h4>Les noms que tu entendras.</h4>
+      <h4>Deux outils pour voir les fils.</h4>
       <div class="grid two" style="margin-top:22px">
         <div class="card tool">
           <span class="tag">Voir</span>
-          <h3>jdeps</h3>
-          <p>Un outil livré avec Java qui liste les dépendances entre paquets : qui utilise qui.</p>
-          <p class="where">En ligne de commande, sur un projet compilé.</p>
-        </div>
-        <div class="card tool">
-          <span class="tag">Voir</span>
-          <h3>L'analyse de dépendances d'IntelliJ</h3>
-          <p>L'éditeur sait montrer quelles classes utilisent une classe donnée, et les dépendances entre paquets.</p>
-          <p class="where">Clic droit sur une classe : « Find Usages » pour commencer.</p>
+          <h3>« Find Usages » dans IntelliJ</h3>
+          <p>Dans ton éditeur, clic droit sur une classe puis « Find Usages » : il te montre toutes les boîtes qui l'utilisent. Ce sont ses fils.</p>
+          <p class="where">Utile avant de changer une boîte : tu sais qui risque de casser.</p>
         </div>
         <div class="card tool">
           <span class="tag">Protéger</span>
           <h3>ArchUnit</h3>
-          <p>Transforme une règle de découpage en test : « le paquet likes n'a pas le droit d'utiliser l'intérieur du paquet photos ».</p>
-          <p class="where">En Java, à l'étape 9.</p>
-        </div>
-        <div class="card tool">
-          <span class="tag">Relire</span>
-          <h3>La revue de code</h3>
-          <p>Un nouvel <code>import</code> vers l'intérieur d'un autre module se repère souvent à la relecture.</p>
-          <p class="where">Dans les pull requests, sur GitHub ou GitLab.</p>
+          <p>Un test qui vérifie tout seul qu'aucune boîte ne fouille chez une autre. S'il trouve une boîte qui se sert dans la cuisine d'une autre, il échoue.</p>
+          <p class="where">On le verra à l'étape 9.</p>
         </div>
       </div>
     </div>
 
     <div class="sub-section">
       <p class="eyebrow" style="color:var(--text-2)">Avec l'IA</p>
-      <h4>Elle découpe, tu juges le découpage.</h4>
+      <h4>Elle range, tu vérifies le rangement.</h4>
       <div class="grid two" style="margin-top:22px">
-        <div class="card"><h3>Ce qu'elle fait bien</h3><p class="muted small" style="margin:0">Découper une grosse classe quand tu lui donnes les sujets : « sépare likes, photos et notifications ». Remplacer un booléen par deux méthodes nommées.</p></div>
-        <div class="card"><h3>Ce que tu dois vérifier</h3><p class="muted small" style="margin:0">Qu'elle découpe par sujet du métier, pas par technique (un <code>Utils</code> ou un <code>Helper</code> fourre-tout). Et qu'aucun module ne va lire l'intérieur d'un autre : regarde les <code>import</code>.</p></div>
+        <div class="card"><h3>Ce qu'elle fait bien</h3><p class="muted small" style="margin:0">Découper une grosse boîte quand tu lui dis les sujets : « sépare les likes, les photos et les notifications ».</p></div>
+        <div class="card"><h3>Ce que tu dois vérifier</h3><p class="muted small" style="margin:0">Qu'elle range par sujet, et pas dans une boîte fourre-tout nommée « Utils » ou « Helper ». Et qu'aucune boîte ne va se servir chez une autre au lieu de passer par son menu.</p></div>
       </div>
       <div class="card" style="margin-top:18px">
         <p class="eyebrow" style="color:var(--text-2)">Question d'entretien</p>
         <h3>« Qu'est-ce qu'un couplage faible et une cohésion forte ? »</h3>
         <div class="controls" style="margin-top:14px"><button class="btn" id="show-answer">Voir une bonne réponse</button></div>
-        <div class="answer" id="answer">La cohésion mesure si ce qui est rangé ensemble va ensemble : un module, un sujet. Le couplage mesure à quel point un module dépend des autres. On vise une cohésion forte, pour savoir où aller quand un sujet change, et un couplage faible, pour qu'un changement ne se propage pas. Le couplage n'est jamais nul : on se couple à ce qui est stable, typiquement une interface, plutôt qu'à l'intérieur d'un autre module. Exemple : remplacer <code>notifier(msg, true)</code> par <code>notifierParPush(msg)</code> supprime un couplage par contrôle.</div>
+        <div class="answer" id="answer">Une cohésion forte, c'est quand chaque module ne s'occupe que d'un sujet : quand ce sujet change, on sait où aller. Un couplage faible, c'est quand les modules se parlent sans connaître l'intérieur des autres : ils passent par une interface, comme on commande sur un menu au lieu d'entrer dans la cuisine. Le couplage n'est jamais nul, sinon rien ne marcherait, mais il passe par quelque chose qui change rarement.</div>
       </div>
     </div>
   </section>
@@ -759,25 +784,26 @@ void notifierParEmail(String msg) { ... }</pre>
   <div class="card" style="margin-top:32px">
     <h3>L'essentiel</h3>
     <ul>
-      <li><b>Cohésion</b> : « est-ce que ça va ensemble ? ». On la veut <b>forte</b> : un module, un sujet. Test : le décrire en une phrase sans « et » entre deux sujets.</li>
-      <li><b>Couplage</b> : « à quel point je dépends de toi ? ». On le veut <b>faible</b>, jamais nul : on se couple à ce qui est stable.</li>
-      <li>Les degrés de couplage, du pire au meilleur : par le contenu, par données globales, par contrôle (un booléen qui pilote l'autre), par structure (un gros objet pour un seul champ), par données simples, par une interface.</li>
-      <li>L'interface est l'outil n°1 : on dépend d'un contrat, pas du code qui le réalise.</li>
+      <li>Une <b>classe</b> est un moule, un <b>objet</b> est un gâteau sorti du moule. Un <b>module</b> est un placard qui range les classes d'un même sujet.</li>
+      <li><b>Cohésion</b> : « ce qui est rangé ensemble va-t-il ensemble ? ». On la veut <b>forte</b> : un placard, un sujet. Test : décrire la boîte en une phrase sans « et » entre deux sujets.</li>
+      <li><b>Couplage</b> : « cette boîte a-t-elle besoin de l'intérieur des autres ? ». On le veut <b>faible</b> : on commande sur le menu, on n'entre pas dans la cuisine.</li>
+      <li>Trois façons de demander, de la pire à la meilleure : se servir dans la cuisine, dire au cuisinier comment cuisiner, commander sur le menu.</li>
+      <li>En Java, le menu s'appelle une <b>interface</b> : la liste de ce qu'on a le droit de demander à une boîte.</li>
     </ul>
   </div>
   <div class="card">
     <h3>Les pièges</h3>
     <ul>
-      <li><span class="pitfall">Croire</span> qu'un champ privé protège tout : si quelqu'un le lit quand même (réflexion, attribut rendu public), le couplage est le pire.</li>
-      <li><span class="pitfall">Viser</span> zéro couplage : un programme sans fils ne fait rien.</li>
-      <li><span class="pitfall">Découper</span> par technique (Utils, Helper) au lieu de découper par sujet.</li>
+      <li><span class="pitfall">Croire</span> que le rangement interne d'une boîte ne regarde personne d'autre, puis aller s'y servir quand même : c'est le couplage le plus fort.</li>
+      <li><span class="pitfall">Viser</span> zéro lien entre les boîtes : une appli dont les boîtes ne se parlent pas ne fait rien.</li>
+      <li><span class="pitfall">Ranger</span> par technique (une boîte « Utils » fourre-tout) au lieu de ranger par sujet.</li>
     </ul>
   </div>
   <div class="card">
     <h3>En vrai</h3>
     <ul>
-      <li>On regarde qui dépend de qui (jdeps, IntelliJ), on protège les modules très utilisés derrière un contrat, et on vérifie les règles avec ArchUnit.</li>
-      <li>Loi de Conway : le découpage du code finit par suivre celui des équipes.</li>
+      <li>Avant de changer une boîte, on regarde qui l'utilise (« Find Usages »), et un test ArchUnit vérifie qu'aucune boîte ne fouille chez une autre.</li>
+      <li>Loi de Conway : le rangement du code finit par suivre l'organisation des équipes.</li>
     </ul>
   </div>
 </div>
@@ -799,21 +825,19 @@ void notifierParEmail(String msg) { ... }</pre>
 
   /* ---------- lexique ---------- */
   const TERMS = {
-    attribut:{t:'Attribut', d:'Une donnée que chaque objet garde pour lui : la légende d’un post, son nombre de likes. Elle est déclarée dans la classe.', s:'Le parfum et la décoration d’un gâteau : chaque gâteau sorti du même moule a les siens.'},
-    paquet:{t:'Paquet (package)', d:'En Java, un dossier qui regroupe des classes. On l’écrit en haut de chaque fichier : package likes;', s:'C’est la forme la plus courante d’un module en Java.'},
-    module:{t:'Module', d:'Un ensemble de code rangé autour d’un seul sujet : parfois une seule classe, souvent un paquet (un dossier) de plusieurs classes qui travaillent ensemble.', s:'Dans une cuisine, on range les ustensiles par usage : un placard pour la pâtisserie (moules, fouet, poche à douille), un autre pour la découpe. Le module, c’est ce placard : tout ce qui sert au même sujet est rangé ensemble.'},
-    classe:{t:'Classe', d:'Le plan d’une sorte d’objet : les données qu’il garde (ses attributs) et ce qu’il sait faire (ses méthodes). En Java, tout le code est rangé dans des classes.', s:'Comme un moule à gâteau : on le fabrique une fois, puis on fait autant de gâteaux qu’on veut, chacun avec son propre parfum et sa propre décoration. La classe Post est le moule ; chaque post publié est un gâteau sorti du moule.'},
-    objet:{t:'Objet', d:'Un exemplaire concret fabriqué à partir d’une classe, avec ses propres valeurs. En Java, on le crée avec new : new Post().', s:'Un gâteau sorti du moule. Deux gâteaux du même moule sont indépendants : décorer l’un ne décore pas l’autre, et liker un post ne change pas les likes d’un autre.'},
-    methode:{t:'Méthode', d:'Une action qu’un objet sait faire, écrite dans sa classe : un bloc de code avec un nom, comme liker().', s:'On l’appelle avec un point : monPost.liker(). Les parenthèses peuvent recevoir des informations : notifier(message).'},
-    dependance:{t:'Dépendance', d:'A dépend de B quand A utilise B : il l’appelle, il le crée, il lit ses données. Si B change, A risque de devoir changer.', s:'En Java, chaque import vers un autre paquet est un fil de dépendance.'},
-    cohesion:{t:'Cohésion', d:'À quel point les éléments d’un module servent le même objectif. On la veut forte : un module, un sujet.', s:'Question à se poser : « est-ce que ça va ensemble ? »'},
-    couplage:{t:'Couplage', d:'À quel point un module dépend des autres. On le veut faible, mais jamais nul : un programme sans fils ne fait rien.', s:'Question à se poser : « à quel point je dépends de toi ? »'},
-    interface:{t:'Interface', d:'En Java, une liste de méthodes sans leur code : un contrat. Une classe qui l’implémente s’engage à fournir ces méthodes.', s:'Comme une prise électrique : tu sais ce qu’elle fournit, pas comment le courant est produit.'},
-    booleen:{t:'Booléen', d:'Une valeur qui vaut vrai ou faux (true ou false en Java).', s:'Passé en paramètre pour changer ce que fait une méthode, il cache une décision : c’est un couplage par contrôle.'},
-    prive:{t:'Champ privé', d:'Une donnée d’une classe marquée private : seule cette classe a le droit de la lire ou de la modifier.', s:'Elle peut la renommer quand elle veut. Si quelqu’un la lisait quand même, il casse.'},
-    stable:{t:'Stable', d:'Qui change rarement. Un contrat bien choisi est stable ; le détail du code qui le réalise change souvent.', s:'Règle pratique : dépendre de ce qui change moins que soi.'},
-    conflit:{t:'Conflit Git', d:'Quand deux personnes ont modifié les mêmes lignes d’un fichier, Git ne sait pas quelle version garder et demande à un humain de choisir.', s:'Plus un fichier est fourre-tout, plus il y a de conflits.'},
-    conway:{t:'Loi de Conway', d:'Les organisations produisent des systèmes dont le découpage copie leur façon de communiquer.', s:'Énoncée par Melvin Conway en 1968. Une équipe par sujet donne souvent un module par sujet.'}
+    classe:{t:'Classe', d:'En Java, une boîte de code qui décrit une sorte de chose : ce qu’elle garde (ses attributs) et ce qu’elle sait faire (ses méthodes).', s:'Comme un moule à gâteau : on le fabrique une fois, puis on fait autant de gâteaux qu’on veut. La classe Post est le moule ; chaque post publié est un gâteau.'},
+    objet:{t:'Objet', d:'Une chose concrète fabriquée à partir d’une classe, avec ses propres valeurs. En Java, on la fabrique avec le mot new : new Post().', s:'Un gâteau sorti du moule. Deux gâteaux du même moule sont indépendants : décorer l’un ne décore pas l’autre.'},
+    attribut:{t:'Attribut', d:'Une information que chaque objet garde pour lui : la légende d’un post, son nombre de likes.', s:'Le parfum et la décoration d’un gâteau : chaque gâteau sorti du même moule a les siens.'},
+    methode:{t:'Méthode', d:'Une action qu’un objet sait faire, écrite dans sa classe, avec un nom : liker(), par exemple.', s:'Ce qu’on fait avec un gâteau : le décorer, le couper. En Java, on la lance avec un point : monPost.liker().'},
+    module:{t:'Module', d:'Un ensemble de code rangé autour d’un seul sujet : une classe, ou souvent un dossier de plusieurs classes qui travaillent ensemble.', s:'Un placard de cuisine rangé par usage : le placard pâtisserie, le placard découpe. Tout ce qui sert au même sujet est au même endroit.'},
+    paquet:{t:'Paquet (package)', d:'En Java, un dossier qui regroupe des classes d’un même sujet. On l’écrit en haut de chaque fichier : package likes;', s:'C’est la façon la plus courante de faire un module en Java.'},
+    dependance:{t:'Dépendance', d:'Une boîte dépend d’une autre quand elle en a besoin pour travailler. Si l’autre change, elle risque de devoir changer aussi.', s:'Un fil entre deux boîtes. Plus il y a de fils vers l’intérieur des autres, plus un changement fait des dégâts.'},
+    cohesion:{t:'Cohésion', d:'À quel point ce qui est rangé dans une même boîte va ensemble. On la veut forte : une boîte, un sujet.', s:'Un placard qui ne contient que la pâtisserie a une cohésion forte. Un placard avec épices, chaussettes et éponges, une cohésion faible.'},
+    couplage:{t:'Couplage', d:'À quel point une boîte a besoin de l’intérieur des autres. On le veut faible : les boîtes se parlent par leur menu, sans fouiller les unes chez les autres.', s:'Couplage fort : entrer dans la cuisine du restaurant pour se servir. Couplage faible : commander sur le menu.'},
+    interface:{t:'Interface', d:'En Java, le menu d’une boîte : la liste de ce qu’on a le droit de lui demander, sans voir comment elle fait pour répondre.', s:'Au restaurant, tu commandes sur le menu : la cuisine peut changer, tant que le menu reste le même, tu reçois ton plat.'},
+    git:{t:'Git', d:'L’outil qui garde l’historique de toutes les modifications du code et réunit le travail de plusieurs personnes.', s:'Comme l’historique des versions d’un document partagé, mais pour du code.'},
+    conflit:{t:'Conflit', d:'Quand deux personnes ont modifié la même ligne de code, Git ne sait pas quelle version garder : quelqu’un doit choisir à la main.', s:'Plus une boîte est fourre-tout, plus il y a de conflits.'},
+    conway:{t:'Loi de Conway', d:'Le rangement du code finit par ressembler à la façon dont les équipes sont organisées et se parlent.', s:'Remarquée par Melvin Conway en 1968. Une équipe par sujet donne souvent une boîte par sujet.'}
   };
 
   const pop = $('pop');
@@ -845,32 +869,32 @@ void notifierParEmail(String msg) { ... }</pre>
 
   /* ---------- les étapes de l'animation ---------- */
   const STEPS = [
-    {t:'Une classe fait tout.', d:'AppService contient six [[methode|méthodes]] sur trois sujets : les likes, les photos, les notifications. C’est un seul [[module|module]] pour trois sujets.',
-      r:'Les couleurs mélangées dans une même boîte : c’est le signe d’une [[cohesion|cohésion]] faible.'},
-    {t:'On veut changer le stockage des photos.', d:'Deux méthodes sont concernées, mais elles sont noyées au milieu des autres. Il faut ouvrir et relire toute la classe, et chaque modification risque de toucher un voisin.',
-      r:'Le cadre orange : tout ce qu’on doit ouvrir pour un seul changement.'},
-    {t:'Un module par sujet.', d:'On range : un module Likes, un module Photos, un module Notifications. Chacun se décrit en une phrase. La cohésion est forte.',
-      r:'Une couleur par boîte. Le champ en pointillés, « dossier », est privé : c’est l’affaire de Photos seulement.'},
-    {t:'Mais les fils sont trop forts.', d:'Likes va lire le [[prive|champ privé]] « dossier » de Photos. Et Likes appelle Notifications avec un [[booleen|booléen]] dont personne ne devine le sens. Le [[couplage|couplage]] est fort.',
-      r:'Chaque flèche orange est une [[dependance|dépendance]] vers l’intérieur d’un autre module.'},
-    {t:'Un renommage, et ça casse.', d:'Photos renomme son champ privé, ce qu’elle a le droit de faire. Likes, qui le lisait, ne compile plus. Le bug arrive dans un module qu’on n’a pas touché.',
-      r:'C’est le pire couplage : par le contenu. On a dépendu d’un détail qui pouvait changer.'},
-    {t:'On attache les fils à un contrat.', d:'Photos publie un contrat, une [[interface|interface]] avec une seule question : « cette photo existe-t-elle ? ». Likes ne connaît plus que ce contrat. Le booléen devient une méthode qui dit ce qu’elle fait.',
-      r:'Les flèches vertes : Likes dépend du contrat, et Photos le réalise (le triangle). L’intérieur de Photos peut changer librement.'},
-    {t:'Des fils, il en faut.', d:'Un programme sans aucun fil ne fait rien. Le but est un couplage faible, attaché à ce qui est [[stable|stable]], et une cohésion forte.',
-      r:'Changer le stockage des photos ne touche plus qu’un seul module : Photos.'}
+    {t:'Une seule boîte fait tout.', d:'Voici une [[classe|classe]], une boîte de code, appelée AppService. Elle s’occupe de trois sujets à la fois : les likes, les photos, les notifications. C’est comme un placard où l’on range ensemble les épices, les chaussettes et les éponges.',
+      r:'Trois couleurs dans la même boîte : les sujets sont mélangés. On dit que la [[cohesion|cohésion]] est faible.'},
+    {t:'On veut changer les photos.', d:'Seules deux tâches parlent des photos. Mais elles sont au milieu des autres : il faut ouvrir et relire toute la boîte, et on risque d’abîmer le reste.',
+      r:'Le cadre orange montre tout ce qu’il faut ouvrir pour un seul changement.'},
+    {t:'Une boîte par sujet.', d:'On range : une boîte pour les likes, une pour les photos, une pour les notifications. Chaque boîte est un [[module|module]], un placard qui ne contient qu’un sujet. La cohésion est forte.',
+      r:'Une couleur par boîte. En pointillés, le rangement interne de Photos : c’est son affaire à elle.'},
+    {t:'Likes va se servir chez Photos.', d:'Pour savoir si une photo existe, Likes ne demande rien : il va lui-même fouiller dans le dossier où Photos range ses images. Likes [[dependance|dépend]] de l’intérieur de Photos : le [[couplage|couplage]] est fort.',
+      r:'La flèche orange entre dans la boîte de Photos. C’est comme entrer dans la cuisine d’un restaurant pour prendre son plat soi-même.'},
+    {t:'Photos se range autrement.', d:'Photos décide de ranger ses images dans un autre dossier. Elle a le droit : c’est son rangement. Mais Likes cherche toujours à l’ancien endroit, et il ne marche plus. Le problème arrive dans une boîte qu’on n’a pas touchée.',
+      r:'C’est le danger du couplage fort : un changement chez l’un casse l’autre.'},
+    {t:'Likes commande sur le menu.', d:'Photos affiche un menu : la liste de ce qu’on a le droit de lui demander, ici « cette photo existe-t-elle ? ». Likes ne fouille plus : il pose la question et attend la réponse. En Java, ce menu s’appelle une [[interface|interface]].',
+      r:'Les flèches vertes passent par le menu. Likes ne voit plus l’intérieur de Photos : le couplage est faible.'},
+    {t:'Photos range comme elle veut.', d:'Photos change encore de rangement. Cette fois, le menu reste le même, donc Likes continue de marcher. Les deux boîtes se parlent toujours, sinon l’appli ne ferait rien. Mais elles se parlent par quelque chose qui change rarement : le menu.',
+      r:'Changer les photos ne touche plus que la boîte Photos.'}
   ];
   const GAUGE = [
-    ['faible','ko', '?','', 'tout AppService','ko'],
-    ['faible','ko', '?','', 'tout AppService','ko'],
-    ['forte','ok', '?','', 'à voir','' ],
-    ['forte','ok', 'fort','ko', 'Photos + Likes','ko'],
-    ['forte','ok', 'fort','ko', 'Likes casse','ko'],
-    ['forte','ok', 'faible','ok', 'Photos seul','ok'],
-    ['forte','ok', 'faible','ok', 'Photos seul','ok']
+    ['non','ko', '?','', 'toute la boîte','ko'],
+    ['non','ko', '?','', 'toute la boîte','ko'],
+    ['oui','ok', '?','', 'à voir',''],
+    ['oui','ok', 'oui','ko', 'Likes aussi','ko'],
+    ['oui','ok', 'oui','ko', 'Likes casse','ko'],
+    ['oui','ok', 'non','ok', 'Photos seule','ok'],
+    ['oui','ok', 'non','ok', 'Photos seule','ok']
   ];
   const PREDIRE_AVANT = 4;
-  const PRED_WHY = 'Le champ est privé, donc Photos a le droit de le renommer. Mais Likes allait le lire quand même : c’est lui qui casse, alors qu’on ne l’a pas touché. C’est un couplage par le contenu.';
+  const PRED_WHY = 'Photos a le droit de ranger comme elle veut : c’est son rangement. Mais Likes allait se servir directement dedans. C’est lui qui ne trouve plus rien, alors qu’on ne l’a pas touché.';
   function setG(id, txt, cls) {
     const el = $(id); if (el.textContent === txt && el.className.includes(cls)) return;
     el.textContent = txt; el.className = 'g-val ' + cls;
@@ -912,7 +936,7 @@ void notifierParEmail(String msg) { ... }</pre>
     if (timer) return stop();
     if (cur >= STEPS.length - 1) go(-1, false);
     $('play').textContent = 'Pause'; next();
-    timer = setInterval(() => { next(); if (cur >= STEPS.length - 1 || gate()) stop(); }, 3200);
+    timer = setInterval(() => { next(); if (cur >= STEPS.length - 1 || gate()) stop(); }, 3600);
   }
   $('next').onclick = () => { stop(); next(); };
   $('prev').onclick = () => { stop(); go(cur - 1); };
@@ -968,7 +992,6 @@ void notifierParEmail(String msg) { ... }</pre>
   }
   window.copierBilan = copierBilan;
   $('copier-bilan').onclick = copierBilan;
-
 
   /* ---------- avant de commencer : classe et objets ---------- */
   const SAMPLES = [
@@ -1038,15 +1061,16 @@ void notifierParEmail(String msg) { ... }</pre>
       : 'Six classes en vrac sur le plan de travail : pour trouver ce qui touche aux likes, il faut tout fouiller.';
   };
 
-  /* ---------- monde réel 1 : le rayon d'un changement ---------- */
-  const NODES = [['Fil','affiche les posts'],['Profil','la grille de photos'],['Stories','24 heures'],['Likes','les cœurs'],['Photos','stockage des images'],['Recherche','trouver un post']];
+
+  /* ---------- monde réel 1 : combien de boîtes casse un changement ---------- */
+  const NODES = [['Fil','affiche les posts'],['Profil','la grille de photos'],['Stories','24 heures'],['Likes','les cœurs'],['Photos','range les images'],['Recherche','trouver un post']];
   const graph = $('graph');
   const els = NODES.map(([n, s]) => { const d = document.createElement('div'); d.className = 'gn' + (n === 'Photos' ? ' src' : ''); d.innerHTML = `${n}<small>${s}</small>`; graph.appendChild(d); return d; });
   let mode = 'fort', ripple = [];
   function setMode(m) {
     mode = m; $('mode-fort').setAttribute('aria-pressed', m === 'fort'); $('mode-contrat').setAttribute('aria-pressed', m === 'contrat');
     ripple.forEach(clearTimeout); els.forEach(e => e.classList.remove('hit', 'safe'));
-    $('impact').textContent = '0'; $('impact-txt').textContent = 'module à revoir';
+    $('impact').textContent = '0'; $('impact-txt').textContent = 'boîte à réparer';
   }
   $('mode-fort').onclick = () => setMode('fort');
   $('mode-contrat').onclick = () => setMode('contrat');
@@ -1054,17 +1078,16 @@ void notifierParEmail(String msg) { ... }</pre>
     setMode(mode);
     const photos = els[4];
     const deps = els.filter(e => e !== photos);
-    const show = (e, cls, n) => { e.classList.add(cls); $('impact').textContent = n; $('impact-txt').textContent = n > 1 ? 'modules à revoir et retester' : 'module à revoir : Photos lui-même'; };
+    const show = (e, n) => { e.classList.add('hit'); $('impact').textContent = n; $('impact-txt').textContent = n > 1 ? 'boîtes à réparer : toutes celles qui fouillaient chez Photos' : 'boîte touchée : Photos elle-même. Les autres commandent sur le menu, qui n’a pas changé.'; };
     if (mode === 'fort') {
-      const seq = [photos, ...deps];
-      seq.forEach((e, i) => { const f = () => show(e, 'hit', i + 1); if (reduce) f(); else ripple.push(setTimeout(f, i * 350)); });
+      [photos, ...deps].forEach((e, i) => { const f = () => show(e, i + 1); if (reduce) f(); else ripple.push(setTimeout(f, i * 350)); });
     } else {
-      show(photos, 'hit', 1);
+      show(photos, 1);
       deps.forEach((e, i) => { const f = () => e.classList.add('safe'); if (reduce) f(); else ripple.push(setTimeout(f, 300 + i * 200)); });
     }
   };
 
-  /* ---------- monde réel 2 : deux équipes, un fichier ---------- */
+  /* ---------- monde réel 2 : deux équipes, une boîte ---------- */
   const DAYS = 5; let weekTimer = null;
   const dot = (cls, txt) => { const s = document.createElement('i'); s.className = 'cm ' + cls; if (txt) s.textContent = txt; return s; };
   function day(d) {
