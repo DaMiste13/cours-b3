@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lire un diagramme de séquence</title>
+<meta name="description" content="Fil rouge Instagram : ce qui se passe quand tu aimes une photo, raconté par un diagramme de séquence.">
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#fbfbfd;
+  --text:#1d1d1f; --text-2:#6e6e73; --hairline:rgba(0,0,0,.08);
+  --accent:#0071e3; --accent-soft:rgba(0,113,227,.10);
+  --like:#ff375f; --ok:#28a745; --warn:#bf4800; --warn-soft:rgba(191,72,0,.10);
+  --line:#86868b; --dim:rgba(29,29,31,.22);
+  --shadow:0 2px 6px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06);
+  --radius:22px; --ease:cubic-bezier(.25,.1,.25,1); --spring:cubic-bezier(.34,1.32,.64,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#000000; --surface:#1c1c1e; --surface-2:#161618;
+    --text:#f5f5f7; --text-2:#a1a1a6; --hairline:rgba(255,255,255,.10);
+    --accent:#2997ff; --accent-soft:rgba(41,151,255,.16);
+    --like:#ff375f; --ok:#30d158; --warn:#ff9f0a; --warn-soft:rgba(255,159,10,.14);
+    --line:#8e8e93; --dim:rgba(245,245,247,.20);
+    --shadow:0 0 0 1px rgba(255,255,255,.06);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+code,.code{font-family:"SF Mono",ui-monospace,Menlo,monospace}
+code{font-size:.88em;background:var(--accent-soft);padding:.1em .35em;border-radius:6px}
+b,strong{font-weight:600}
+
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--hairline)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.crumb{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb b{color:var(--text)}
+
+.seg{display:inline-flex;background:var(--hairline);border-radius:9px;padding:2px;position:relative;flex:none}
+.seg button{all:unset;cursor:pointer;font-size:13px;font-weight:500;padding:5px 14px;border-radius:7px;position:relative;z-index:1;color:var(--text)}
+.seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc(50% - 2px);background:var(--surface);border-radius:7px;
+  box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .35s var(--spring)}
+.seg[data-mode="fiche"] .thumb{transform:translateX(100%)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+main{max-width:980px;margin:0 auto;padding:0 22px 120px}
+section{margin-top:96px}
+.sub-section{margin-top:64px}
+.eyebrow{font-size:14px;font-weight:600;color:var(--accent);letter-spacing:-.01em;margin:0 0 8px}
+h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:72px 0 16px}
+h2{font-size:clamp(30px,4.6vw,44px);line-height:1.1;letter-spacing:-.03em;font-weight:700;margin:0 0 14px}
+h3{font-size:21px;line-height:1.25;letter-spacing:-.02em;font-weight:600;margin:0 0 6px}
+h4{font-size:28px;line-height:1.15;letter-spacing:-.025em;font-weight:700;margin:0 0 10px}
+.lede{font-size:clamp(19px,2.4vw,24px);line-height:1.38;color:var(--text-2);max-width:720px;margin:0;letter-spacing:-.02em}
+.lede strong{color:var(--text)}
+p{max-width:680px}
+.muted{color:var(--text-2)}
+.small{font-size:15px}
+
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+.grid{display:grid;gap:18px}
+@media (min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+/* mots du lexique : on clique, une bulle explique */
+.term{all:unset;cursor:help;border-bottom:1.5px dotted currentColor;color:inherit;transition:color .2s var(--ease)}
+.term:hover,.term[aria-expanded="true"]{color:var(--accent)}
+.term:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.pop{position:fixed;z-index:50;width:min(340px,calc(100vw - 32px));background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 0 0 1px var(--hairline);padding:16px 18px;
+  opacity:0;transform:translateY(6px) scale(.97);transform-origin:top left;pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--spring)}
+.pop.on{opacity:1;transform:none;pointer-events:auto}
+.pop .pt{font-weight:700;font-size:17px;margin:0 0 6px}
+.pop .pd{margin:0;font-size:15px;line-height:1.45}
+.pop .ps{margin:10px 0 0;font-size:14px;color:var(--text-2);line-height:1.45}
+.pop .ps:empty{display:none}
+
+.cast{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:28px}
+@media (min-width:900px){.cast{grid-template-columns:repeat(5,1fr)}}
+.cast .card{padding:20px}
+.cast .ico{font-size:26px;line-height:1;margin-bottom:10px}
+.cast h3{font-size:17px}
+.cast p{margin:4px 0 0;font-size:15px;color:var(--text-2)}
+
+/* ---------- le diagramme ---------- */
+.stage{margin-top:28px;padding:0;overflow:hidden}
+.stage-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;border-bottom:1px solid var(--hairline)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:background .3s var(--ease),transform .3s var(--spring)}
+.dots i.done{background:var(--text-2)}
+.dots i.now{background:var(--accent);transform:scale(1.35)}
+.stepcount{font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.diagram-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+svg.seq{display:block;width:100%;min-width:720px;height:auto}
+.seq text{font-family:inherit;fill:var(--text)}
+.actor rect{fill:var(--surface-2);stroke:var(--hairline);stroke-width:1}
+.actor text{font-size:13px;font-weight:600;text-anchor:middle}
+.actor .sub{font-size:11px;font-weight:400;fill:var(--text-2)}
+.lifeline{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5;opacity:.6}
+.act{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1;opacity:0;transition:opacity .5s var(--ease)}
+.act.on{opacity:1}
+.msg{opacity:0;transition:opacity .45s var(--ease)}
+.msg.past{opacity:.38}
+.msg.now{opacity:1}
+.msg path{fill:none;stroke:var(--text);stroke-width:1.6}
+.msg.now path{stroke:var(--accent);stroke-width:2.2}
+.msg.ret path{stroke-dasharray:6 5}
+.msg .label{font-size:12.5px;text-anchor:middle}
+.msg.now .label{fill:var(--accent);font-weight:600}
+.msg .num{font-size:10.5px;font-weight:700;fill:var(--surface);text-anchor:middle}
+.msg circle{fill:var(--text)}
+.msg.now circle{fill:var(--accent)}
+.draw path.line{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw .7s var(--ease) forwards}
+.msg.ret.draw path.line{animation:drawRet .7s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes drawRet{from{stroke-dasharray:6 5;opacity:0}to{stroke-dasharray:6 5;opacity:1}}
+.time-axis text{font-size:11px;fill:var(--text-2)}
+.time-axis line{stroke:var(--text-2);stroke-width:1}
+
+.stage-bottom{display:grid;border-top:1px solid var(--hairline)}
+@media (min-width:760px){.stage-bottom{grid-template-columns:1fr 230px}}
+.caption{padding:22px 24px}
+.caption .read{margin-top:12px;font-size:15px;color:var(--text-2);display:flex;gap:10px;align-items:flex-start}
+.caption .read b{color:var(--text);white-space:nowrap}
+.phone-col{padding:18px 24px;display:flex;justify-content:center;border-left:1px solid var(--hairline)}
+@media (max-width:759px){.phone-col{border-left:0;border-top:1px solid var(--hairline)}}
+
+.phone{width:150px;border-radius:26px;background:var(--surface-2);border:1px solid var(--hairline);padding:10px;position:relative}
+.phone .photo{height:120px;border-radius:14px;background:linear-gradient(135deg,#ff9f0a,#ff375f 55%,#bf5af2)}
+.phone .row{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;color:var(--text-2)}
+.heart{width:22px;height:22px;transition:transform .45s var(--spring)}
+.heart path{fill:none;stroke:var(--text);stroke-width:2;transition:fill .3s var(--ease),stroke .3s var(--ease)}
+.heart.on path{fill:var(--like);stroke:var(--like)}
+.heart.pop{transform:scale(1.3)}
+.heart.wait path{stroke:var(--accent)}
+.banner{position:absolute;left:8px;right:8px;top:-14px;background:var(--surface);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);
+  font-size:11px;padding:8px 10px;line-height:1.3;opacity:0;transform:translateY(-8px) scale(.96);transition:all .5s var(--spring)}
+.banner.on{opacity:1;transform:none}
+.banner small{display:block;color:var(--text-2);font-size:10px;margin-bottom:2px}
+.phone-label{font-size:11px;color:var(--text-2);text-align:center;margin-top:8px}
+
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-size:14px;font-weight:500;padding:8px 16px;border-radius:980px;background:var(--hairline);color:var(--text);
+  transition:transform .2s var(--ease),background .2s var(--ease);-webkit-user-select:none;user-select:none;text-align:center}
+.btn:hover{background:color-mix(in srgb,var(--hairline) 100%,var(--text) 6%)}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.btn.danger{background:var(--warn-soft);color:var(--warn)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+@media (max-width:560px){.stage-top{flex-wrap:wrap}.stage-top .controls{width:100%}.stage-top .btn{flex:1}}
+.kbd{font-size:12px;color:var(--text-2);text-align:right;margin:12px 4px 0;max-width:none}
+
+.predict{margin:0 24px 22px;padding:18px;border-radius:16px;background:var(--accent-soft);display:none}
+.predict.on{display:block;animation:rise .5s var(--spring)}
+.predict p{margin:0 0 12px;font-weight:600}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+.choice{all:unset;cursor:pointer;background:var(--surface);border-radius:12px;padding:10px 14px;font-size:15px;border:1px solid var(--hairline);transition:all .25s var(--ease)}
+.choice:hover{border-color:var(--accent)}
+.choice.right{border-color:var(--ok);color:var(--ok);font-weight:600}
+.choice.wrong{border-color:var(--warn);color:var(--warn)}
+.choice:focus-visible{outline:2px solid var(--accent)}
+.feedback{margin-top:12px;font-size:15px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.glyph{height:54px;display:flex;align-items:center;margin-bottom:14px}
+.glyph svg{width:100%;max-width:220px;height:40px}
+.glyph path,.glyph line{stroke:var(--text);stroke-width:1.8;fill:none}
+
+.q{padding:24px 28px}
+.q + .q{border-top:1px solid var(--hairline)}
+.q .choices{margin-top:12px}
+
+/* monde réel : compteur */
+.counter-wrap{display:grid;gap:18px;align-items:start}
+@media (min-width:760px){.counter-wrap{grid-template-columns:1fr 1fr}}
+.big{font-size:56px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
+.big.lag{color:var(--text-2)}
+.lane{height:44px;border-radius:12px;background:var(--surface-2);border:1px solid var(--hairline);position:relative;overflow:hidden;margin-top:14px}
+.lane .ev{position:absolute;top:13px;width:18px;height:18px;border-radius:50%;background:var(--like);animation:flow 1.4s var(--ease) forwards}
+@keyframes flow{from{left:-20px;opacity:0}20%{opacity:1}to{left:calc(100% + 20px);opacity:.9}}
+.batch-clock{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:15px;color:var(--text-2)}
+.ring{width:28px;height:28px;transform:rotate(-90deg);flex:none}
+.ring circle{fill:none;stroke-width:3}
+.ring .bg{stroke:var(--hairline)}
+.ring .fg{stroke:var(--accent);stroke-dasharray:75.4;stroke-dashoffset:75.4}
+.ring.run .fg{animation:clock 1s linear infinite}
+@keyframes clock{to{stroke-dashoffset:0}}
+.legend-steps{margin:20px 0 0;padding:0;list-style:none;counter-reset:s}
+.legend-steps li{counter-increment:s;position:relative;padding:8px 0 8px 34px;font-size:15px}
+.legend-steps li::before{content:counter(s);position:absolute;left:0;top:8px;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;display:grid;place-items:center}
+
+/* monde réel : la file */
+.pipe{display:grid;grid-template-columns:1fr;gap:16px;align-items:center;margin-top:8px}
+@media (min-width:760px){.pipe{grid-template-columns:150px 1fr 170px}}
+.node{border-radius:16px;padding:14px;background:var(--surface-2);border:1px solid var(--hairline);text-align:center;transition:all .4s var(--ease)}
+.node b{display:block;font-size:15px}
+.node span{font-size:13px;color:var(--text-2)}
+.node.down{background:var(--warn-soft);border-color:var(--warn)}
+.node.down span{color:var(--warn);font-weight:600}
+.queue{height:58px;border-radius:14px;border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:0 12px;overflow:visible;position:relative}
+.queue::before{content:"file d’événements";position:absolute;left:12px;top:0;font-size:11px;color:var(--text-2);background:var(--surface);padding:0 6px;transform:translateY(-55%)}
+.queue .m{flex:none;width:22px;height:22px;border-radius:7px;background:var(--like);display:grid;place-items:center;color:#fff;font-size:12px;animation:drop .45s var(--spring)}
+.queue .m.out{animation:leave .45s var(--ease) forwards}
+@keyframes drop{from{transform:translateX(-30px) scale(.4);opacity:0}to{transform:none;opacity:1}}
+@keyframes leave{to{transform:translateX(40px);opacity:0}}
+.queue .more{font-size:12px;color:var(--text-2);flex:none;margin-right:auto}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:18px;font-size:15px}
+.stats b{font-size:28px;display:block;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.pipe-note{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--accent-soft);font-size:15px;transition:background .3s var(--ease)}
+.pipe-note.down{background:var(--warn-soft)}
+
+/* outils */
+.tool{display:flex;flex-direction:column;gap:6px}
+.tool .tag{align-self:flex-start;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:980px;padding:3px 10px}
+.tool p{margin:0;font-size:15px}
+.tool .where{color:var(--text-2);font-size:14px;margin-top:6px}
+
+/* code Mermaid */
+.codebox{background:var(--surface-2);border:1px solid var(--hairline);border-radius:16px;padding:18px 20px;font-size:13.5px;line-height:1.75;overflow-x:auto;white-space:pre;margin:0}
+.codebox .k{color:var(--accent);font-weight:600}
+.codebox .hl{background:var(--accent-soft);border-radius:4px}
+.map{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px}
+.map td{padding:10px 8px;border-top:1px solid var(--hairline);vertical-align:middle}
+.map tr:first-child td{border-top:0}
+.map td:first-child{font-family:"SF Mono",ui-monospace,Menlo,monospace;white-space:nowrap;color:var(--accent);font-weight:600;width:70px}
+.map svg{width:110px;height:16px;display:block}
+.map path{stroke:var(--text);stroke-width:1.6;fill:none}
+
+.answer{display:none;margin-top:14px;padding:16px 18px;border-radius:14px;background:var(--surface-2);border:1px solid var(--hairline);font-size:15px}
+.answer.on{display:block;animation:rise .45s var(--spring)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chips .term{border:0;background:var(--surface);box-shadow:var(--shadow);border-radius:980px;padding:8px 14px;font-size:15px}
+
+.fiche{display:none}
+body.mode-fiche .cours{display:none}
+body.mode-fiche .fiche{display:block}
+.fiche h1{margin-top:56px}
+.fiche .card + .card{margin-top:18px}
+.fiche ul{margin:8px 0 0;padding-left:20px}
+.fiche li{margin:6px 0}
+.pitfall{color:var(--warn);font-weight:600}
+
+footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color:var(--text-2);border-top:1px solid var(--hairline)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="crumb">Fil rouge Instagram · <b>Lire un diagramme de séquence</b></div>
+    <div class="seg" id="seg" data-mode="cours" role="tablist" aria-label="Affichage">
+      <span class="thumb" aria-hidden="true"></span>
+      <button role="tab" aria-selected="true" data-mode="cours">Cours</button>
+      <button role="tab" aria-selected="false" data-mode="fiche">Fiche</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="cours">
+
+  <h1>Un cœur.<br>Neuf messages.</h1>
+  <p class="lede">Tu touches le cœur sous une photo. Une fraction de seconde plus tard, il est rouge, et l'autrice reçoit une notification. <strong>Entre les deux, cinq parties du système se sont parlé.</strong> Un diagramme de séquence raconte cette conversation, du haut vers le bas, comme une histoire.</p>
+  <p class="muted small" style="margin-top:22px">Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
+
+  <section class="reveal" aria-labelledby="t-why">
+    <p class="eyebrow">Pourquoi ça existe</p>
+    <h2 id="t-why">Parce qu'un paragraphe ne suffit plus.</h2>
+    <p>Une application comme Instagram n'est pas un seul programme. C'est plusieurs morceaux, appelés <button class="term" data-term="service">services</button>, qui s'envoient des messages. Décrire en phrases qui parle à qui, dans quel ordre et qui attend qui devient vite illisible.</p>
+    <p>Le diagramme de séquence dessine cette conversation. Les équipes s'en servent pour se mettre d'accord avant de coder, pour expliquer un bug, et dans les dossiers d'architecture. On te demandera souvent d'en lire un : en cours, à l'oral et en entretien.</p>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-cast">
+    <p class="eyebrow">Les personnages</p>
+    <h2 id="t-cast">Cinq participants, un rôle chacun.</h2>
+    <p class="muted">Chaque participant a sa colonne dans le diagramme.</p>
+    <div class="cast">
+      <div class="card"><div class="ico">📱</div><h3>App</h3><p>L'application sur ton téléphone. Elle affiche et elle demande, mais elle ne décide rien.</p></div>
+      <div class="card"><div class="ico">🚪</div><h3>API</h3><p>La porte d'entrée du système. Toute demande passe par elle. <button class="term" data-term="api">C'est quoi ?</button></p></div>
+      <div class="card"><div class="ico">❤️</div><h3>Service Likes</h3><p>Celui qui connaît les règles des likes, par exemple « on ne peut aimer qu'une fois ».</p></div>
+      <div class="card"><div class="ico">🗄️</div><h3>Base de données</h3><p>La mémoire durable du système. <button class="term" data-term="bdd">C'est quoi ?</button></p></div>
+      <div class="card"><div class="ico">🔔</div><h3>Notifications</h3><p>Celui qui prévient l'autrice de la photo sur son téléphone.</p></div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-anim">
+    <p class="eyebrow">L'histoire, pas à pas</p>
+    <h2 id="t-anim">Ce qui se passe quand tu aimes une photo.</h2>
+    <p class="muted">Avance à ton rythme. Chaque flèche est une phrase de l'histoire ; le temps coule vers le bas.</p>
+
+    <div class="card stage">
+      <div class="stage-top">
+        <div>
+          <div class="stepcount" id="stepcount">Début</div>
+          <div class="dots" id="dots" aria-hidden="true"></div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="prev">Précédent</button>
+          <button class="btn primary" id="next">Suivant</button>
+          <button class="btn" id="play">Lecture</button>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <svg class="seq" id="seq" viewBox="0 0 900 500" role="img" aria-labelledby="seq-title">
+          <title id="seq-title">Diagramme de séquence : aimer une photo</title>
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+            </marker>
+            <marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10" fill="none" stroke="context-stroke" stroke-width="1.6"/>
+            </marker>
+          </defs>
+          <g id="actors"></g>
+          <g id="acts"></g>
+          <g id="msgs"></g>
+          <g class="time-axis" aria-hidden="true">
+            <line x1="22" y1="86" x2="22" y2="462" marker-end="url(#arr)"/>
+            <text x="30" y="482">le temps</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="predict" id="predict" role="group" aria-labelledby="predict-q">
+        <p id="predict-q">Avant de continuer : ton cœur devient rouge avant ou après que l'autrice reçoit sa notification ?</p>
+        <div class="choices">
+          <button class="choice" data-ok="1">Avant, ou en même temps : l'app n'attend pas la notification</button>
+          <button class="choice" data-ok="0">Après : l'app attend que l'autrice soit prévenue</button>
+        </div>
+        <div class="feedback" id="predict-fb" aria-live="polite"></div>
+      </div>
+
+      <div class="stage-bottom">
+        <div class="caption" aria-live="polite">
+          <h3 id="cap-title">Prête ?</h3>
+          <div id="cap-text" class="muted">Appuie sur « Suivant », ou sur la flèche droite du clavier.</div>
+          <div class="read" id="cap-read" hidden><b>Comment lire</b><span id="cap-read-text"></span></div>
+        </div>
+        <div class="phone-col" aria-hidden="true">
+          <div>
+            <div class="phone">
+              <div class="banner" id="banner"><small>Instagram (fil rouge)</small>Quelqu'un a aimé ta photo.</div>
+              <div class="photo"></div>
+              <div class="row">
+                <svg class="heart" id="heart" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.1 1.8-1.9 3.3-3.1 5.4-3.1 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg>
+                <span id="likes">128 J'aime</span>
+              </div>
+            </div>
+            <div class="phone-label" id="phone-label">Ton écran</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="kbd">← → pour avancer · espace pour lancer ou mettre en pause</p>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-gram">
+    <p class="eyebrow">La grammaire</p>
+    <h2 id="t-gram">Quatre signes suffisent.</h2>
+    <p class="muted">Ce sont les mêmes partout : en cours, dans un dossier d'architecture, à l'oral.</p>
+    <div class="grid two" style="margin-top:28px">
+      <div class="card">
+        <div class="glyph"><svg viewBox="0 0 220 40"><line x1="110" y1="2" x2="110" y2="38" stroke-dasharray="3 5"/><rect x="104" y="10" width="12" height="22" rx="2" style="fill:var(--accent-soft);stroke:var(--accent)"/></svg></div>
+        <h3>La ligne de vie</h3>
+        <p class="muted">Une colonne par participant. Le petit rectangle posé dessus veut dire « je suis en train de travailler ».</p>
+      </div>
+      <div class="card">
+        <div class="glyph"><svg viewBox="0 0 220 40"><path d="M10 20 H205" marker-end="url(#arr)"/></svg></div>
+        <h3>Trait plein, pointe pleine</h3>
+        <p class="muted">Un appel. Celui qui l'envoie <b>attend la réponse</b> avant de continuer, comme quand tu poses une question au téléphone.</p>
+      </div>
+      <div class="card">
+        <div class="glyph"><svg viewBox="0 0 220 40"><path d="M205 20 H12" stroke-dasharray="6 5" marker-end="url(#open)"/></svg></div>
+        <h3>Pointillés</h3>
+        <p class="muted">La réponse qui revient vers celui qui avait appelé.</p>
+      </div>
+      <div class="card">
+        <div class="glyph"><svg viewBox="0 0 220 40"><path d="M10 20 H205" marker-end="url(#open)"/></svg></div>
+        <h3>Trait plein, pointe ouverte</h3>
+        <p class="muted">Un message <button class="term" data-term="async">asynchrone</button> : on l'envoie et on continue sans attendre. C'est une annonce, comme un SMS, pas une question.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-quiz">
+    <p class="eyebrow">Vérifie-toi</p>
+    <h2 id="t-quiz">Trois questions, trente secondes.</h2>
+    <div class="card" style="padding:0;margin-top:28px" id="quiz">
+      <div class="q">
+        <h3>Qui déclenche toute l'histoire ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="0">Le service Notifications</button>
+          <button class="choice" data-ok="1">L'app, quand tu touches le cœur</button>
+          <button class="choice" data-ok="0">La base de données</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="La première flèche, tout en haut, part de l'app. Pour lire un diagramme de séquence, on cherche toujours d'abord la flèche du haut : c'est le déclencheur."></div>
+      </div>
+      <div class="q">
+        <h3>Le service Likes envoie « PhotoAimée » avec une pointe ouverte. Qu'est-ce que ça veut dire ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="1">Il l'annonce et continue sans attendre</button>
+          <button class="choice" data-ok="0">Il attend que la notification soit envoyée</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="Pointe ouverte sur un trait plein : asynchrone. C'est pour ça que ton cœur devient rouge même si le service Notifications est lent ou en panne."></div>
+      </div>
+      <div class="q">
+        <h3>Où se termine l'histoire de ton côté ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="0">Quand l'autrice reçoit la notification</button>
+          <button class="choice" data-ok="1">Au « 201 Created » qui revient à l'app</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="Ta partie s'arrête à la dernière réponse en pointillés vers l'app. La notification est une deuxième histoire, qui continue en parallèle pour quelqu'un d'autre."></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MONDE RÉEL ===================== -->
+  <section class="reveal" aria-labelledby="t-real">
+    <p class="eyebrow">Le monde réel</p>
+    <h2 id="t-real">Avec des centaines de millions de personnes, l'histoire change.</h2>
+    <p class="lede">En TP, ton application a trois utilisateurs : toi et deux comptes de test. Instagram en a des centaines de millions chaque jour. <strong>Ce qui marche pour trois personnes casse à cette échelle.</strong> Voici deux problèmes que les équipes rencontrent sur ce scénario précis, et comment elles les règlent.</p>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Problème 1</p>
+      <h4>Compter les cœurs.</h4>
+      <p>En TP, quand quelqu'un aime une photo, on recompte tous les likes de la photo dans la <button class="term" data-term="bdd">base de données</button> pour afficher le chiffre. Avec des millions de likes par minute, la base passerait son temps à compter et deviendrait lente pour tout le monde.</p>
+      <p>La solution des équipes : mettre le chiffre à jour <button class="term" data-term="paquets">par paquets</button>. On note les nouveaux likes au fur et à mesure, et une fois par seconde on ajoute le paquet entier au compteur, en une seule opération. Le chiffre affiché a donc un petit retard sur la réalité. On appelle ça la <button class="term" data-term="coherence">cohérence à terme</button>.</p>
+
+      <div class="card" style="margin-top:24px">
+        <div class="counter-wrap">
+          <div>
+            <p class="eyebrow" style="color:var(--text-2)">Likes réellement enregistrés</p>
+            <div class="big" id="real">0</div>
+            <div class="lane" id="lane" aria-hidden="true"></div>
+          </div>
+          <div>
+            <p class="eyebrow" style="color:var(--text-2)">Chiffre affiché sous la photo</p>
+            <div class="big lag" id="shown">0</div>
+            <div class="batch-clock">
+              <svg class="ring" id="ring" viewBox="0 0 28 28" aria-hidden="true"><circle class="bg" cx="14" cy="14" r="12"/><circle class="fg" cx="14" cy="14" r="12"/></svg>
+              <span id="batch-text">Le paquet part toutes les secondes.</span>
+            </div>
+          </div>
+        </div>
+        <div class="controls" style="margin-top:20px">
+          <button class="btn primary" id="burst">Envoyer 500 cœurs</button>
+          <button class="btn" id="reset">Remettre à zéro</button>
+        </div>
+        <ol class="legend-steps">
+          <li><b>À gauche</b>, chaque cœur est enregistré tout de suite : rien n'est perdu.</li>
+          <li><b>À droite</b>, le chiffre affiché ne bouge qu'une fois par seconde, d'un seul coup : c'est le paquet.</li>
+          <li><b>Pendant un instant</b>, les deux chiffres ne sont pas égaux. Puis ils se rejoignent : c'est la cohérence à terme.</li>
+        </ol>
+      </div>
+      <p class="muted small" style="margin-top:14px">Pourquoi c'est acceptable ici : personne ne remarque si le compteur affiche 1 240 au lieu de 1 243 pendant une seconde. Sur un solde bancaire, ce serait inacceptable, et on ne ferait pas comme ça.</p>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Problème 2</p>
+      <h4>Et si Notifications tombe en panne ?</h4>
+      <p>Si le service Likes appelait Notifications directement, une panne de Notifications aurait deux effets possibles : soit ton like échoue, soit la notification est perdue. Les deux sont mauvais.</p>
+      <p>La solution : poser une <button class="term" data-term="file">file d'événements</button> entre les deux. Likes y dépose son annonce « PhotoAimée » et passe à la suite. Notifications vient chercher les annonces quand il est prêt. S'il est en panne, les annonces l'attendent dans la file, et rien n'est perdu.</p>
+
+      <div class="card" style="margin-top:24px">
+        <div class="pipe">
+          <div class="node"><b>Service Likes</b><span>dépose les annonces</span></div>
+          <div class="queue" id="queue" aria-label="File d'événements"></div>
+          <div class="node" id="noti-node"><b>Notifications</b><span id="noti-state">en marche</span></div>
+        </div>
+        <div class="stats">
+          <div><b id="st-wait">0</b><span class="muted">en attente dans la file</span></div>
+          <div><b id="st-sent">0</b><span class="muted">notifications envoyées</span></div>
+          <div><b id="st-lost">0</b><span class="muted">perdues</span></div>
+        </div>
+        <div class="controls" style="margin-top:18px">
+          <button class="btn danger" id="toggle-down">Mettre Notifications en panne</button>
+        </div>
+        <div class="pipe-note" id="pipe-note" aria-live="polite">Tout va bien : chaque annonce entre dans la file et Notifications la traite presque aussitôt.</div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Les outils</p>
+      <h4>Les noms que tu entendras.</h4>
+      <p>Personne ne code une file d'événements ou un outil de diagramme à la main : on utilise des outils existants. Voici ceux qu'on croise le plus sur ce sujet.</p>
+      <div class="grid two" style="margin-top:22px">
+        <div class="card tool">
+          <span class="tag">File d'événements</span>
+          <h3>Kafka</h3>
+          <p>Un logiciel libre qui sert de file d'événements géante. Créé chez LinkedIn, aujourd'hui maintenu par la fondation Apache. Il encaisse des millions de messages par seconde et les garde sur disque, donc rien n'est perdu.</p>
+          <p class="where">Où tu le croiseras : grandes entreprises, banques, sites à fort trafic. Souvent cité dans les offres d'emploi back-end.</p>
+        </div>
+        <div class="card tool">
+          <span class="tag">File d'événements</span>
+          <h3>RabbitMQ</h3>
+          <p>Un autre logiciel libre de file de messages. Plus simple à installer et à comprendre que Kafka, mais prévu pour des volumes plus modestes.</p>
+          <p class="where">Où tu le croiseras : projets de taille moyenne, et souvent en premier dans les formations.</p>
+        </div>
+        <div class="card tool">
+          <span class="tag">File d'événements, louée</span>
+          <h3>Amazon SQS, Google Pub/Sub</h3>
+          <p>La même idée, mais on ne l'installe pas : on la loue à un fournisseur de <i>cloud</i>, c'est-à-dire des serveurs qu'on loue sur Internet. On paie à l'usage, et c'est le fournisseur qui gère les pannes.</p>
+          <p class="where">Où tu le croiseras : start-up et équipes qui ne veulent pas gérer leurs propres serveurs.</p>
+        </div>
+        <div class="card tool">
+          <span class="tag">Diagrammes en texte</span>
+          <h3>Mermaid et PlantUML</h3>
+          <p>Des outils qui transforment quelques lignes de texte en diagramme. L'intérêt : le diagramme vit dans le même <button class="term" data-term="depot">dépôt</button> que le code et se met à jour avec lui. GitHub et Notion savent afficher Mermaid directement.</p>
+          <p class="where">Où tu les croiseras : la documentation technique de presque toutes les équipes. PlantUML est plus ancien et très présent dans le monde Java.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">En pratique</p>
+      <h4>Ce même diagramme, écrit en texte.</h4>
+      <p>Voici notre histoire écrite en Mermaid. Chaque ligne est une flèche : qui parle, un symbole pour le type de flèche, qui écoute, puis le message.</p>
+      <div class="grid two" style="margin-top:22px;align-items:start">
+<pre class="codebox" aria-label="Code Mermaid"><span class="k">sequenceDiagram</span>
+  App<span class="hl">-&gt;&gt;</span>API: POST /photos/42/likes
+  API<span class="hl">-&gt;&gt;</span>Likes: aimer(photo 42, toi)
+  Likes<span class="hl">-&gt;&gt;</span>Base: enregistre le like
+  Base<span class="hl">--&gt;&gt;</span>Likes: ok
+  Likes<span class="hl">-)</span>Notifications: PhotoAimée
+  Likes<span class="hl">--&gt;&gt;</span>API: like enregistré
+  API<span class="hl">--&gt;&gt;</span>App: 201 Created</pre>
+        <div class="card" style="padding:20px 22px">
+          <h3 style="font-size:17px">Les symboles</h3>
+          <table class="map">
+            <tr><td>-&gt;&gt;</td><td><svg viewBox="0 0 110 16"><path d="M2 8 H104" marker-end="url(#arr)"/></svg></td><td>un appel, on attend</td></tr>
+            <tr><td>--&gt;&gt;</td><td><svg viewBox="0 0 110 16"><path d="M2 8 H104" stroke-dasharray="6 5" marker-end="url(#arr)"/></svg></td><td>une réponse</td></tr>
+            <tr><td>-)</td><td><svg viewBox="0 0 110 16"><path d="M2 8 H104" marker-end="url(#open)"/></svg></td><td>asynchrone, on n'attend pas</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Avec l'IA</p>
+      <h4>Elle dessine, tu vérifies.</h4>
+      <div class="grid two" style="margin-top:22px">
+        <div class="card">
+          <h3>Ce qu'elle fait bien</h3>
+          <p class="muted small" style="margin:0">Donne-lui ton code ou une description du scénario : elle écrit le Mermaid en quelques secondes. C'est un vrai gain de temps.</p>
+        </div>
+        <div class="card">
+          <h3>Ce que tu dois vérifier</h3>
+          <p class="muted small" style="margin:0">Qui déclenche, ce qui est attendu ou non, et surtout qu'une annonce asynchrone n'a pas été dessinée comme un appel. C'est une erreur fréquente, et elle change tout le sens du diagramme.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <p class="eyebrow" style="color:var(--text-2)">Question d'entretien</p>
+        <h3>« Le service de notifications tombe en panne. Que voit l'utilisatrice qui aime une photo ? »</h3>
+        <div class="controls" style="margin-top:14px"><button class="btn" id="show-answer">Voir une bonne réponse</button></div>
+        <div class="answer" id="answer">Rien de spécial : son cœur devient rouge normalement. Le service Likes publie l'annonce dans la file d'événements sans attendre Notifications. Pendant la panne, les annonces s'accumulent dans la file ; quand le service redémarre, les notifications partent en retard. Rien n'est perdu. Tu peux ajouter qu'on surveille la longueur de la file, pour être alerté si elle grossit trop.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-lex">
+    <p class="eyebrow">Lexique de la page</p>
+    <h2 id="t-lex">Les mots à retenir.</h2>
+    <p class="muted">Clique sur un mot pour revoir son explication. Ils rejoindront ton lexique dans Notion.</p>
+    <div class="chips" id="chips"></div>
+  </section>
+</div>
+
+<div class="fiche">
+  <h1>Fiche · Diagramme de séquence</h1>
+  <p class="lede">L'essentiel sur un écran, à relire la veille.</p>
+  <div class="card" style="margin-top:32px">
+    <h3>Lire en trois temps</h3>
+    <ul>
+      <li><b>Le déclencheur</b> : la flèche tout en haut. Ici, l'app.</li>
+      <li><b>Le chemin</b> : on descend, flèche par flèche. Le temps coule vers le bas.</li>
+      <li><b>La fin</b> : la dernière réponse en pointillés vers celui qui a déclenché.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Les quatre signes</h3>
+    <ul>
+      <li>Ligne de vie : un participant. Rectangle dessus : il travaille.</li>
+      <li>Trait plein, pointe pleine : un appel, on attend la réponse.</li>
+      <li>Pointillés : la réponse.</li>
+      <li>Trait plein, pointe ouverte : asynchrone, on n'attend pas.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Les pièges</h3>
+    <ul>
+      <li><span class="pitfall">Croire</span> que le déclencheur est celui qui parle le plus. C'est celui de la première flèche.</li>
+      <li><span class="pitfall">Croire</span> que la dernière flèche dessinée est la fin. Une histoire asynchrone peut continuer à côté.</li>
+      <li><span class="pitfall">Lire</span> une pointe ouverte comme un appel normal.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>En vrai</h3>
+    <ul>
+      <li>À grande échelle, on compte par paquets et on accepte un petit retard (cohérence à terme).</li>
+      <li>Une file d'événements (Kafka, RabbitMQ, Amazon SQS) entre deux services : une panne ne perd rien.</li>
+      <li>On écrit les diagrammes en texte (Mermaid, PlantUML), un par scénario, dans le dépôt.</li>
+    </ul>
+  </div>
+</div>
+</main>
+
+<footer>Fil rouge Instagram · cours animé. Instagram sert ici d'exemple d'étude ; ce site n'y est pas lié.</footer>
+
+<div class="pop" id="pop" role="dialog" aria-labelledby="pop-t">
+  <p class="pt" id="pop-t"></p>
+  <p class="pd" id="pop-d"></p>
+  <p class="ps" id="pop-s"></p>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+
+  /* ---------- lexique ---------- */
+  const TERMS = {
+    service:{t:'Service', d:'Un morceau du système qui s’occupe d’un seul sujet. Ici, le service Likes ne fait que les likes.', s:'Découper en services permet à plusieurs équipes de travailler en parallèle, chacune sur le sien.'},
+    api:{t:'API', d:'La porte d’entrée d’un système. L’app ne parle jamais directement à la base de données : elle envoie ses demandes à l’API, qui vérifie et transmet.', s:'Comme le guichet d’une banque : tu ne vas pas toi-même dans le coffre.'},
+    requete:{t:'Requête', d:'Un message que l’app envoie à l’API pour demander quelque chose : lire un fil, publier une photo, aimer une photo.', s:''},
+    post:{t:'POST', d:'Le type de requête qu’on utilise pour créer quelque chose, ici un like.', s:'Les autres types courants : GET pour lire, PUT ou PATCH pour modifier, DELETE pour supprimer.'},
+    jeton:{t:'Jeton (token)', d:'Une preuve de connexion que l’app joint à chaque requête. Tu as donné ton mot de passe une seule fois ; ensuite, c’est le jeton qui prouve que c’est toi.', s:'Comme le bracelet d’un festival : il montre que tu es déjà entrée.'},
+    bdd:{t:'Base de données', d:'L’endroit où les informations sont gardées durablement : comptes, photos, likes. Si un serveur redémarre, rien n’est perdu.', s:'PostgreSQL et MySQL sont deux bases de données libres très répandues.'},
+    evenement:{t:'Événement', d:'L’annonce d’un fait qui vient de se passer. On l’écrit au passé : « PhotoAimée ». Celui qui l’annonce ne sait pas qui va réagir.', s:'C’est ce qui permet d’ajouter plus tard un nouveau service, par exemple des statistiques, sans toucher au service Likes.'},
+    async:{t:'Asynchrone', d:'On envoie un message et on continue sans attendre la réponse.', s:'Synchrone, c’est un appel téléphonique : tu attends que l’autre réponde. Asynchrone, c’est un SMS : tu l’envoies et tu fais autre chose.'},
+    created:{t:'201 Created', d:'Un code de réponse qui veut dire « c’est créé ». Chaque réponse d’une API porte un code à trois chiffres.', s:'2xx : tout va bien. 4xx : la demande est fausse (404 : introuvable). 5xx : le serveur a un problème.'},
+    push:{t:'Notification push', d:'Un message que le serveur envoie au téléphone sans qu’on l’ait demandé, et qui s’affiche en bannière.', s:'Pour joindre les téléphones, les applications passent par les services de notification d’Apple ou de Google.'},
+    paquets:{t:'Par paquets (batch)', d:'Au lieu de traiter chaque élément dès qu’il arrive, on en regroupe plusieurs et on les traite en une seule fois.', s:'Comme le facteur : il distribue tout le courrier en une tournée, pas un aller-retour par lettre.'},
+    coherence:{t:'Cohérence à terme', d:'Pendant un court instant, le chiffre affiché peut être en retard sur la réalité, mais il finit toujours par être juste.', s:'Acceptable pour un compteur de likes. Pas pour un solde bancaire.'},
+    file:{t:'File d’événements', d:'Une salle d’attente pour les messages. Celui qui envoie dépose son message ; celui qui reçoit vient le chercher quand il est prêt.', s:'Si le receveur est en panne, les messages l’attendent au lieu d’être perdus. On dit aussi « file de messages » ou « queue ».'},
+    depot:{t:'Dépôt (repository)', d:'Le dossier d’un projet suivi par Git, souvent hébergé sur GitHub. Le code y vit, et la documentation à côté.', s:''}
+  };
+
+  const pop = $('pop');
+  let openTerm = null;
+  function showTerm(btn) {
+    const k = TERMS[btn.dataset.term]; if (!k) return;
+    if (openTerm === btn) return hideTerm();
+    if (openTerm) openTerm.setAttribute('aria-expanded', 'false');
+    $('pop-t').textContent = k.t; $('pop-d').textContent = k.d; $('pop-s').textContent = k.s;
+    const r = btn.getBoundingClientRect(), w = pop.offsetWidth || 340;
+    pop.style.left = Math.min(Math.max(16, r.left), innerWidth - w - 16) + 'px';
+    pop.classList.add('on');
+    const h = pop.offsetHeight;
+    pop.style.top = (r.bottom + 10 + h > innerHeight ? Math.max(12, r.top - h - 10) : r.bottom + 10) + 'px';
+    btn.setAttribute('aria-expanded', 'true'); openTerm = btn;
+  }
+  function hideTerm() { pop.classList.remove('on'); if (openTerm) openTerm.setAttribute('aria-expanded', 'false'); openTerm = null; }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { e.preventDefault(); showTerm(t); }
+    else if (!e.target.closest('.pop')) hideTerm();
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') hideTerm(); });
+  addEventListener('scroll', () => openTerm && hideTerm(), {passive:true});
+
+  const rich = s => s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, '<button class="term" data-term="$1">$2</button>');
+  const chips = $('chips');
+  Object.entries(TERMS).forEach(([k, v]) => { const b = document.createElement('button'); b.className = 'term'; b.dataset.term = k; b.textContent = v.t; chips.appendChild(b); });
+
+  /* ---------- acteurs et messages ---------- */
+  const actors = [
+    {id:'app',  x:110, name:'App', sub:'ton téléphone'},
+    {id:'api',  x:280, name:'API', sub:'porte d’entrée'},
+    {id:'like', x:450, name:'Service Likes', sub:'règles des likes'},
+    {id:'db',   x:610, name:'Base de données', sub:'mémoire'},
+    {id:'noti', x:760, name:'Notifications', sub:'prévient l’autrice'}
+  ];
+  const X = Object.fromEntries(actors.map(a => [a.id, a.x])); X.out = 890;
+  const top = 80, gap = 42;
+  const steps = [
+    {from:'app', to:'api', label:'POST /photos/42/likes', kind:'call',
+      t:'Tu touches le cœur.', d:'L’app envoie une [[requete|requête]] [[post|POST]] à l’[[api|API]] : « cette personne aime la photo 42 ».',
+      r:'Trait plein, pointe pleine : un appel. L’app attend une réponse.'},
+    {from:'api', to:'api', label:'vérifie ton jeton', kind:'self',
+      t:'L’API vérifie que c’est bien toi.', d:'Avant tout, elle contrôle le [[jeton|jeton]] de connexion envoyé avec la requête.',
+      r:'Une flèche qui revient sur la même colonne : un participant qui travaille seul.'},
+    {from:'api', to:'like', label:'aimer(photo 42, toi)', kind:'call',
+      t:'L’API passe la main au service Likes.', d:'L’API ne sait pas ce qu’« aimer » veut dire. C’est le [[service|service]] Likes qui porte la règle, par exemple « on ne peut aimer qu’une fois ».',
+      r:'L’API attend toujours : son rectangle reste allumé.'},
+    {from:'like', to:'db', label:'enregistre le like', kind:'call',
+      t:'Le service Likes l’enregistre.', d:'Il écrit dans la [[bdd|base de données]] : qui, quelle photo, quand.',
+      r:'Chaque nouvel appel vers la droite descend d’un cran dans le système.'},
+    {from:'db', to:'like', label:'ok', kind:'ret',
+      t:'La base confirme.', d:'Le like est écrit. Il ne sera pas perdu, même si un serveur redémarre.',
+      r:'Pointillés : c’est une réponse, elle revient vers celui qui avait appelé.'},
+    {from:'like', to:'noti', label:'« PhotoAimée »', kind:'async',
+      t:'Le service Likes l’annonce.', d:'Il publie un [[evenement|événement]] : « la photo 42 a été aimée ». Il n’attend pas que quelqu’un réagisse.',
+      r:'Pointe ouverte sur un trait plein : [[async|asynchrone]]. C’est une annonce, pas une question.'},
+    {from:'like', to:'api', label:'like enregistré', kind:'ret',
+      t:'Le service Likes répond à l’API.', d:'Il répond tout de suite, sans attendre les notifications.',
+      r:'La réponse part pendant que l’annonce fait son chemin de son côté.'},
+    {from:'api', to:'app', label:'201 Created', kind:'ret',
+      t:'Ton cœur devient rouge.', d:'L’API confirme à l’app avec le code [[created|201 Created]]. Fin de ton histoire : environ un dixième de seconde s’est écoulé.',
+      r:'La dernière réponse vers le déclencheur : c’est la fin de son histoire.'},
+    {from:'noti', to:'out', label:'push à l’autrice', kind:'call',
+      t:'L’autrice est prévenue.', d:'De son côté, Notifications a reçu l’événement et envoie une [[push|notification push]] sur le téléphone de l’autrice. Ça peut arriver une seconde plus tard, ou une minute si le service est chargé.',
+      r:'Une deuxième histoire, en parallèle, pour quelqu’un d’autre.'}
+  ];
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+  const gA = $('actors'), gM = $('msgs'), gAct = $('acts');
+
+  actors.forEach(a => {
+    const g = el('g', {class:'actor'}, gA);
+    el('line', {class:'lifeline', x1:a.x, y1:66, x2:a.x, y2:480}, g);
+    el('rect', {x:a.x-72, y:16, width:144, height:50, rx:12}, g);
+    el('text', {x:a.x, y:38}, g).textContent = a.name;
+    el('text', {x:a.x, y:55, class:'sub'}, g).textContent = a.sub;
+  });
+
+  const acts = [['app',0,7],['api',0,7],['like',2,6],['db',3,4],['noti',5,8]];
+  const actEls = acts.map(([id, s, e]) => ({s, e, node: el('rect', {class:'act', x:X[id]-6, y:top+s*gap+gap-14, width:12, height:(e-s)*gap+22, rx:3}, gAct)}));
+
+  const msgEls = steps.map((m, i) => {
+    const y = top + (i+1)*gap;
+    const g = el('g', {class:'msg' + (m.kind === 'ret' ? ' ret' : '')}, gM);
+    const right = X[m.to] >= X[m.from];
+    let d, lx, ly = y - 8;
+    if (m.kind === 'self') { const x = X[m.from] + 6; d = `M${x} ${y-10} h44 v20 h-42`; lx = x + 104; ly = y + 4; }
+    else { const x1 = X[m.from] + (right ? 6 : -6), x2 = X[m.to] + (right ? -7 : 7); d = `M${x1} ${y} H${x2}`; lx = (x1 + x2) / 2; }
+    const p = el('path', {d, class:'line', 'marker-end': (m.kind === 'call' || m.kind === 'self') ? 'url(#arr)' : 'url(#open)'}, g);
+    const lab = el('text', {x: m.to === 'out' ? X[m.from] + 12 : lx, y:ly, class:'label'}, g);
+    lab.textContent = m.label; if (m.to === 'out') lab.style.textAnchor = 'start';
+    const cx = right ? X[m.from] - 22 : X[m.from] + 22;
+    el('circle', {cx, cy:y, r:9}, g);
+    el('text', {x:cx, y:y+3.5, class:'num'}, g).textContent = i + 1;
+    requestAnimationFrame(() => { try { g.style.setProperty('--len', p.getTotalLength()); } catch (e) {} });
+    return g;
+  });
+
+  /* ---------- état de l'animation ---------- */
+  let cur = -1, timer = null, predicted = false;
+  const dots = $('dots'); steps.forEach(() => dots.appendChild(document.createElement('i')));
+  const heart = $('heart'), banner = $('banner');
+
+  function render(animate) {
+    msgEls.forEach((g, i) => {
+      g.classList.toggle('past', i < cur); g.classList.toggle('now', i === cur); g.classList.remove('draw');
+      if (i === cur && animate && !reduce) { void g.getBBox(); g.classList.add('draw'); }
+    });
+    actEls.forEach(a => a.node.classList.toggle('on', cur >= a.s && cur <= a.e));
+    [...dots.children].forEach((d, i) => { d.className = i < cur ? 'done' : i === cur ? 'now' : ''; });
+    $('stepcount').textContent = cur < 0 ? 'Début' : `Étape ${cur+1} sur ${steps.length}`;
+    const s = steps[cur];
+    $('cap-title').textContent = s ? s.t : 'Prête ?';
+    $('cap-text').innerHTML = s ? rich(s.d) : 'Appuie sur « Suivant », ou sur la flèche droite du clavier.';
+    $('cap-read').hidden = !s; if (s) $('cap-read-text').innerHTML = rich(s.r);
+    const liked = cur >= 7, wasOn = heart.classList.contains('on');
+    heart.classList.toggle('on', liked); heart.classList.toggle('wait', cur >= 0 && cur < 7);
+    if (liked && !wasOn && !reduce) { heart.classList.add('pop'); setTimeout(() => heart.classList.remove('pop'), 300); }
+    $('likes').textContent = liked ? '129 J’aime' : '128 J’aime';
+    banner.classList.toggle('on', cur >= 8);
+    $('phone-label').textContent = cur >= 8 ? 'Le téléphone de l’autrice' : 'Ton écran';
+    $('predict').classList.toggle('on', cur === 5 && !predicted);
+    $('prev').disabled = cur < 0;
+    $('next').disabled = cur >= steps.length - 1 || (cur === 5 && !predicted);
+  }
+  const go = (n, animate = true) => { cur = Math.max(-1, Math.min(steps.length - 1, n)); render(animate); };
+  function stop() { clearInterval(timer); timer = null; $('play').textContent = 'Lecture'; }
+  function next() { if (cur === 5 && !predicted) return stop(); if (cur < steps.length - 1) go(cur + 1); else stop(); }
+  function play() {
+    if (timer) return stop();
+    if (cur >= steps.length - 1) go(-1, false);
+    $('play').textContent = 'Pause'; next();
+    timer = setInterval(() => { next(); if (cur >= steps.length - 1 || (cur === 5 && !predicted)) stop(); }, 2800);
+  }
+  $('next').onclick = () => { stop(); next(); };
+  $('prev').onclick = () => { stop(); go(cur - 1); };
+  $('play').onclick = play;
+  addEventListener('keydown', e => {
+    if (document.body.classList.contains('mode-fiche')) return;
+    if (e.key === ' ' && e.target.closest && e.target.closest('button')) return;
+    if (e.key === 'ArrowRight') { stop(); next(); }
+    else if (e.key === 'ArrowLeft') { stop(); go(cur - 1); }
+    else if (e.key === ' ') { e.preventDefault(); play(); }
+  });
+
+  /* ---------- questions ---------- */
+  function wire(group, fb, onRight) {
+    group.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      const ok = b.dataset.ok === '1';
+      group.querySelectorAll('.choice').forEach(x => x.classList.remove('right', 'wrong'));
+      b.classList.add(ok ? 'right' : 'wrong');
+      fb.textContent = (ok ? 'Exact. ' : 'Pas tout à fait. ') + (fb.dataset.why || '');
+      if (ok && onRight) onRight();
+    }));
+  }
+  const pfb = $('predict-fb');
+  pfb.dataset.why = 'Le service Likes a annoncé l’événement sans attendre (pointe ouverte). La réponse à l’app ne dépend donc pas des notifications. Continue pour le voir.';
+  wire($('predict'), pfb, () => { predicted = true; render(false); $('next').focus(); });
+  document.querySelectorAll('#quiz .q').forEach(q => wire(q, q.querySelector('.feedback')));
+
+  /* ---------- problème 1 : compteur par paquets ---------- */
+  let real = 0, shown = 0, tick = null;
+  const realEl = $('real'), shownEl = $('shown'), lane = $('lane'), ring = $('ring');
+  const fmt = n => n.toLocaleString('fr-FR');
+  function flush() {
+    if (shown === real) { clearInterval(tick); tick = null; ring.classList.remove('run'); shownEl.classList.remove('lag'); $('batch-text').textContent = 'À jour : les deux chiffres sont égaux.'; return; }
+    const from = shown, target = real, t0 = performance.now();
+    $('batch-text').textContent = `Paquet de ${fmt(target - from)} likes ajouté d’un coup.`;
+    shown = target;
+    if (reduce) { shownEl.textContent = fmt(target); return; }
+    const step = now => { const k = Math.min(1, (now - t0) / 400); shownEl.textContent = fmt(Math.round(from + (target - from) * k)); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  $('burst').onclick = () => {
+    let sent = 0; shownEl.classList.add('lag'); ring.classList.add('run'); $('batch-text').textContent = 'Les likes arrivent… le prochain paquet part dans une seconde.';
+    const iv = setInterval(() => {
+      real += 25; sent += 25; realEl.textContent = fmt(real);
+      if (!reduce) { const dot = document.createElement('span'); dot.className = 'ev'; dot.style.animationDelay = (Math.random()*0.2) + 's'; lane.appendChild(dot); setTimeout(() => dot.remove(), 1700); }
+      if (sent >= 500) clearInterval(iv);
+    }, 90);
+    if (!tick) tick = setInterval(flush, 1000);
+  };
+  $('reset').onclick = () => { real = shown = 0; realEl.textContent = shownEl.textContent = '0'; $('batch-text').textContent = 'Le paquet part toutes les secondes.'; };
+
+  /* ---------- problème 2 : la file d'événements ---------- */
+  const queue = $('queue'); let waiting = 0, sentN = 0, down = false, qTimer = null, cTimer = null;
+  const MAX_SHOWN = 9;
+  const newMsg = () => { const m = document.createElement('span'); m.className = 'm'; m.textContent = '♥'; return m; };
+  const liveMsgs = () => queue.querySelectorAll('.m:not(.out)');
+  function sync() {
+    $('st-wait').textContent = waiting; $('st-sent').textContent = sentN;
+    let more = queue.querySelector('.more');
+    if (waiting > MAX_SHOWN) { if (!more) { more = document.createElement('span'); more.className = 'more'; queue.prepend(more); } more.textContent = '+' + (waiting - MAX_SHOWN); }
+    else if (more) more.remove();
+    while (liveMsgs().length < Math.min(waiting, MAX_SHOWN)) { const m = newMsg(); const mo = queue.querySelector('.more'); mo ? mo.after(m) : queue.prepend(m); }
+  }
+  function produce() { waiting++; sync(); }
+  function consume() {
+    if (down || waiting === 0) return;
+    waiting--; sentN++;
+    const l = liveMsgs(), last = l[l.length - 1];
+    if (last) { last.classList.add('out'); setTimeout(() => last.remove(), reduce ? 0 : 450); }
+    sync();
+  }
+  const setConsumer = ms => { clearInterval(cTimer); cTimer = ms ? setInterval(consume, ms) : null; };
+  function startPipe() { if (qTimer) return; qTimer = setInterval(produce, 900); setConsumer(down ? 0 : 450); }
+  function stopPipe() { clearInterval(qTimer); qTimer = null; setConsumer(0); }
+  $('toggle-down').onclick = () => {
+    down = !down;
+    $('noti-node').classList.toggle('down', down);
+    $('noti-state').textContent = down ? 'en panne' : 'en marche';
+    const b = $('toggle-down'); b.textContent = down ? 'Réparer Notifications' : 'Mettre Notifications en panne';
+    b.classList.toggle('danger', !down); b.classList.toggle('primary', down);
+    const note = $('pipe-note'); note.classList.toggle('down', down);
+    note.textContent = down
+      ? 'Notifications est en panne. Regarde : les annonces s’accumulent dans la file, aucune n’est perdue, et les likes continuent de marcher normalement.'
+      : 'Notifications redémarre et vide la file plus vite qu’elle ne se remplit : toutes les notifications en retard partent.';
+    if (qTimer) setConsumer(down ? 0 : 250);
+  };
+  new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? startPipe() : stopPipe()), {threshold:.3}).observe(queue);
+
+  $('show-answer').onclick = () => { const on = $('answer').classList.toggle('on'); $('show-answer').textContent = on ? 'Masquer la réponse' : 'Voir une bonne réponse'; };
+
+  /* ---------- Cours / Fiche ---------- */
+  const seg = $('seg');
+  seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.mode; seg.dataset.mode = m;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.body.classList.toggle('mode-fiche', m === 'fiche');
+    hideTerm(); scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+    try { localStorage.setItem('mode-diagramme-sequence', m); } catch (e) {}
+  }));
+  try { if (localStorage.getItem('mode-diagramme-sequence') === 'fiche') seg.querySelector('[data-mode="fiche"]').click(); } catch (e) {}
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.08});
+  document.querySelectorAll('.reveal').forEach(s => io.observe(s));
+
+  render(false);
+})();
+</script>
+</body>
+</html>
