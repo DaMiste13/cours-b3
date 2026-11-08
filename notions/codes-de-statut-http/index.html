@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les codes de statut HTTP</title>
+<meta name="description" content="Lire la réponse d'un serveur en trois chiffres : ça a marché, la demande pose problème, ou le serveur a un problème.">
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#fbfbfd;
+  --text:#1d1d1f; --text-2:#6e6e73; --hairline:rgba(0,0,0,.08);
+  --accent:#0071e3; --accent-soft:rgba(0,113,227,.10);
+  --like:#d70015; --like-soft:rgba(215,0,21,.10);
+  --ok:#1e7e34; --ok-soft:rgba(30,126,52,.12);
+  --warn:#bf4800; --warn-soft:rgba(191,72,0,.10);
+  --line:#86868b; --dim:rgba(29,29,31,.22);
+  --shadow:0 2px 6px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06);
+  --radius:22px; --ease:cubic-bezier(.25,.1,.25,1); --spring:cubic-bezier(.34,1.32,.64,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#000000; --surface:#1c1c1e; --surface-2:#161618;
+    --text:#f5f5f7; --text-2:#a1a1a6; --hairline:rgba(255,255,255,.10);
+    --accent:#2997ff; --accent-soft:rgba(41,151,255,.16);
+    --like:#ff6961; --like-soft:rgba(255,105,97,.16);
+    --ok:#30d158; --ok-soft:rgba(48,209,88,.16);
+    --warn:#ff9f0a; --warn-soft:rgba(255,159,10,.14);
+    --line:#8e8e93; --dim:rgba(245,245,247,.20);
+    --shadow:0 0 0 1px rgba(255,255,255,.06);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+code,.code{font-family:"SF Mono",ui-monospace,Menlo,monospace}
+code{font-size:.88em;background:var(--accent-soft);padding:.1em .35em;border-radius:6px}
+b,strong{font-weight:600}
+
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--hairline)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.crumb{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb b{color:var(--text)}
+
+.seg{display:inline-flex;background:var(--hairline);border-radius:9px;padding:2px;position:relative;flex:none}
+.seg button{all:unset;cursor:pointer;font-size:13px;font-weight:500;padding:5px 14px;border-radius:7px;position:relative;z-index:1;color:var(--text)}
+.seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc(50% - 2px);background:var(--surface);border-radius:7px;
+  box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .35s var(--spring)}
+.seg[data-mode="fiche"] .thumb{transform:translateX(100%)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+main{max-width:980px;margin:0 auto;padding:0 22px 120px}
+section{margin-top:96px}
+.sub-section{margin-top:64px}
+.eyebrow{font-size:14px;font-weight:600;color:var(--accent);letter-spacing:-.01em;margin:0 0 8px}
+h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:72px 0 16px}
+h2{font-size:clamp(30px,4.6vw,44px);line-height:1.1;letter-spacing:-.03em;font-weight:700;margin:0 0 14px}
+h3{font-size:21px;line-height:1.25;letter-spacing:-.02em;font-weight:600;margin:0 0 6px}
+h4{font-size:28px;line-height:1.15;letter-spacing:-.025em;font-weight:700;margin:0 0 10px}
+.lede{font-size:clamp(19px,2.4vw,24px);line-height:1.38;color:var(--text-2);max-width:720px;margin:0;letter-spacing:-.02em}
+.lede strong{color:var(--text)}
+p{max-width:680px}
+.muted{color:var(--text-2)}
+.small{font-size:15px}
+
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+.grid{display:grid;gap:18px}
+@media (min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+.term{all:unset;cursor:help;border-bottom:1.5px dotted currentColor;color:inherit;transition:color .2s var(--ease)}
+.term:hover,.term[aria-expanded="true"]{color:var(--accent)}
+.term:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.pop{position:fixed;z-index:50;width:min(340px,calc(100vw - 32px));background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 0 0 1px var(--hairline);padding:16px 18px;
+  opacity:0;transform:translateY(6px) scale(.97);transform-origin:top left;pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--spring)}
+.pop.on{opacity:1;transform:none;pointer-events:auto}
+.pop .pt{font-weight:700;font-size:17px;margin:0 0 6px}
+.pop .pd{margin:0;font-size:15px;line-height:1.45}
+.pop .ps{margin:10px 0 0;font-size:14px;color:var(--text-2);line-height:1.45}
+.pop .ps:empty{display:none}
+
+.cast{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:28px}
+@media (min-width:900px){.cast{grid-template-columns:repeat(5,1fr)}}
+.cast .card{padding:20px}
+.cast .ico{font-size:26px;line-height:1;margin-bottom:10px}
+.cast h3{font-size:17px}
+.cast p{margin:4px 0 0;font-size:15px;color:var(--text-2)}
+
+/* ---------- le schéma animé ---------- */
+.stage{margin-top:28px;padding:0;overflow:hidden}
+.stage-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;border-bottom:1px solid var(--hairline)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:background .3s var(--ease),transform .3s var(--spring)}
+.dots i.done{background:var(--text-2)}
+.dots i.now{background:var(--accent);transform:scale(1.35)}
+.stepcount{font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.diagram-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+svg.seq{display:block;width:100%;min-width:720px;height:auto}
+.seq text{font-family:inherit;fill:var(--text)}
+.actor rect{fill:var(--surface-2);stroke:var(--hairline);stroke-width:1}
+.actor text{font-size:14px;font-weight:600;text-anchor:middle}
+.actor .sub{font-size:11.5px;font-weight:400;fill:var(--text-2)}
+.lifeline{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5;opacity:.6}
+.scene{font-size:11.5px;font-weight:700;fill:var(--text-2)}
+.msg{opacity:0;transition:opacity .45s var(--ease)}
+.msg.past{opacity:.38}
+.msg.now{opacity:1}
+.msg path{fill:none;stroke:var(--text);stroke-width:1.6}
+.msg.now path{stroke:var(--accent);stroke-width:2.2}
+.msg.ret path{stroke-dasharray:6 5}
+.msg .label{font-size:13px;text-anchor:middle}
+.msg.now .label{fill:var(--accent);font-weight:600}
+.seq .msg .label.st2{fill:var(--ok);font-weight:700}
+.seq .msg .label.st4{fill:var(--warn);font-weight:700}
+.seq .msg .label.st5{fill:var(--like);font-weight:700}
+.seq .msg circle.boom{fill:var(--like)}
+.seq .msg .boomx{fill:#fff;font-size:15px;font-weight:700;text-anchor:middle}
+.seq .msg .boomt{fill:var(--like);font-size:12px;font-weight:700;text-anchor:middle}
+.draw path.line{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw .7s var(--ease) forwards}
+.msg.ret.draw path.line{animation:drawRet .7s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes drawRet{from{stroke-dasharray:6 5;opacity:0}to{stroke-dasharray:6 5;opacity:1}}
+
+.stage-bottom{display:grid;border-top:1px solid var(--hairline)}
+@media (min-width:760px){.stage-bottom{grid-template-columns:1fr 230px}}
+.caption{padding:22px 24px}
+.caption .read{margin-top:12px;font-size:15px;color:var(--text-2);display:flex;gap:10px;align-items:flex-start}
+.caption .read b{color:var(--text);white-space:nowrap}
+.phone-col{padding:18px 24px;display:flex;flex-direction:column;align-items:center;border-left:1px solid var(--hairline)}
+@media (max-width:759px){.phone-col{border-left:0;border-top:1px solid var(--hairline)}}
+
+.phone{width:160px;min-height:220px;border-radius:26px;background:var(--surface-2);border:1px solid var(--hairline);padding:12px;display:flex;flex-direction:column;gap:8px}
+.phone .bar{font-size:11px;font-weight:600;color:var(--text-2);text-align:center}
+.screen{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;text-align:center;font-size:12.5px;line-height:1.35;transition:opacity .3s var(--ease)}
+.screen .photo{width:100%;height:96px;border-radius:12px;background:linear-gradient(135deg,#ff9f0a,#ff375f 55%,#bf5af2)}
+.screen .who{font-size:11.5px;color:var(--text-2)}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--hairline);border-top-color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chip{display:inline-block;font-size:12px;font-weight:700;border-radius:980px;padding:3px 10px;font-variant-numeric:tabular-nums}
+.chip.c2{background:var(--ok-soft);color:var(--ok)}
+.chip.c4{background:var(--warn-soft);color:var(--warn)}
+.chip.c5{background:var(--like-soft);color:var(--like)}
+.phone-label{font-size:11px;color:var(--text-2);text-align:center;margin-top:8px}
+
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-size:14px;font-weight:500;padding:8px 16px;border-radius:980px;background:var(--hairline);color:var(--text);
+  transition:transform .2s var(--ease),background .2s var(--ease);-webkit-user-select:none;user-select:none;text-align:center}
+.btn:hover{background:color-mix(in srgb,var(--hairline) 100%,var(--text) 6%)}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+@media (max-width:560px){.stage-top{flex-wrap:wrap}.stage-top .controls{width:100%}.stage-top .btn{flex:1}}
+.kbd{font-size:12px;color:var(--text-2);text-align:right;margin:12px 4px 0;max-width:none}
+
+.predict{margin:0 24px 22px;padding:18px;border-radius:16px;background:var(--accent-soft);display:none}
+.predict.on{display:block;animation:rise .5s var(--spring)}
+.predict p{margin:0 0 12px;font-weight:600}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+.choice{all:unset;cursor:pointer;background:var(--surface);border-radius:12px;padding:10px 14px;font-size:15px;border:1px solid var(--hairline);transition:all .25s var(--ease)}
+.choice:hover{border-color:var(--accent)}
+.choice.right{border-color:var(--ok);color:var(--ok);font-weight:600}
+.choice.wrong{border-color:var(--warn);color:var(--warn)}
+.choice:focus-visible{outline:2px solid var(--accent)}
+.feedback{margin-top:12px;font-size:15px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* grammaire : les familles */
+.fam{position:relative;overflow:hidden}
+.fam .big{font-size:52px;font-weight:700;letter-spacing:-.04em;line-height:1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.fam.f2 .big{color:var(--ok)} .fam.f4 .big{color:var(--warn)} .fam.f5 .big{color:var(--like)}
+.fam .who{font-size:13px;font-weight:600;color:var(--text-2);margin:0 0 12px}
+.fam ul{list-style:none;margin:14px 0 0;padding:0}
+.fam li{padding:8px 0;border-top:1px solid var(--hairline);font-size:15px;display:flex;gap:10px}
+.fam li code{flex:none;background:none;padding:0;font-weight:700}
+.codebox{background:var(--surface-2);border:1px solid var(--hairline);border-radius:16px;padding:18px 20px;font-size:13.5px;line-height:1.75;overflow-x:auto;white-space:pre;margin:0}
+.codebox .k{color:var(--accent);font-weight:600}
+.codebox .c{color:var(--text-2)}
+.codebox .s4{color:var(--warn);font-weight:700}
+.codebox .s2{color:var(--ok);font-weight:700}
+
+.q{padding:24px 28px}
+.q + .q{border-top:1px solid var(--hairline)}
+.q .choices{margin-top:12px}
+
+/* monde réel 1 : l'onglet Réseau */
+.net{border:1px solid var(--hairline);border-radius:14px;overflow:hidden;font-size:13.5px}
+.net .head,.net .row{display:grid;grid-template-columns:62px 1fr 64px;gap:10px;padding:9px 14px;align-items:center}
+.net .head{background:var(--surface-2);font-size:12px;font-weight:600;color:var(--text-2)}
+.net .row{border-top:1px solid var(--hairline);font-family:"SF Mono",ui-monospace,Menlo,monospace;animation:rise .4s var(--spring)}
+.net .row.hot{background:var(--like-soft)}
+.net .row.mid{background:var(--warn-soft)}
+.net .empty{padding:18px 14px;color:var(--text-2);font-size:14px;border-top:1px solid var(--hairline)}
+.notes{display:grid;gap:10px;margin-top:16px}
+.note{padding:14px 16px;border-radius:14px;font-size:15px;animation:rise .45s var(--spring)}
+.note.n5{background:var(--like-soft)} .note.n4{background:var(--warn-soft)}
+
+/* monde réel 2 : réessayer ou pas */
+.lanes{display:grid;gap:16px}
+.lane{border:1px solid var(--hairline);border-radius:14px;padding:14px 16px}
+.lane h3{font-size:16px;margin:0 0 10px}
+.track{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:30px}
+.wait{font-size:12px;color:var(--text-2);animation:rise .35s var(--spring)}
+.track .chip{animation:rise .35s var(--spring)}
+.verdict{margin-top:10px;font-size:15px;font-weight:600;animation:rise .45s var(--spring)}
+
+.tool{display:flex;flex-direction:column;gap:6px}
+.tool .tag{align-self:flex-start;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:980px;padding:3px 10px}
+.tool p{margin:0;font-size:15px}
+.tool .where{color:var(--text-2);font-size:14px;margin-top:6px}
+
+.answer{display:none;margin-top:14px;padding:16px 18px;border-radius:14px;background:var(--surface-2);border:1px solid var(--hairline);font-size:15px}
+.answer.on{display:block;animation:rise .45s var(--spring)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chips .term{border:0;background:var(--surface);box-shadow:var(--shadow);border-radius:980px;padding:8px 14px;font-size:15px}
+
+.fiche{display:none}
+body.mode-fiche .cours{display:none}
+body.mode-fiche .fiche{display:block}
+.fiche h1{margin-top:56px}
+.fiche .card + .card{margin-top:18px}
+.fiche ul{margin:8px 0 0;padding-left:20px}
+.fiche li{margin:6px 0}
+.pitfall{color:var(--warn);font-weight:600}
+
+.tally{list-style:none;margin:0;padding:0}
+.tally li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--hairline);font-size:15px}
+.tally li:first-child{border-top:0;padding-top:0}
+.pill{font-size:13px;font-weight:600;border-radius:980px;padding:4px 12px;background:var(--hairline);color:var(--text-2);white-space:nowrap;transition:background .3s var(--ease),color .3s var(--ease)}
+.pill.juste{background:var(--ok-soft);color:var(--ok)}
+.pill.fausse{background:var(--warn-soft);color:var(--warn)}
+.pill.bump{animation:bump .55s var(--spring)}
+@keyframes bump{from{transform:scale(.6);opacity:.2}to{transform:none;opacity:1}}
+.copied{margin:14px 0 0;font-size:15px;color:var(--ok);font-weight:600;min-height:1.4em;opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease),transform .45s var(--spring)}
+.copied.on{opacity:1;transform:none}
+.bilan-texte{display:block;width:100%;min-height:140px;margin-top:14px;border-radius:14px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);font:13.5px/1.6 "SF Mono",ui-monospace,Menlo,monospace;padding:14px 16px;resize:vertical}
+.bilan-texte[hidden]{display:none}
+
+footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color:var(--text-2);border-top:1px solid var(--hairline)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+  .spin{animation:none;border-top-color:var(--hairline)}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="crumb"><a href="../../">Cours animés</a> · API web · <b>Les codes de statut HTTP</b></div>
+    <div class="seg" id="seg" data-mode="cours" role="tablist" aria-label="Affichage">
+      <span class="thumb" aria-hidden="true"></span>
+      <button role="tab" aria-selected="true" data-mode="cours">Cours</button>
+      <button role="tab" aria-selected="false" data-mode="fiche">Fiche</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="cours">
+
+  <h1>Ça ne marche pas.<br>Qui est en faute ?</h1>
+  <p class="lede">Tu ouvres un post et rien ne s'affiche. C'est ton téléphone ? Le serveur ? Le post lui-même ? <strong>Le serveur te le dit en trois chiffres.</strong></p>
+  <p class="muted small" style="margin-top:22px">Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
+
+  <section class="reveal" aria-labelledby="t-why">
+    <p class="eyebrow">Pourquoi ça existe</p>
+    <h2 id="t-why">Une réponse doit dire si ça a marché.</h2>
+    <p>Chaque fois que ton appli envoie une <button class="term" data-term="requete">requête</button>, elle reçoit une <button class="term" data-term="reponse">réponse</button>. Mais une réponse, ça peut être une bonne ou une mauvaise nouvelle. Avant même de lire les données, l'appli doit savoir : est-ce que ça a marché ? Et sinon, à qui la faute ?</p>
+    <p>Si chaque serveur l'écrivait avec ses propres mots, aucune appli ne pourrait comprendre tous les serveurs. Alors <button class="term" data-term="http">HTTP</button> a fixé une règle commune : chaque réponse commence par un <button class="term" data-term="statut">code de statut</button> de trois chiffres. <strong>Le premier chiffre suffit pour savoir de quel côté chercher.</strong></p>
+    <p>C'est aussi ce que tu regardes en premier quand une appli plante, ce que tu choisis quand tu écris une <button class="term" data-term="api">API</button>, et une question classique en entretien.</p>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-cast">
+    <p class="eyebrow">Les personnages</p>
+    <h2 id="t-cast">Quatre acteurs, un message.</h2>
+    <div class="cast">
+      <div class="card"><div class="ico">📱</div><h3>Le client</h3><p>L'appli sur ton téléphone. Elle demande, puis affiche ce qu'on lui répond.</p></div>
+      <div class="card"><div class="ico">✉️</div><h3>La requête</h3><p>Ce que l'appli demande : une méthode et une URL, par exemple <code>GET /posts/42</code>.</p></div>
+      <div class="card"><div class="ico">🖥️</div><h3>Le serveur</h3><p>Il reçoit la requête, fait le travail, et répond toujours, même pour dire non.</p></div>
+      <div class="card"><div class="ico">🗄️</div><h3>La base de données</h3><p>Là où les posts sont rangés. Le serveur lui demande ce qu'il cherche.</p></div>
+      <div class="card"><div class="ico">🔢</div><h3>Le code de statut</h3><p>Trois chiffres au début de la réponse : ça a marché, ou qui est en faute.</p></div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-anim">
+    <p class="eyebrow">L'histoire, pas à pas</p>
+    <h2 id="t-anim">Trois requêtes, trois réponses.</h2>
+    <p class="muted">La même appli envoie trois requêtes. Regarde ce que fait le serveur à chaque fois, puis le code qu'il renvoie. Avance à ton rythme.</p>
+
+    <div class="card stage">
+      <div class="stage-top">
+        <div>
+          <div class="stepcount" id="stepcount">Début</div>
+          <div class="dots" id="dots" aria-hidden="true"></div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="prev">Précédent</button>
+          <button class="btn primary" id="next">Suivant</button>
+          <button class="btn" id="play">Lecture</button>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <svg class="seq" id="seq" viewBox="0 0 900 550" role="img" aria-labelledby="seq-title">
+          <title id="seq-title">Trois requêtes envoyées par l'appli au serveur : un post trouvé (200), un post introuvable (404), une base de données en panne (500).</title>
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+            </marker>
+            <marker id="open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10" fill="none" stroke="context-stroke" stroke-width="1.6"/>
+            </marker>
+          </defs>
+
+          <g class="actor"><rect x="95" y="16" width="150" height="52" rx="12"/><text x="170" y="38">L'appli</text><text class="sub" x="170" y="56">le client</text></g>
+          <g class="actor"><rect x="395" y="16" width="150" height="52" rx="12"/><text x="470" y="38">Le serveur</text><text class="sub" x="470" y="56">l'API</text></g>
+          <g class="actor"><rect x="695" y="16" width="150" height="52" rx="12"/><text x="770" y="38">La base</text><text class="sub" x="770" y="56">les posts rangés</text></g>
+          <line class="lifeline" x1="170" y1="68" x2="170" y2="545"/>
+          <line class="lifeline" x1="470" y1="68" x2="470" y2="545"/>
+          <line class="lifeline" x1="770" y1="68" x2="770" y2="545"/>
+
+          <!-- requête 1 : le post existe -->
+          <g data-step="0"><text class="scene" x="14" y="114">Requête 1</text><path class="line" d="M174 112 H464" marker-end="url(#arr)"/><text class="label" x="320" y="102">GET /posts/42</text></g>
+          <g data-step="1"><path class="line" d="M474 150 H764" marker-end="url(#arr)"/><text class="label" x="620" y="140">cherche le post 42</text></g>
+          <g data-step="1" class="ret"><path class="line" d="M766 182 H476" marker-end="url(#open)"/><text class="label" x="620" y="174">le voilà</text></g>
+          <g data-step="2" class="ret"><path class="line" d="M466 222 H176" marker-end="url(#open)"/><text class="label st2" x="320" y="212">200 OK + le post</text></g>
+
+          <!-- requête 2 : le post n'existe pas -->
+          <g data-step="3"><text class="scene" x="14" y="284">Requête 2</text><path class="line" d="M174 282 H464" marker-end="url(#arr)"/><text class="label" x="320" y="272">GET /posts/999</text></g>
+          <g data-step="4"><path class="line" d="M474 320 H764" marker-end="url(#arr)"/><text class="label" x="620" y="310">cherche le post 999</text></g>
+          <g data-step="4" class="ret"><path class="line" d="M766 352 H476" marker-end="url(#open)"/><text class="label" x="620" y="344">rien trouvé</text></g>
+          <g data-step="5" class="ret"><path class="line" d="M466 392 H176" marker-end="url(#open)"/><text class="label st4" x="320" y="382">404 Not Found</text></g>
+
+          <!-- requête 3 : la base est en panne -->
+          <g data-step="6"><text class="scene" x="14" y="452">Requête 3</text><path class="line" d="M174 450 H464" marker-end="url(#arr)"/><text class="label" x="320" y="440">POST /posts/42/like</text></g>
+          <g data-step="6"><path class="line" d="M474 488 H748" marker-end="url(#arr)"/><text class="label" x="610" y="478">enregistre le like</text><circle class="boom" cx="770" cy="488" r="14"/><text class="boomx" x="770" y="493">✕</text><text class="boomt" x="770" y="520">en panne</text></g>
+          <g data-step="7" class="ret"><path class="line" d="M466 530 H176" marker-end="url(#open)"/><text class="label st5" x="320" y="520">500 Internal Server Error</text></g>
+        </svg>
+      </div>
+
+      <div class="predict" id="predict" role="group" aria-labelledby="predict-q" data-bilan="Prédiction : le post introuvable">
+        <p id="predict-q">Avant de continuer : le serveur fonctionne, la base a répondu « rien trouvé ». Quel code le serveur renvoie-t-il à l'appli ?</p>
+        <div class="choices">
+          <button class="choice" data-ok="0">500 : il y a eu une erreur</button>
+          <button class="choice" data-ok="1">404 : le post demandé n'existe pas</button>
+        </div>
+        <div class="feedback" id="predict-fb" aria-live="polite"></div>
+      </div>
+
+      <div class="stage-bottom">
+        <div class="caption" aria-live="polite">
+          <h3 id="cap-title">Prête ?</h3>
+          <div id="cap-text" class="muted">Appuie sur « Suivant », ou sur la flèche droite du clavier.</div>
+          <div class="read" id="cap-read" hidden><b>Comment lire</b><span id="cap-read-text"></span></div>
+        </div>
+        <div class="phone-col" aria-hidden="true">
+          <div class="phone">
+            <div class="bar">9:41</div>
+            <div class="screen" id="screen"></div>
+          </div>
+          <div class="phone-label">Ce que tu vois sur ton téléphone</div>
+        </div>
+      </div>
+    </div>
+    <p class="kbd">← → pour avancer · espace pour lancer ou mettre en pause</p>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-gram">
+    <p class="eyebrow">La grammaire</p>
+    <h2 id="t-gram">Lis d'abord le premier chiffre.</h2>
+    <p>Le premier chiffre donne la famille, et la famille dit de quel côté chercher. Les deux autres chiffres précisent. Tu n'as pas besoin de tout retenir : connais les trois familles et une poignée de codes.</p>
+    <div class="grid three" style="margin-top:28px">
+      <div class="card fam f2">
+        <div class="big">2xx</div>
+        <p class="who">✅ Ça a marché</p>
+        <p class="muted small" style="margin:0">La demande était bonne, le serveur l'a traitée.</p>
+        <ul>
+          <li><code>200</code><span>OK, voilà ce que tu as demandé</span></li>
+          <li><code>201</code><span>Créé (après un POST)</span></li>
+          <li><code>204</code><span>Fait, rien à renvoyer</span></li>
+        </ul>
+      </div>
+      <div class="card fam f4">
+        <div class="big">4xx</div>
+        <p class="who">🙋 La demande pose problème</p>
+        <p class="muted small" style="margin:0">Le serveur va bien. C'est ce qu'on lui demande qui ne va pas.</p>
+        <ul>
+          <li><code>400</code><span>Demande mal formée</span></li>
+          <li><code>401</code><span>Pas connecté</span></li>
+          <li><code>403</code><span>Connecté, mais pas le droit</span></li>
+          <li><code>404</code><span>Introuvable</span></li>
+          <li><code>409</code><span>Conflit avec l'état actuel</span></li>
+        </ul>
+      </div>
+      <div class="card fam f5">
+        <div class="big">5xx</div>
+        <p class="who">🔥 Le serveur a un problème</p>
+        <p class="muted small" style="margin:0">La demande était peut-être bonne. Le serveur n'a pas réussi à faire son travail.</p>
+        <ul>
+          <li><code>500</code><span>Erreur interne</span></li>
+          <li><code>503</code><span>Indisponible pour l'instant</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="muted small" style="margin-top:18px">Il existe aussi les 1xx (informations) et les 3xx (redirections : « c'est à une autre adresse »). Tu les croiseras moins.</p>
+
+    <div class="grid two" style="margin-top:28px">
+      <div class="card">
+        <h3>À quoi ressemble une réponse</h3>
+        <p class="muted small">Le code arrive sur la toute première ligne, avant les données.</p>
+<pre class="codebox"><span class="k">HTTP/1.1</span> <span class="s4">404 Not Found</span>
+Content-Type: application/json
+
+{ "erreur": "Post 999 introuvable" }</pre>
+      </div>
+      <div class="card">
+        <h3>Le plus petit code qui le choisit</h3>
+        <p class="muted small">Côté serveur, en Java avec Spring : c'est toi qui décides du code.</p>
+<pre class="codebox">Post post = posts.trouver(id);
+<span class="k">if</span> (post == <span class="k">null</span>) {
+    <span class="c">// la demande vise un post qui n'existe pas</span>
+    <span class="k">return</span> ResponseEntity.status(<span class="s4">404</span>).build();
+}
+<span class="k">return</span> ResponseEntity.ok(post);  <span class="c">// <span class="s2">200</span> + le post</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-quiz">
+    <p class="eyebrow">Vérifie-toi</p>
+    <h2 id="t-quiz">Trois questions, une minute.</h2>
+    <div class="card" style="padding:0;margin-top:28px" id="quiz">
+      <div class="q" data-bilan="Q1 Mauvais mot de passe">
+        <h3>Tu te connectes avec un mauvais mot de passe. Le serveur répond avec quelle famille ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="0">5xx, le serveur a refusé</button>
+          <button class="choice" data-ok="1">4xx, la demande ne convient pas</button>
+          <button class="choice" data-ok="0">2xx, il a bien répondu</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="Le serveur fonctionne : il a vérifié et refusé. C'est la demande (les identifiants) qui ne convient pas. En pratique, c'est un 401."></div>
+      </div>
+      <div class="q" data-bilan="Q2 Trouver le bug : 500 pour un post absent">
+        <h3>Un développeur a écrit : « si le post n'existe pas, renvoyer 500 ». Qu'est-ce qui cloche ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="0">Rien, une erreur reste une erreur</button>
+          <button class="choice" data-ok="1">Il faut 404 : le serveur va bien, c'est le post qui manque</button>
+          <button class="choice" data-ok="0">Il faut 200 avec un message vide</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="Un 500 fait croire que le serveur est cassé : les équipes reçoivent une alerte pour rien, et l'appli peut réessayer en boucle. Le post absent est un problème de la demande : 404."></div>
+      </div>
+      <div class="q" data-bilan="Q3 Que faire face à un 503">
+        <h3>Un soir de grosse affluence, ton appli reçoit 503. Que doit-elle faire ?</h3>
+        <div class="choices">
+          <button class="choice" data-ok="1">Réessayer un peu plus tard : la demande était bonne</button>
+          <button class="choice" data-ok="0">Demander à l'utilisateur de corriger sa demande</button>
+        </div>
+        <div class="feedback" aria-live="polite" data-why="5xx = le problème est côté serveur, ici une surcharge passagère. La même demande a des chances de marcher dans quelques secondes. Corriger la demande n'aurait aucun sens."></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MONDE RÉEL ===================== -->
+  <section class="reveal" aria-labelledby="t-real">
+    <p class="eyebrow">Le monde réel</p>
+    <h2 id="t-real">En équipe, le code dit où chercher.</h2>
+    <p class="lede">Une vraie appli envoie des dizaines de requêtes par écran. <strong>Quand ça casse, le premier chiffre trie le problème en une seconde.</strong></p>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Problème 1</p>
+      <h4>Trouver la requête qui casse.</h4>
+      <p>L'écran s'affiche à moitié. Un développeur ouvre l'<button class="term" data-term="onglet">onglet Réseau</button> du navigateur : chaque requête y apparaît avec son code. Il cherche les 4xx et les 5xx, et chaque famille l'envoie à un endroit différent.</p>
+      <div class="card" style="margin-top:24px">
+        <div class="net" id="net" aria-live="polite">
+          <div class="head"><span>Méthode</span><span>URL</span><span>Statut</span></div>
+          <div class="empty" id="net-empty">Lance le chargement de l'écran.</div>
+        </div>
+        <div class="notes" id="net-notes"></div>
+        <div class="controls" style="margin-top:16px"><button class="btn primary" id="demo-1">Charger l'écran</button></div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Problème 2</p>
+      <h4>Réessayer, ou pas.</h4>
+      <p>Une appli bien faite <button class="term" data-term="reessai">réessaie</button> toute seule quand c'est utile. Un 5xx est souvent passager : on réessaie en attendant un peu plus à chaque fois. Un 4xx ne changera pas : la même demande donnera la même réponse, réessayer ne sert à rien.</p>
+      <div class="card" style="margin-top:24px">
+        <div class="lanes">
+          <div class="lane"><h3><code>GET /posts/999</code> · le post n'existe pas</h3><div class="track" id="lane-a"></div><div id="lane-a-v"></div></div>
+          <div class="lane"><h3><code>POST /posts/42/like</code> · serveur surchargé</h3><div class="track" id="lane-b"></div><div id="lane-b-v"></div></div>
+        </div>
+        <div class="controls" style="margin-top:16px"><button class="btn primary" id="demo-2">Lancer les deux</button></div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Les outils</p>
+      <h4>Les noms que tu entendras.</h4>
+      <div class="grid two" style="margin-top:22px">
+        <div class="card tool">
+          <span class="tag">Navigateur</span>
+          <h3>L'onglet Réseau (Network)</h3>
+          <p>Dans les outils de développement du navigateur : toutes les requêtes de la page, avec leur code et leur réponse.</p>
+          <p class="where">Clic droit sur une page, « Inspecter », puis « Réseau ».</p>
+        </div>
+        <div class="card tool">
+          <span class="tag">Tester une API</span>
+          <h3>curl, Postman, Bruno</h3>
+          <p>Envoyer une requête à la main et lire le code reçu, sans écrire d'appli.</p>
+          <p class="where">Partout où on construit ou teste une API.</p>
+        </div>
+        <div class="card tool">
+          <span class="tag">Documentation</span>
+          <h3>Swagger / OpenAPI</h3>
+          <p>Une <button class="term" data-term="doc">documentation</button> qui liste chaque route de l'API et les codes qu'elle peut renvoyer.</p>
+          <p class="where">Dans les projets Spring Boot, souvent à l'adresse <code>/swagger-ui</code>.</p>
+        </div>
+        <div class="card tool">
+          <span class="tag">Surveillance</span>
+          <h3>Journaux et alertes</h3>
+          <p>Les <button class="term" data-term="journaux">journaux</button> du serveur expliquent chaque 5xx. Les équipes surveillent le nombre de 5xx et reçoivent une alerte quand il monte.</p>
+          <p class="where">Outils comme Grafana, Datadog ou Sentry.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <p class="eyebrow" style="color:var(--text-2)">Avec l'IA</p>
+      <h4>Elle propose, tu vérifies.</h4>
+      <div class="grid two" style="margin-top:22px">
+        <div class="card"><h3>Ce qu'elle fait bien</h3><p class="muted small" style="margin:0">Choisir le code d'un cas courant (créé, introuvable, pas connecté) et écrire le code Java qui le renvoie.</p></div>
+        <div class="card"><h3>Ce que tu dois vérifier</h3><p class="muted small" style="margin:0">Qu'elle ne renvoie pas 500 pour une demande invalide, ni 200 avec un message d'erreur caché dans les données. Pose-toi la question : qui est en faute, la demande ou le serveur ?</p></div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <p class="eyebrow" style="color:var(--text-2)">Question d'entretien</p>
+        <h3>« Un client envoie un JSON mal formé et ton API répond 500. Qu'est-ce qui ne va pas ? »</h3>
+        <div class="controls" style="margin-top:14px"><button class="btn" id="show-answer">Voir une bonne réponse</button></div>
+        <div class="answer" id="answer">Le problème vient de la demande, pas du serveur : il faut répondre 400 (demande mal formée). Un 500 fait croire à une panne : l'équipe reçoit une alerte pour rien, et le client peut réessayer en boucle une demande qui échouera toujours. En général, la cause est une exception qui n'est pas attrapée : on l'intercepte et on la transforme en 400 avec un message clair.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-lex">
+    <p class="eyebrow">Lexique de la page</p>
+    <h2 id="t-lex">Les mots à retenir.</h2>
+    <p class="muted">Clique sur un mot pour revoir son explication. Ils rejoindront ton lexique dans Notion.</p>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-bilan">
+    <p class="eyebrow">Ton bilan</p>
+    <h2 id="t-bilan">Ce que tu as réussi, prêt à coller.</h2>
+    <p class="muted">Ta première réponse à chaque question compte. Ce site n'enregistre rien : le bouton copie un court résumé, que tu colles à l'expert cours.</p>
+    <div class="card" style="margin-top:28px">
+      <ul class="tally" id="tally"></ul>
+      <div class="controls" style="margin-top:22px">
+        <button class="btn primary" id="copier-bilan">Copier mon bilan</button>
+      </div>
+      <p class="copied" id="copie-msg" aria-live="polite"></p>
+      <textarea class="bilan-texte" id="bilan-texte" readonly hidden aria-label="Texte du bilan"></textarea>
+    </div>
+  </section>
+</div>
+
+<div class="fiche">
+  <h1>Fiche · Les codes de statut HTTP</h1>
+  <p class="lede">L'essentiel sur un écran, à relire la veille.</p>
+  <div class="card" style="margin-top:32px">
+    <h3>L'essentiel</h3>
+    <ul>
+      <li>Chaque réponse HTTP commence par un code de trois chiffres. <b>Lis d'abord le premier.</b></li>
+      <li><b>2xx</b> ça a marché · <b>4xx</b> la demande pose problème · <b>5xx</b> le serveur a un problème.</li>
+      <li>Un serveur en bonne santé peut répondre une mauvaise nouvelle : 404, c'est le serveur qui dit calmement « ça n'existe pas ».</li>
+      <li>À connaître : 200 OK · 201 créé · 204 fait, rien à renvoyer · 400 mal formée · 401 pas connecté · 403 pas le droit · 404 introuvable · 409 conflit · 500 erreur interne · 503 indisponible.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Les pièges</h3>
+    <ul>
+      <li><span class="pitfall">Croire</span> que toute erreur est un problème de serveur : 4xx = la demande.</li>
+      <li><span class="pitfall">Renvoyer 500</span> pour une demande invalide : fausse alerte, réessais inutiles.</li>
+      <li><span class="pitfall">Renvoyer 200</span> avec <code>{"erreur": …}</code> dans les données : l'appli croit que tout va bien.</li>
+      <li><span class="pitfall">Réessayer un 4xx</span> : la même demande donnera la même réponse.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>En vrai</h3>
+    <ul>
+      <li>Quand ça casse, on ouvre l'onglet Réseau : 4xx, on regarde la demande envoyée par l'appli ; 5xx, on lit les journaux du serveur.</li>
+      <li>La documentation Swagger d'une API liste, pour chaque route, les codes qu'elle peut renvoyer.</li>
+    </ul>
+  </div>
+</div>
+</main>
+
+<footer>API web · cours animé. Instagram sert ici d'exemple d'étude ; ce site n'y est pas lié.</footer>
+
+<div class="pop" id="pop" role="dialog" aria-labelledby="pop-t">
+  <p class="pt" id="pop-t"></p>
+  <p class="pd" id="pop-d"></p>
+  <p class="ps" id="pop-s"></p>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+  const SLUG = 'codes-de-statut-http';
+
+  /* ---------- lexique ---------- */
+  const TERMS = {
+    client:{t:'Client', d:'Le programme qui envoie la demande. Ici, l’appli sur ton téléphone.', s:'Toi, tu cliques ; c’est l’appli qui transforme ton clic en requête.'},
+    serveur:{t:'Serveur', d:'L’ordinateur qui reçoit les requêtes, fait le travail et renvoie une réponse.', s:'Il répond toujours, même quand la réponse est « non » ou « introuvable ».'},
+    requete:{t:'Requête', d:'Le message que le client envoie au serveur : une méthode (GET, POST…) et une URL.', s:'Le voyage aller.'},
+    reponse:{t:'Réponse', d:'Le message que le serveur renvoie : un code de statut, puis souvent des données en JSON.', s:'Le voyage retour.'},
+    http:{t:'HTTP', d:'HyperText Transfer Protocol : la langue commune des clients et des serveurs sur le web.', s:'Elle fixe la forme des requêtes, des réponses et des codes de statut.'},
+    statut:{t:'Code de statut', d:'Les trois chiffres au début d’une réponse HTTP. Le premier donne la famille : 2 ça a marché, 4 la demande pose problème, 5 le serveur a un problème.', s:'Exemples : 200, 404, 500.'},
+    base:{t:'Base de données', d:'Le logiciel où les données (les posts, les comptes) sont rangées durablement.', s:'Le serveur lui pose des questions ; l’appli ne lui parle jamais directement.'},
+    url:{t:'URL', d:'L’adresse de ce qu’on demande, par exemple /posts/42.', s:'Elle dit « sur quoi » porte la requête.'},
+    methode:{t:'Méthode HTTP', d:'Le verbe de la requête : GET lire, POST créer, PUT ou PATCH modifier, DELETE supprimer.', s:'Elle dit « ce qu’on veut faire ».'},
+    api:{t:'API', d:'Application Programming Interface : la porte d’entrée d’une application, la liste des demandes qu’un autre programme peut lui faire.', s:'Une API web reçoit ses demandes en HTTP.'},
+    json:{t:'JSON', d:'Une façon d’écrire des données en texte, avec des objets { } et des listes [ ].', s:'C’est souvent ce que contient une réponse, après le code de statut.'},
+    onglet:{t:'Onglet Réseau', d:'Un panneau des outils de développement du navigateur qui liste chaque requête de la page, avec sa méthode, son URL et son code.', s:'En anglais : Network. Clic droit, « Inspecter », puis « Réseau ».'},
+    journaux:{t:'Journaux (logs)', d:'Les lignes que le serveur écrit pendant qu’il travaille : ce qu’il a reçu, ce qu’il a fait, les erreurs.', s:'C’est là qu’on trouve la cause d’un 500.'},
+    reessai:{t:'Réessai', d:'Renvoyer automatiquement une requête qui a échoué, en attendant un peu plus à chaque essai (1 s, 2 s, 4 s…).', s:'Utile pour un 5xx passager, inutile pour un 4xx.'},
+    doc:{t:'Documentation d’API', d:'La description de chaque route d’une API : méthode, URL, données attendues et codes de statut possibles.', s:'Swagger / OpenAPI en est le format le plus répandu.'}
+  };
+
+  const pop = $('pop');
+  let openTerm = null;
+  function showTerm(btn) {
+    const k = TERMS[btn.dataset.term || btn.dataset.t]; if (!k) return;
+    if (openTerm === btn) return hideTerm();
+    if (openTerm) openTerm.setAttribute('aria-expanded', 'false');
+    $('pop-t').textContent = k.t; $('pop-d').textContent = k.d; $('pop-s').textContent = k.s;
+    const r = btn.getBoundingClientRect(), w = pop.offsetWidth || 340;
+    pop.style.left = Math.min(Math.max(16, r.left), innerWidth - w - 16) + 'px';
+    pop.classList.add('on');
+    const h = pop.offsetHeight;
+    pop.style.top = (r.bottom + 10 + h > innerHeight ? Math.max(12, r.top - h - 10) : r.bottom + 10) + 'px';
+    btn.setAttribute('aria-expanded', 'true'); openTerm = btn;
+  }
+  function hideTerm() { pop.classList.remove('on'); if (openTerm) openTerm.setAttribute('aria-expanded', 'false'); openTerm = null; }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { e.preventDefault(); showTerm(t); }
+    else if (!e.target.closest('.pop')) hideTerm();
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') hideTerm(); });
+  addEventListener('scroll', () => openTerm && hideTerm(), {passive:true});
+
+  const rich = s => s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, '<button class="term" data-t="$1">$2</button>');
+  const chips = $('chips');
+  Object.entries(TERMS).forEach(([k, v]) => { const b = document.createElement('button'); b.className = 'term'; b.dataset.t = k; b.textContent = v.t; chips.appendChild(b); });
+
+  /* ---------- les étapes de l'animation ---------- */
+  const STEPS = [
+    {t:'L’appli demande le post 42.', d:'Tu ouvres un post. Le [[client|client]] envoie la [[requete|requête]] <code>GET /posts/42</code> au [[serveur|serveur]] : « donne-moi le post 42 ».', r:'Flèche pleine vers la droite : une demande part.'},
+    {t:'Le serveur cherche, la base trouve.', d:'Le serveur ne garde pas les posts lui-même : il demande à la [[base|base de données]]. Le post 42 existe, la base le renvoie.', r:'Le serveur fait le travail. L’appli, elle, attend.'},
+    {t:'200 : ça a marché.', d:'Le serveur renvoie sa [[reponse|réponse]]. Elle commence par le [[statut|code de statut]] <b>200 OK</b>, suivi du post en [[json|JSON]]. L’appli affiche la photo.', r:'Premier chiffre 2 : tout s’est bien passé.'},
+    {t:'L’appli demande le post 999.', d:'Nouvelle requête : <code>GET /posts/999</code>. Ce post n’a jamais existé, ou il a été supprimé. L’appli ne le sait pas encore.', r:'La demande a la même forme que la première. Seule l’[[url|URL]] change.'},
+    {t:'La base ne trouve rien.', d:'Le serveur cherche le post 999 dans la base. La base répond : « rien ». Personne n’est en panne : la base a bien travaillé, il n’y a juste rien à cet endroit.', r:'Regarde : aucune croix, aucune panne. Tout le monde fonctionne.'},
+    {t:'404 : introuvable.', d:'Le serveur répond calmement <b>404 Not Found</b> : « ce que tu demandes n’existe pas ». Le serveur va bien. C’est la demande qui vise quelque chose d’absent.', r:'Premier chiffre 4 : le problème vient de la demande.'},
+    {t:'Un like, et la base tombe en panne.', d:'Tu likes le post 42 : <code>POST /posts/42/like</code>. Le serveur veut enregistrer le like dans la base… mais la base ne répond plus. Cette fois, il y a une vraie panne, côté serveur.', r:'La croix rouge : c’est une pièce du serveur qui casse, pas ta demande.'},
+    {t:'500 : le serveur a un problème.', d:'Le serveur n’a pas pu faire son travail. Il répond <b>500 Internal Server Error</b>. Ta demande était correcte : réessayer plus tard pourra marcher.', r:'Premier chiffre 5 : le problème vient du serveur.'}
+  ];
+  const PREDIRE_AVANT = 5;
+  const PRED_WHY = 'Le serveur n’a rien cassé : il a cherché, il n’a rien trouvé, et il le dit. Le problème vient de la demande, qui vise un post qui n’existe pas. C’est un 4xx : 404.';
+
+  const SCREENS = {
+    idle:'<div class="who">Ton fil</div><div class="muted">Touche un post pour l’ouvrir.</div>',
+    load42:'<div class="spin"></div><div class="who">Chargement du post 42…</div>',
+    post:'<div class="photo"></div><div class="who">@lou.photo · 2 j’aime</div><span class="chip c2">200 · OK</span>',
+    load999:'<div class="spin"></div><div class="who">Chargement du post 999…</div>',
+    absent:'<div style="font-size:22px">🔍</div><div>Ce post n’existe pas ou a été supprimé.</div><span class="chip c4">404 · introuvable</span>',
+    like:'<div class="spin"></div><div class="who">Envoi du j’aime…</div>',
+    panne:'<div style="font-size:22px">⚠️</div><div>Oups, un problème de notre côté. Réessaie plus tard.</div><span class="chip c5">500 · erreur serveur</span>'
+  };
+  const SCREEN_AT = ['load42','load42','post','load999','load999','absent','like','panne'];
+  let lastScreen = null;
+  function surEtape(cur) {
+    const k = cur < 0 ? 'idle' : SCREEN_AT[cur];
+    if (k === lastScreen) return;
+    lastScreen = k; $('screen').innerHTML = SCREENS[k];
+  }
+
+  /* ---------- moteur pas à pas ---------- */
+  let cur = -1, timer = null, predicted = false;
+  const dots = $('dots'); STEPS.forEach(() => dots.appendChild(document.createElement('i')));
+  const parts = [...document.querySelectorAll('#seq [data-step]')];
+  parts.forEach(p => p.classList.add('msg'));
+  requestAnimationFrame(() => parts.forEach(p => { const l = p.querySelector('.line'); if (l) try { p.style.setProperty('--len', l.getTotalLength()); } catch (e) {} }));
+  const gate = () => PREDIRE_AVANT !== null && cur === PREDIRE_AVANT - 1 && !predicted;
+  function render(animate) {
+    parts.forEach(g => {
+      const i = +g.dataset.step;
+      g.classList.toggle('past', i < cur); g.classList.toggle('now', i === cur); g.classList.remove('draw');
+      if (i === cur && animate && !reduce) { void g.getBBox(); g.classList.add('draw'); }
+    });
+    [...dots.children].forEach((d, i) => { d.className = i < cur ? 'done' : i === cur ? 'now' : ''; });
+    $('stepcount').textContent = cur < 0 ? 'Début' : `Étape ${cur + 1} sur ${STEPS.length}`;
+    const s = STEPS[cur];
+    $('cap-title').textContent = s ? s.t : 'Prête ?';
+    $('cap-text').innerHTML = s ? rich(s.d) : 'Appuie sur « Suivant », ou sur la flèche droite du clavier.';
+    $('cap-read').hidden = !s; if (s) $('cap-read-text').innerHTML = rich(s.r);
+    $('predict').classList.toggle('on', gate());
+    $('prev').disabled = cur < 0;
+    $('next').disabled = cur >= STEPS.length - 1 || gate();
+    surEtape(cur);
+  }
+  const go = (n, animate = true) => { cur = Math.max(-1, Math.min(STEPS.length - 1, n)); render(animate); };
+  function stop() { clearInterval(timer); timer = null; $('play').textContent = 'Lecture'; }
+  function next() { if (gate()) return stop(); if (cur < STEPS.length - 1) go(cur + 1); else stop(); }
+  function play() {
+    if (timer) return stop();
+    if (cur >= STEPS.length - 1) go(-1, false);
+    $('play').textContent = 'Pause'; next();
+    timer = setInterval(() => { next(); if (cur >= STEPS.length - 1 || gate()) stop(); }, 3200);
+  }
+  $('next').onclick = () => { stop(); next(); };
+  $('prev').onclick = () => { stop(); go(cur - 1); };
+  $('play').onclick = play;
+  addEventListener('keydown', e => {
+    if (document.body.classList.contains('mode-fiche')) return;
+    if (e.target.closest && e.target.closest('textarea')) return;
+    if (e.key === ' ' && e.target.closest && e.target.closest('button')) return;
+    if (e.key === 'ArrowRight') { stop(); next(); }
+    else if (e.key === 'ArrowLeft') { stop(); go(cur - 1); }
+    else if (e.key === ' ') { e.preventDefault(); play(); }
+  });
+
+  /* ---------- questions ---------- */
+  function wire(group, fb, onRight) {
+    group.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      const ok = b.dataset.ok === '1';
+      group.querySelectorAll('.choice').forEach(x => x.classList.remove('right', 'wrong'));
+      b.classList.add(ok ? 'right' : 'wrong');
+      fb.textContent = (ok ? 'Exact. ' : 'Pas tout à fait. ') + (fb.dataset.why || '');
+      if (ok && onRight) onRight();
+    }));
+  }
+  const pfb = $('predict-fb'); pfb.dataset.why = PRED_WHY;
+  wire($('predict'), pfb, () => { predicted = true; render(false); $('next').focus(); });
+  document.querySelectorAll('#quiz .q').forEach(q => wire(q, q.querySelector('.feedback')));
+
+  /* ---------- bilan ---------- */
+  const answers = new Map();
+  const bilanGroups = [...document.querySelectorAll('[data-bilan]')].filter(g => g.id !== 'predict' || PREDIRE_AVANT !== null);
+  bilanGroups.forEach(g => {
+    const li = document.createElement('li'), lab = document.createElement('span'), pill = document.createElement('span');
+    lab.textContent = g.dataset.bilan; pill.className = 'pill'; pill.textContent = 'non faite';
+    li.append(lab, pill); $('tally').appendChild(li);
+    g.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      if (answers.has(g)) return;
+      const v = b.dataset.ok === '1' ? 'juste' : 'fausse';
+      answers.set(g, v); pill.textContent = v; pill.className = 'pill ' + v;
+      if (!reduce) { void pill.offsetWidth; pill.classList.add('bump'); }
+    }));
+  });
+  function texteBilan() {
+    const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
+    return [`Bilan · ${document.title} · ${date}`, ...bilanGroups.map(g => `${g.dataset.bilan} : ${answers.get(g) || 'non faite'}`)].join('\n');
+  }
+  async function copierBilan() {
+    const txt = texteBilan(), msg = $('copie-msg'), ta = $('bilan-texte');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    if (!ok) { ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} }
+    msg.textContent = ok ? 'Copié. Colle-le à l’expert cours.' : 'Le texte est sélectionné ci-dessous : copie-le (⌘ C), puis colle-le à l’expert cours.';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+  }
+  window.copierBilan = copierBilan;
+  $('copier-bilan').onclick = copierBilan;
+
+  /* ---------- monde réel ---------- */
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; e.innerHTML = html; return e; };
+
+  /* 1. l'onglet Réseau */
+  const REQS = [
+    ['GET', '/feed', 200], ['GET', '/stories', 200], ['GET', '/posts/42', 200],
+    ['POST', '/posts/42/like', 500], ['GET', '/avatars/lou.png', 404], ['GET', '/notifications', 200]
+  ];
+  let netBusy = false;
+  $('demo-1').onclick = async () => {
+    if (netBusy) return; netBusy = true; $('demo-1').disabled = true;
+    const net = $('net'), notes = $('net-notes');
+    net.querySelectorAll('.row').forEach(r => r.remove()); notes.innerHTML = '';
+    $('net-empty').hidden = true;
+    for (const [m, u, c] of REQS) {
+      await wait(450);
+      const fam = String(c)[0];
+      const row = el('div', 'row' + (fam === '5' ? ' hot' : fam === '4' ? ' mid' : ''), `<span>${m}</span><span>${u}</span><span class="chip c${fam}">${c}</span>`);
+      net.appendChild(row);
+    }
+    await wait(600);
+    notes.appendChild(el('div', 'note n5', '<b>500 sur le like</b> : la demande était bonne, le serveur a échoué. On lit les journaux du serveur pour trouver la cause.'));
+    await wait(500);
+    notes.appendChild(el('div', 'note n4', '<b>404 sur l’avatar</b> : le serveur va bien, l’image demandée n’existe pas. On vérifie l’URL que l’appli envoie.'));
+    netBusy = false; $('demo-1').disabled = false; $('demo-1').textContent = 'Recharger l’écran';
+  };
+
+  /* 2. réessayer ou pas */
+  let laneBusy = false;
+  async function runLane(id, codes) {
+    const t = $(id), v = $(id + '-v'); t.innerHTML = ''; v.innerHTML = '';
+    for (let i = 0; i < codes.length; i++) {
+      if (i > 0) { t.appendChild(el('span', 'wait', `attente ${2 ** (i - 1)} s`)); await wait(2 ** (i - 1) * 500); }
+      const c = codes[i], fam = String(c)[0];
+      t.appendChild(el('span', 'chip c' + fam, `essai ${i + 1} · ${c}`));
+      await wait(350);
+    }
+  }
+  $('demo-2').onclick = async () => {
+    if (laneBusy) return; laneBusy = true; $('demo-2').disabled = true;
+    await Promise.all([runLane('lane-a', [404, 404, 404]), runLane('lane-b', [503, 503, 200])]);
+    $('lane-a-v').appendChild(el('div', 'verdict', '✋ Inutile : un 4xx ne change pas. Il fallait s’arrêter au premier essai et prévenir l’utilisateur.'));
+    $('lane-b-v').appendChild(el('div', 'verdict', '✅ Utile : la surcharge était passagère. Au troisième essai, le like passe.'));
+    laneBusy = false; $('demo-2').disabled = false; $('demo-2').textContent = 'Relancer';
+  };
+
+  $('show-answer').onclick = () => { const on = $('answer').classList.toggle('on'); $('show-answer').textContent = on ? 'Masquer la réponse' : 'Voir une bonne réponse'; };
+
+  /* ---------- Cours / Fiche ---------- */
+  const seg = $('seg');
+  seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.mode; seg.dataset.mode = m;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.body.classList.toggle('mode-fiche', m === 'fiche');
+    hideTerm(); stop(); scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+    try { localStorage.setItem('mode-' + SLUG, m); } catch (e) {}
+  }));
+  try { if (location.hash === '#fiche' || localStorage.getItem('mode-' + SLUG) === 'fiche') seg.querySelector('[data-mode="fiche"]').click(); } catch (e) {}
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.08});
+  document.querySelectorAll('.reveal').forEach(s => io.observe(s));
+
+  render(false);
+})();
+</script>
+</body>
+</html>
