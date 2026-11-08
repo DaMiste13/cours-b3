@@ -4,27 +4,140 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cours animés</title>
+<meta name="description" content="Mes cours d'informatique en pages animées : une page par cours, une page par notion.">
 <style>
-:root{--bg:#f5f5f7;--surface:#fff;--text:#1d1d1f;--text-2:#6e6e73;--accent:#0071e3;--shadow:0 2px 6px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06)}
-@media (prefers-color-scheme:dark){:root{--bg:#000;--surface:#1c1c1e;--text:#f5f5f7;--text-2:#a1a1a6;--accent:#2997ff;--shadow:0 0 0 1px rgba(255,255,255,.06)}}
+:root{--bg:#f5f5f7;--surface:#fff;--surface-2:#fbfbfd;--text:#1d1d1f;--text-2:#6e6e73;--hairline:rgba(0,0,0,.08);--accent:#0071e3;--accent-soft:rgba(0,113,227,.10);
+  --ok:#28a745;--warn:#bf4800;--like:#ff375f;--shadow:0 2px 6px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06);--ease:cubic-bezier(.25,.1,.25,1);--spring:cubic-bezier(.34,1.32,.64,1)}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--surface:#1c1c1e;--surface-2:#161618;--text:#f5f5f7;--text-2:#a1a1a6;--hairline:rgba(255,255,255,.10);--accent:#2997ff;--accent-soft:rgba(41,151,255,.16);
+  --ok:#30d158;--warn:#ff9f0a;--like:#ff375f;--shadow:0 0 0 1px rgba(255,255,255,.06)}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
-main{max-width:980px;margin:0 auto;padding:72px 22px 96px}
-h1{font-size:clamp(40px,7vw,56px);letter-spacing:-.035em;line-height:1.05;margin:0 0 12px}
-p{color:var(--text-2);font-size:21px;margin:0 0 40px;max-width:640px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--hairline)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.crumb{font-size:12px;color:var(--text)}
+.seg{display:inline-flex;background:var(--hairline);border-radius:9px;padding:2px;position:relative;flex:none}
+.seg button{all:unset;cursor:pointer;font-size:13px;font-weight:500;padding:5px 14px;border-radius:7px;position:relative;z-index:1;color:var(--text)}
+.seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc(50% - 2px);background:var(--surface);border-radius:7px;box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .35s var(--spring)}
+.seg[data-mode="fiche"] .thumb{transform:translateX(100%)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+main{max-width:980px;margin:0 auto;padding:0 22px 96px}
+h1{font-size:clamp(40px,7vw,56px);letter-spacing:-.035em;line-height:1.05;margin:72px 0 12px}
+.lede{color:var(--text-2);font-size:21px;margin:0 0 48px;max-width:640px}
 .eyebrow{font-size:14px;font-weight:600;color:var(--accent);margin:0 0 12px}
-a.card{display:block;background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:26px 28px;color:inherit;text-decoration:none;transition:transform .3s cubic-bezier(.25,.1,.25,1)}
+.card{display:block;background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:26px 28px;color:inherit}
+a.card{transition:transform .3s var(--ease)}
 a.card:hover{transform:translateY(-3px)}
-a.card h2{margin:0 0 6px;font-size:24px;letter-spacing:-.025em}
-a.card span{color:var(--text-2);font-size:15px}
+a.card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.card h2{margin:0 0 6px;font-size:24px;letter-spacing:-.025em}
+.card span{color:var(--text-2);font-size:15px}
+.list{display:grid;gap:14px}
+.course{display:grid;gap:10px}
+.sub{display:flex;flex-wrap:wrap;gap:8px;padding-left:4px}
+.sub a{font-size:14px;background:var(--surface);box-shadow:var(--shadow);border-radius:980px;padding:7px 14px;transition:transform .25s var(--ease)}
+.sub a:hover{transform:translateY(-2px)}
+.rise{opacity:0;transform:translateY(16px);animation:rise .7s var(--ease) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.mini{display:flex;height:6px;border-radius:980px;overflow:hidden;background:var(--hairline);margin-top:16px}
+.mini i{display:block;height:100%;width:0;transition:width .9s var(--spring)}
+.mini .a{background:var(--ok)}.mini .f{background:var(--warn)}.mini .m{background:var(--like)}
+.fiche{display:none}
+body.mode-fiche .cours{display:none}
+body.mode-fiche .fiche{display:block;animation:rise .5s var(--spring) both}
+.bilan{margin-top:64px}
+.btn{all:unset;cursor:pointer;font-size:14px;font-weight:500;padding:8px 16px;border-radius:980px;background:var(--accent);color:#fff;transition:transform .2s var(--ease)}
+.btn:active{transform:scale(.96)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.copied{margin:12px 0 0;font-size:15px;color:var(--ok);font-weight:600;min-height:1.4em;opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease),transform .45s var(--spring)}
+.copied.on{opacity:1;transform:none}
+.bilan-texte{display:block;width:100%;min-height:120px;margin-top:12px;border-radius:14px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);font:13.5px/1.6 "SF Mono",ui-monospace,Menlo,monospace;padding:14px 16px}
+.bilan-texte[hidden]{display:none}
+.muted{color:var(--text-2)}
+footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color:var(--text-2);border-top:1px solid var(--hairline)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.rise{opacity:1;transform:none}}
 </style>
 </head>
 <body>
+<header class="nav">
+  <div class="nav-in">
+    <div class="crumb"><b>Cours animés</b></div>
+    <div class="seg" id="seg" data-mode="cours" role="tablist" aria-label="Affichage">
+      <span class="thumb" aria-hidden="true"></span>
+      <button role="tab" aria-selected="true" data-mode="cours">Cours</button>
+      <button role="tab" aria-selected="false" data-mode="fiche">Fiche</button>
+    </div>
+  </div>
+</header>
 <main>
+<div class="cours">
   <h1>Cours animés.</h1>
-  <p>Chaque notion expliquée pas à pas, avec ses animations, son monde réel et sa fiche de révision.</p>
-  <p class="eyebrow">Fil rouge Instagram</p>
-  <a class="card" href="notions/diagramme-de-sequence/"><h2>Lire un diagramme de séquence</h2><span>Ce qui se passe quand tu aimes une photo.</span></a>
+  <p class="lede">Chaque cours a sa carte des notions. Chaque notion est expliquée pas à pas, avec ses animations, son monde réel et sa fiche de révision.</p>
+  <p class="eyebrow">Les cours</p>
+  <div class="list">
+    <div class="course rise">
+      <a class="card" href="cours/architecture-hexagonale-ddd/"><h2>Architecture hexagonale et DDD</h2><span>Le métier au centre, la technique branchée autour. Carte des notions et chemin conseillé.</span>
+        <div class="mini" aria-hidden="true"><i class="a" id="m-a"></i><i class="f" id="m-f"></i><i class="m" id="m-m"></i></div></a>
+      <div class="sub"><a href="notions/diagramme-de-sequence/">Lire un diagramme de séquence</a></div>
+    </div>
+  </div>
+  <div class="bilan rise" style="animation-delay:.15s">
+    <p class="eyebrow">Ton bilan</p>
+    <p class="muted" style="margin:0 0 16px;max-width:640px">Tes marques restent dans ce navigateur. Le bouton copie où tu en es dans chaque cours, à coller à l'expert cours.</p>
+    <button class="btn" id="copier-bilan">Copier mon bilan</button>
+    <p class="copied" id="copie-msg" aria-live="polite"></p>
+    <textarea class="bilan-texte" id="bilan-texte" readonly hidden aria-label="Texte du bilan"></textarea>
+  </div>
+</div>
+<div class="fiche">
+  <h1>Toutes les fiches.</h1>
+  <p class="lede">Pour réviser vite : chaque lien ouvre directement la face Fiche.</p>
+  <div class="list">
+    <a class="card" href="cours/architecture-hexagonale-ddd/#fiche"><h2>Architecture hexagonale et DDD</h2><span>Le module sur un écran : à quoi il sert, les notions dans l'ordre, les trois pièges.</span></a>
+    <a class="card" href="notions/diagramme-de-sequence/#fiche"><h2>Lire un diagramme de séquence</h2><span>Lire en trois temps, les quatre signes, les pièges.</span></a>
+  </div>
+</div>
 </main>
+<footer>Mes propres explications, jamais les supports d'une école. Instagram sert d'exemple d'étude dans certaines pages ; ce site n'y est pas lié.</footer>
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+  const TERMS = {};
+  /* les cours publiés : clé de leur état local et nombre de notions */
+  const COURS = [
+    {titre:'Architecture hexagonale et DDD', cle:'etat-cours-architecture-hexagonale-ddd', total:19, barre:['m-a', 'm-f', 'm-m']}
+  ];
+  const lire = cle => { try { return JSON.parse(localStorage.getItem(cle) || '{}') || {}; } catch (e) { return {}; } };
+  const compte = (etat, s) => Object.values(etat).filter(v => v === s).length;
+  COURS.forEach(c => {
+    const e = lire(c.cle);
+    ['acquise', 'fragile', 'manquante'].forEach((s, i) => { const el = $(c.barre[i]); if (el) setTimeout(() => { el.style.width = (compte(e, s) / c.total * 100) + '%'; }, reduce ? 0 : 400); });
+  });
+  function texteBilan() {
+    const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
+    return [`Bilan · ${document.title} · ${date}`, ...COURS.map(c => {
+      const e = lire(c.cle), a = compte(e, 'acquise'), f = compte(e, 'fragile'), m = compte(e, 'manquante');
+      return `${c.titre} : ${a} acquise(s), ${f} fragile(s), ${m} manquante(s), ${c.total - a - f - m} non marquée(s)`;
+    })].join('\n');
+  }
+  async function copierBilan() {
+    const txt = texteBilan(), msg = $('copie-msg'), ta = $('bilan-texte');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    if (!ok) { ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} }
+    msg.textContent = ok ? 'Copié. Colle-le à l’expert cours.' : 'Le texte est sélectionné ci-dessous : copie-le (⌘ C), puis colle-le à l’expert cours.';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+  }
+  window.copierBilan = copierBilan;
+  $('copier-bilan').onclick = copierBilan;
+  const seg = $('seg');
+  seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.mode; seg.dataset.mode = m;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.body.classList.toggle('mode-fiche', m === 'fiche');
+  }));
+  if (location.hash === '#fiche') seg.querySelector('[data-mode="fiche"]').click();
+})();
+</script>
 </body>
 </html>

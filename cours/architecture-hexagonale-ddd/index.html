@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture hexagonale et DDD</title>
+<meta name="description" content="La carte animée des notions du module : ce qu'il faut savoir avant quoi, et la liste des notions dans l'ordre.">
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#fbfbfd;
+  --text:#1d1d1f; --text-2:#6e6e73; --hairline:rgba(0,0,0,.08);
+  --accent:#0071e3; --accent-soft:rgba(0,113,227,.10);
+  --like:#ff375f; --like-soft:rgba(255,55,95,.10); --ok:#28a745; --ok-soft:rgba(40,167,69,.12); --warn:#bf4800; --warn-soft:rgba(191,72,0,.10);
+  --line:#86868b; --dim:rgba(29,29,31,.22);
+  --shadow:0 2px 6px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.06);
+  --radius:22px; --ease:cubic-bezier(.25,.1,.25,1); --spring:cubic-bezier(.34,1.32,.64,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#000000; --surface:#1c1c1e; --surface-2:#161618;
+    --text:#f5f5f7; --text-2:#a1a1a6; --hairline:rgba(255,255,255,.10);
+    --accent:#2997ff; --accent-soft:rgba(41,151,255,.16);
+    --like:#ff375f; --like-soft:rgba(255,55,95,.16); --ok:#30d158; --ok-soft:rgba(48,209,88,.16); --warn:#ff9f0a; --warn-soft:rgba(255,159,10,.14);
+    --line:#8e8e93; --dim:rgba(245,245,247,.20);
+    --shadow:0 0 0 1px rgba(255,255,255,.06);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+b,strong{font-weight:600}
+
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--hairline)}
+.nav-in{max-width:980px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.crumb{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb a{color:var(--text-2)}
+.crumb b{color:var(--text)}
+
+.seg{display:inline-flex;background:var(--hairline);border-radius:9px;padding:2px;position:relative;flex:none}
+.seg button{all:unset;cursor:pointer;font-size:13px;font-weight:500;padding:5px 14px;border-radius:7px;position:relative;z-index:1;color:var(--text)}
+.seg .thumb{position:absolute;top:2px;bottom:2px;left:2px;width:calc(50% - 2px);background:var(--surface);border-radius:7px;
+  box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .35s var(--spring)}
+.seg[data-mode="fiche"] .thumb{transform:translateX(100%)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+main{max-width:980px;margin:0 auto;padding:0 22px 120px}
+section{margin-top:96px}
+.eyebrow{font-size:14px;font-weight:600;color:var(--accent);letter-spacing:-.01em;margin:0 0 8px}
+h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:72px 0 16px}
+h2{font-size:clamp(30px,4.6vw,44px);line-height:1.1;letter-spacing:-.03em;font-weight:700;margin:0 0 14px}
+h3{font-size:21px;line-height:1.25;letter-spacing:-.02em;font-weight:600;margin:0 0 6px}
+.lede{font-size:clamp(19px,2.4vw,24px);line-height:1.38;color:var(--text-2);max-width:720px;margin:0;letter-spacing:-.02em}
+.lede strong{color:var(--text)}
+p{max-width:680px}
+.muted{color:var(--text-2)}
+.small{font-size:15px}
+
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+.grid{display:grid;gap:18px}
+@media (min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+/* mots du lexique : on clique, une bulle explique */
+.term{all:unset;cursor:help;border-bottom:1.5px dotted currentColor;color:inherit;transition:color .2s var(--ease)}
+.term:hover,.term[aria-expanded="true"]{color:var(--accent)}
+.term:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.pop{position:fixed;z-index:50;width:min(340px,calc(100vw - 32px));background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 0 0 1px var(--hairline);padding:16px 18px;
+  opacity:0;transform:translateY(6px) scale(.97);transform-origin:top left;pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--spring)}
+.pop.on{opacity:1;transform:none;pointer-events:auto}
+.pop .pt{font-weight:700;font-size:17px;margin:0 0 6px}
+.pop .pd{margin:0;font-size:15px;line-height:1.45}
+.pop .ps{margin:10px 0 0;font-size:14px;color:var(--text-2);line-height:1.45}
+.pop .ps:empty{display:none}
+
+/* ---------- l'hexagone d'ouverture ---------- */
+.hero{display:grid;gap:12px;align-items:center}
+@media (min-width:860px){.hero{grid-template-columns:1.35fr .65fr}.hero h1{font-size:clamp(40px,5.2vw,52px)}}
+.hx{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
+.hx text{font-family:inherit;fill:var(--text);text-anchor:middle}
+.hx .core{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.hx .core-t{font-size:18px;font-weight:700}
+.hx .core-s{font-size:12px;fill:var(--text-2)}
+.hx .port{fill:var(--surface);stroke:var(--accent);stroke-width:2;animation:portOn 7s var(--ease) infinite both}
+.hx .ad rect{fill:var(--surface);stroke:var(--hairline);stroke-width:1}
+.hx .ad text{font-size:13px;font-weight:600}
+.hx .ad .k{font-size:10.5px;font-weight:400;fill:var(--text-2)}
+.hx .ad{animation:plug 7s var(--ease) infinite both}
+.hx .wire{stroke:var(--accent);stroke-width:2;fill:none;stroke-dasharray:24;animation:wire 7s var(--ease) infinite both}
+.hx .a2,.hx .a2 .wire,.hx .p2{animation-delay:.6s}
+.hx .a3,.hx .a3 .wire,.hx .p3{animation-delay:1.2s}
+@keyframes plug{0%{opacity:0;transform:translate(var(--dx),var(--dy))}14%,80%{opacity:1;transform:none}92%,100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+@keyframes wire{0%,12%{stroke-dashoffset:24}24%,80%{stroke-dashoffset:0}92%,100%{stroke-dashoffset:24}}
+@keyframes portOn{0%,16%{fill:var(--surface)}26%,80%{fill:var(--accent)}92%,100%{fill:var(--surface)}}
+.hx-cap{font-size:13px;color:var(--text-2);text-align:center;margin:6px auto 0}
+
+/* ---------- pourquoi : trois petites scènes ---------- */
+.glyph{height:64px;display:flex;align-items:center;margin-bottom:14px}
+.glyph svg{width:100%;max-width:200px;height:56px}
+.glyph .blk{fill:var(--surface-2);stroke:var(--line);stroke-width:1.4}
+.glyph .blk.c{fill:var(--accent-soft);stroke:var(--accent)}
+.glyph .swap-out{animation:swapOut 4.5s var(--ease) infinite}
+.glyph .swap-in{animation:swapIn 4.5s var(--ease) infinite}
+@keyframes swapOut{0%,30%{transform:none;opacity:1}45%,100%{transform:translateY(-26px);opacity:0}}
+@keyframes swapIn{0%,45%{transform:translateY(26px);opacity:0}60%,100%{transform:none;opacity:1}}
+.glyph .chk{fill:none;stroke:var(--ok);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;animation:check 3.2s var(--ease) infinite}
+@keyframes check{0%,15%{stroke-dashoffset:60}45%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:-60}}
+.glyph .bub rect{fill:var(--surface-2);stroke:var(--line);stroke-width:1.2}
+.glyph .bub text{font-family:inherit;font-size:12px;font-weight:600;fill:var(--text);text-anchor:middle}
+.glyph .bub.b2 rect{fill:var(--accent-soft);stroke:var(--accent)}
+.glyph .bub{animation:talk 4s var(--ease) infinite both}
+.glyph .bub.b2{animation-delay:1s}
+@keyframes talk{0%{opacity:0;transform:scale(.7)}12%,75%{opacity:1;transform:none}90%,100%{opacity:0;transform:scale(.9)}}
+.glyph .bub,.glyph .swap-in,.glyph .swap-out{transform-box:fill-box;transform-origin:center}
+
+/* ---------- la carte des notions ---------- */
+.stage{margin-top:28px;padding:0;overflow:hidden}
+.stage-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;border-bottom:1px solid var(--hairline)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:background .3s var(--ease),transform .3s var(--spring)}
+.dots i.done{background:var(--text-2)}
+.dots i.now{background:var(--accent);transform:scale(1.35)}
+.stepcount{font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.map-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+svg.map{display:block;width:100%;min-width:720px;height:auto}
+.map text{font-family:inherit;fill:var(--text);text-anchor:middle;pointer-events:none}
+.mnode{cursor:pointer;outline:none;transition:opacity .5s var(--ease)}
+.mnode .in{transform-box:fill-box;transform-origin:center;transition:transform .35s var(--spring)}
+.mnode rect{fill:var(--surface-2);stroke:var(--line);stroke-width:1;transition:fill .35s var(--ease),stroke .35s var(--ease),stroke-width .2s var(--ease)}
+.mnode .nm{font-size:12.5px;font-weight:600}
+.mnode .sb{font-size:10.5px;fill:var(--text-2)}
+.mnode.ghost{opacity:.14;pointer-events:none}
+.mnode.now rect{stroke:var(--accent);stroke-width:2;fill:var(--accent-soft)}
+.mnode.now .in{animation:nodePop .55s var(--spring)}
+@keyframes nodePop{from{transform:scale(.82);opacity:.2}to{transform:none;opacity:1}}
+.mnode:hover .in{transform:scale(1.04)}
+.mnode:focus-visible rect,.mnode.sel rect{stroke:var(--accent);stroke-width:2.5}
+.mnode.st-acquise rect{fill:var(--ok-soft);stroke:var(--ok)}
+.mnode.st-fragile rect{fill:var(--warn-soft);stroke:var(--warn)}
+.mnode.st-manquante rect{fill:var(--like-soft);stroke:var(--like);stroke-dasharray:5 4}
+.mnode.sel rect{stroke-dasharray:none;stroke-width:3}
+.mnode.sel rect{filter:drop-shadow(0 0 6px var(--accent-soft)) drop-shadow(0 0 2px var(--accent))}
+.edge{fill:none;stroke:var(--line);stroke-width:1.4;opacity:0;transition:opacity .45s var(--ease)}
+.edge.seen{opacity:.55}
+.edge.now{opacity:1;stroke:var(--accent);stroke-width:2}
+.edge.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw .8s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.stage-bottom{display:grid;border-top:1px solid var(--hairline)}
+@media (min-width:760px){.stage-bottom{grid-template-columns:1fr 300px}}
+.caption{padding:22px 24px}
+.caption .read{margin-top:12px;font-size:15px;color:var(--text-2);display:flex;gap:10px;align-items:flex-start}
+.caption .read b{color:var(--text);white-space:nowrap}
+.detail{padding:20px 24px;border-left:1px solid var(--hairline)}
+@media (max-width:759px){.detail{border-left:0;border-top:1px solid var(--hairline)}}
+.detail h3{font-size:19px}
+.legend{list-style:none;margin:10px 0 0;padding:0;font-size:14px}
+.legend li{display:flex;align-items:center;gap:10px;margin:7px 0}
+.sw{width:22px;height:14px;border-radius:5px;border:1.5px solid var(--line);background:var(--surface-2);flex:none}
+.sw.acquise{border-color:var(--ok);background:var(--ok-soft)}
+.sw.fragile{border-color:var(--warn);background:var(--warn-soft)}
+.sw.manquante{border-color:var(--like);background:var(--like-soft);border-style:dashed}
+.info{animation:rise .45s var(--spring)}
+.states{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.st{all:unset;cursor:pointer;font-size:13px;font-weight:600;padding:7px 12px;border-radius:980px;border:1px solid var(--hairline);background:var(--surface);transition:all .25s var(--ease)}
+.st:hover{border-color:var(--accent)}
+.st:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.st[aria-pressed="true"][data-st="acquise"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.st[aria-pressed="true"][data-st="fragile"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.st[aria-pressed="true"][data-st="manquante"]{background:var(--like);border-color:var(--like);color:#fff}
+.go{margin:14px 0 0;font-size:15px}
+.soon{display:inline-block;font-size:12px;font-weight:600;color:var(--text-2);background:var(--hairline);border-radius:980px;padding:3px 10px}
+
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-size:14px;font-weight:500;padding:8px 16px;border-radius:980px;background:var(--hairline);color:var(--text);
+  transition:transform .2s var(--ease),background .2s var(--ease);-webkit-user-select:none;user-select:none;text-align:center}
+.btn:hover{background:color-mix(in srgb,var(--hairline) 100%,var(--text) 6%)}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+@media (max-width:560px){.stage-top{flex-wrap:wrap}.stage-top .controls{width:100%}.stage-top .btn{flex:1}}
+.kbd{font-size:12px;color:var(--text-2);text-align:right;margin:12px 4px 0;max-width:none}
+
+.predict{margin:0 24px 22px;padding:18px;border-radius:16px;background:var(--accent-soft);display:none}
+.predict.on{display:block;animation:rise .5s var(--spring)}
+.predict p{margin:0 0 12px;font-weight:600}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+.choice{all:unset;cursor:pointer;background:var(--surface);border-radius:12px;padding:10px 14px;font-size:15px;border:1px solid var(--hairline);transition:all .25s var(--ease)}
+.choice:hover{border-color:var(--accent)}
+.choice.right{border-color:var(--ok);color:var(--ok);font-weight:600}
+.choice.wrong{border-color:var(--warn);color:var(--warn)}
+.choice:focus-visible{outline:2px solid var(--accent)}
+.feedback{margin-top:12px;font-size:15px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- la liste des notions ---------- */
+.notions{list-style:none;margin:28px 0 0;padding:0}
+.notions li{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:16px 20px;background:var(--surface);
+  border-radius:16px;box-shadow:var(--shadow);margin-top:10px;opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.notions.in li{opacity:1;transform:none}
+.notions .pn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--accent-soft);color:var(--accent);
+  position:relative;transition:background .35s var(--ease),color .35s var(--ease)}
+.notions li.st-acquise .pn{background:var(--ok);color:#fff}
+.notions li.st-fragile .pn{background:var(--warn);color:#fff}
+.notions li.st-manquante .pn{background:var(--like);color:#fff}
+.notions .nn{font-weight:600}
+.notions .nr{display:block;font-size:14px;color:var(--text-2);line-height:1.4}
+.notions .act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.notions .mark{all:unset;cursor:pointer;font-size:13px;color:var(--accent)}
+.notions .mark:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (max-width:620px){.notions li{grid-template-columns:40px 1fr}.notions .act{grid-column:2;justify-content:flex-start}}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chips .term{border:0;background:var(--surface);box-shadow:var(--shadow);border-radius:980px;padding:8px 14px;font-size:15px}
+
+/* ---------- bilan ---------- */
+.bar{display:flex;height:12px;border-radius:980px;overflow:hidden;background:var(--hairline);margin:4px 0 14px}
+.bar i{display:block;height:100%;width:0;transition:width .8s var(--spring)}
+.bar .b-acquise{background:var(--ok)}
+.bar .b-fragile{background:var(--warn)}
+.bar .b-manquante{background:var(--like)}
+.counts{display:flex;gap:24px;flex-wrap:wrap;font-size:14px;color:var(--text-2)}
+.counts b{display:block;font-size:28px;color:var(--text);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.counts b.bump{animation:bump .55s var(--spring)}
+@keyframes bump{from{transform:scale(.6);opacity:.2}to{transform:none;opacity:1}}
+.copied{margin:14px 0 0;font-size:15px;color:var(--ok);font-weight:600;min-height:1.4em;opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease),transform .45s var(--spring)}
+.copied.on{opacity:1;transform:none}
+.bilan-texte{display:block;width:100%;min-height:160px;margin-top:14px;border-radius:14px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);font:13.5px/1.6 "SF Mono",ui-monospace,Menlo,monospace;padding:14px 16px;resize:vertical}
+.bilan-texte[hidden]{display:none}
+
+/* ---------- fiche ---------- */
+.fiche{display:none}
+body.mode-fiche .cours{display:none}
+body.mode-fiche .fiche{display:block;animation:rise .5s var(--spring)}
+.fiche h1{margin-top:56px}
+.fiche .card + .card{margin-top:18px}
+.fiche ul,.fiche ol{margin:8px 0 0;padding-left:22px}
+.fiche li{margin:5px 0}
+.fiche ol.cols{columns:2 260px;column-gap:32px}
+.pitfall{color:var(--warn);font-weight:600}
+
+footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color:var(--text-2);border-top:1px solid var(--hairline)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .hx *,.glyph *{animation:none!important}
+  .reveal,.notions li{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="crumb"><a href="../../">Cours animés</a> · <b>Architecture hexagonale et DDD</b></div>
+    <div class="seg" id="seg" data-mode="cours" role="tablist" aria-label="Affichage">
+      <span class="thumb" aria-hidden="true"></span>
+      <button role="tab" aria-selected="true" data-mode="cours">Cours</button>
+      <button role="tab" aria-selected="false" data-mode="fiche">Fiche</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="cours">
+
+  <div class="hero">
+    <div>
+      <h1>Un domaine au centre.<br>Le reste se branche.</h1>
+      <p class="lede">Ce module apprend à ranger une application pour qu'elle reste facile à changer. <strong>Les règles du métier au milieu, la technique autour, branchée comme un appareil sur une prise.</strong> Puis à parler la langue du métier, et à dessiner le tout pour l'expliquer.</p>
+      <p class="muted small" style="margin-top:22px">Les mots soulignés en pointillés s'expliquent : clique dessus.</p>
+    </div>
+    <div>
+      <svg class="hx" viewBox="0 0 420 320" role="img" aria-labelledby="hx-t">
+        <title id="hx-t">Le domaine au centre d'un hexagone ; le web, la base de données et les tests se branchent sur ses prises</title>
+        <defs>
+          <marker id="hx-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+          </marker>
+        </defs>
+        <polygon class="core" points="305,150 257.5,67.7 162.5,67.7 115,150 162.5,232.3 257.5,232.3"/>
+        <text class="core-t" x="210" y="146">Domaine</text>
+        <text class="core-s" x="210" y="166">les règles du métier</text>
+        <circle class="port p1" cx="115" cy="150" r="7"/>
+        <circle class="port p2" cx="305" cy="150" r="7"/>
+        <circle class="port p3" cx="210" cy="232.3" r="7"/>
+        <g class="ad a1" style="--dx:-34px;--dy:0px">
+          <rect x="6" y="128" width="84" height="44" rx="11"/>
+          <text x="48" y="148">Web</text><text class="k" x="48" y="163">adaptateur</text>
+          <path class="wire" d="M90 150 H104" marker-end="url(#hx-arr)"/>
+        </g>
+        <g class="ad a2" style="--dx:34px;--dy:0px">
+          <rect x="330" y="128" width="84" height="44" rx="11"/>
+          <text x="372" y="148">Base</text><text class="k" x="372" y="163">adaptateur</text>
+          <path class="wire" d="M330 150 H316" marker-end="url(#hx-arr)"/>
+        </g>
+        <g class="ad a3" style="--dx:0px;--dy:30px">
+          <rect x="168" y="266" width="84" height="44" rx="11"/>
+          <text x="210" y="286">Tests</text><text class="k" x="210" y="301">adaptateur</text>
+          <path class="wire" d="M210 266 V244" marker-end="url(#hx-arr)"/>
+        </g>
+      </svg>
+      <p class="hx-cap">Les flèches pointent vers le centre : le domaine ne connaît personne.</p>
+    </div>
+  </div>
+
+  <section class="reveal" aria-labelledby="t-why">
+    <p class="eyebrow">À quoi sert ce module</p>
+    <h2 id="t-why">Parce qu'un code qui marche ne suffit pas.</h2>
+    <p>Une application écrite « vite » marche le premier jour. Six mois plus tard, chaque changement en casse un autre, et plus personne n'ose y toucher. L'<button class="term" data-term="archi">architecture</button> coûte un peu au début et rapporte longtemps. Ce module en donne trois bénéfices concrets.</p>
+    <div class="grid three" style="margin-top:28px">
+      <div class="card">
+        <div class="glyph" aria-hidden="true"><svg viewBox="0 0 200 56">
+          <rect class="blk c" x="20" y="14" width="70" height="28" rx="8"/>
+          <path d="M90 28 H112" stroke="var(--line)" stroke-width="1.6"/>
+          <rect class="blk swap-out" x="112" y="14" width="70" height="28" rx="8"/>
+          <rect class="blk swap-in" x="112" y="14" width="70" height="28" rx="8" style="fill:var(--ok-soft);stroke:var(--ok)"/>
+        </svg></div>
+        <h3>Changer sans casser</h3>
+        <p class="muted small" style="margin:0">On remplace la base de données ou le site web sans toucher aux règles du métier.</p>
+      </div>
+      <div class="card">
+        <div class="glyph" aria-hidden="true"><svg viewBox="0 0 200 56">
+          <rect class="blk c" x="20" y="10" width="70" height="36" rx="8"/>
+          <path class="chk" d="M120 28 l14 14 l28 -28"/>
+        </svg></div>
+        <h3>Tester sans tout lancer</h3>
+        <p class="muted small" style="margin:0">Le cœur se teste seul, en une fraction de seconde, sans serveur ni base.</p>
+      </div>
+      <div class="card">
+        <div class="glyph" aria-hidden="true"><svg viewBox="0 0 200 56">
+          <g class="bub"><rect x="6" y="10" width="86" height="30" rx="12"/><text x="49" y="30">« commande »</text></g>
+          <g class="bub b2"><rect x="108" y="16" width="86" height="30" rx="12"/><text x="151" y="36">« commande »</text></g>
+        </svg></div>
+        <h3>Parler la langue du métier</h3>
+        <p class="muted small" style="margin:0">Les mêmes mots dans la bouche du client, de l'équipe et dans le code.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-map">
+    <p class="eyebrow">La carte des notions</p>
+    <h2 id="t-map">Ce qu'il faut savoir avant quoi.</h2>
+    <p class="muted">Chaque flèche veut dire « nécessaire pour ». Avance pas à pas ; à la fin, clique sur une notion pour dire où tu en es. Ce choix reste dans ton navigateur et n'est envoyé nulle part.</p>
+
+    <div class="card stage">
+      <div class="stage-top">
+        <div>
+          <div class="stepcount" id="stepcount">Début</div>
+          <div class="dots" id="dots" aria-hidden="true"></div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="prev">Précédent</button>
+          <button class="btn primary" id="next">Suivant</button>
+          <button class="btn" id="play">Lecture</button>
+        </div>
+      </div>
+
+      <div class="map-wrap">
+        <svg class="map" id="map" viewBox="0 0 960 640" role="group" aria-labelledby="map-title">
+          <title id="map-title">Carte des prérequis du module</title>
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+            </marker>
+          </defs>
+          <g id="edges"></g>
+          <g id="nodes"></g>
+        </svg>
+      </div>
+
+      <div class="predict" id="predict" role="group" aria-labelledby="predict-q" data-bilan="Prédiction">
+        <p id="predict-q">Avant de continuer : dans l'hexagone, qui connaît qui ?</p>
+        <div class="choices">
+          <button class="choice" data-ok="1">Les adaptateurs connaissent le domaine ; le domaine ne connaît aucun adaptateur</button>
+          <button class="choice" data-ok="0">Le domaine connaît la base de données, pour pouvoir y écrire</button>
+        </div>
+        <div class="feedback" id="predict-fb" aria-live="polite"></div>
+      </div>
+
+      <div class="stage-bottom">
+        <div class="caption" aria-live="polite">
+          <h3 id="cap-title">Prête ?</h3>
+          <div id="cap-text" class="muted">Appuie sur « Suivant », ou sur la flèche droite du clavier.</div>
+          <div class="read" id="cap-read" hidden><b>Comment lire</b><span id="cap-read-text"></span></div>
+        </div>
+        <div class="detail" id="detail">
+          <div id="legend">
+            <p class="eyebrow">Légende</p>
+            <h3>Clique sur une notion</h3>
+            <ul class="legend">
+              <li><span class="sw acquise"></span>Je l'ai</li>
+              <li><span class="sw fragile"></span>Fragile</li>
+              <li><span class="sw manquante"></span>Me manque</li>
+              <li><span class="sw"></span>Pas encore marquée</li>
+            </ul>
+          </div>
+          <div id="info" class="info" hidden>
+            <p class="eyebrow" id="i-part"></p>
+            <h3 id="i-nom"></h3>
+            <p class="muted small" id="i-resume" style="margin:0"></p>
+            <div class="states" role="group" aria-label="Où j'en suis">
+              <button class="st" data-st="acquise" aria-pressed="false">Je l'ai</button>
+              <button class="st" data-st="fragile" aria-pressed="false">Fragile</button>
+              <button class="st" data-st="manquante" aria-pressed="false">Me manque</button>
+            </div>
+            <p class="go" id="i-lien"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="kbd">← → pour avancer · espace pour lancer ou mettre en pause</p>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-list">
+    <p class="eyebrow">Les notions, dans l'ordre</p>
+    <h2 id="t-list">Un chemin conseillé.</h2>
+    <p class="muted">L'ordre suit les flèches de la carte. Les notions marquées « bientôt » n'ont pas encore leur page.</p>
+    <ol class="notions" id="liste"></ol>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-lex">
+    <p class="eyebrow">Lexique du module</p>
+    <h2 id="t-lex">Les mots à retenir.</h2>
+    <p class="muted">Clique sur un mot pour revoir son explication.</p>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="reveal" aria-labelledby="t-bilan">
+    <p class="eyebrow">Ton bilan</p>
+    <h2 id="t-bilan">Où tu en es, prêt à coller.</h2>
+    <p class="muted">Tes marques restent dans ce navigateur, rien n'est publié. Le bouton copie un court résumé, que tu colles à l'expert cours.</p>
+    <div class="card" style="margin-top:28px">
+      <div class="bar" aria-hidden="true"><i class="b-acquise" id="b-acquise"></i><i class="b-fragile" id="b-fragile"></i><i class="b-manquante" id="b-manquante"></i></div>
+      <div class="counts">
+        <div><b id="n-acquise">0</b>je l'ai</div>
+        <div><b id="n-fragile">0</b>fragiles</div>
+        <div><b id="n-manquante">0</b>me manquent</div>
+        <div><b id="n-rien">0</b>pas marquées</div>
+      </div>
+      <div class="controls" style="margin-top:22px">
+        <button class="btn primary" id="copier-bilan">Copier mon bilan</button>
+      </div>
+      <p class="copied" id="copie-msg" aria-live="polite"></p>
+      <textarea class="bilan-texte" id="bilan-texte" readonly hidden aria-label="Texte du bilan"></textarea>
+    </div>
+  </section>
+</div>
+
+<div class="fiche">
+  <h1>Fiche · Architecture hexagonale et DDD</h1>
+  <p class="lede">Le module sur un écran, à relire la veille.</p>
+  <div class="card" style="margin-top:32px">
+    <h3>À quoi il sert</h3>
+    <ul>
+      <li>Ranger le code pour qu'il reste facile à changer : le métier au centre, la technique branchée autour.</li>
+      <li>Tester le cœur seul, sans serveur ni base.</li>
+      <li>Modéliser le métier avec ses propres mots (DDD), puis documenter l'architecture (UML, décisions).</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Les notions, dans l'ordre</h3>
+    <ol class="cols">
+      <li>Pourquoi l'architecture</li>
+      <li>Couplage et cohésion</li>
+      <li>L'architecture en couches</li>
+      <li>SOLID, surtout l'inversion des dépendances</li>
+      <li>Ports et adaptateurs</li>
+      <li>La règle de dépendance</li>
+      <li>L'injection de dépendances</li>
+      <li>Brancher un framework autour</li>
+      <li>La stratégie de tests</li>
+      <li>Refactorer du legacy</li>
+      <li>Le langage omniprésent</li>
+      <li>L'Event Storming</li>
+      <li>Les contextes délimités</li>
+      <li>Entités et value objects</li>
+      <li>Les agrégats</li>
+      <li>Les événements de domaine</li>
+      <li>Le diagramme de composants</li>
+      <li>Le diagramme de séquence</li>
+      <li>Le dossier et les décisions d'architecture</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h3>Les trois pièges</h3>
+    <ul>
+      <li><span class="pitfall">Croire</span> que l'hexagone, ce sont des dossiers. Ce qui compte, c'est le sens des dépendances : vers le centre.</li>
+      <li><span class="pitfall">Confondre</span> port et adaptateur. Le port est la prise, déclarée par le domaine ; l'adaptateur est le câble, écrit avec la technique.</li>
+      <li><span class="pitfall">Laisser</span> les règles du métier dans les services ou les contrôleurs. Elles vivent dans les entités et les agrégats.</li>
+    </ul>
+  </div>
+</div>
+</main>
+
+<footer>Cours animés · mes propres explications, jamais les supports d'une école.</footer>
+
+<div class="pop" id="pop" role="dialog" aria-labelledby="pop-t">
+  <p class="pt" id="pop-t"></p>
+  <p class="pd" id="pop-d"></p>
+  <p class="ps" id="pop-s"></p>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+
+  /* ---------- lexique ---------- */
+  const TERMS = {
+    archi:{t:'Architecture', d:'La façon de découper une application en morceaux et de décider qui a le droit de parler à qui.', s:'Comme le plan d’une maison : il se décide avant les murs, et il coûte cher à changer après.'},
+    couplage:{t:'Couplage', d:'À quel point un morceau de code dépend des autres. Fort couplage : on touche à un endroit, ça casse ailleurs.', s:'On cherche un couplage faible.'},
+    cohesion:{t:'Cohésion', d:'À quel point un morceau de code ne s’occupe que d’un seul sujet.', s:'On cherche une cohésion forte : un module, une raison d’exister.'},
+    couches:{t:'Architecture en couches', d:'Le code rangé en étages : l’écran en haut, le métier au milieu, la technique (base de données) en bas.', s:'Limite : le métier dépend encore de la base, juste en dessous. L’hexagone corrige ça.'},
+    solid:{t:'SOLID', d:'Cinq principes pour écrire du code facile à changer. Le plus important ici est le D : l’inversion des dépendances.', s:'Dépendre d’une promesse (une interface), pas d’un outil précis.'},
+    interface:{t:'Interface', d:'Une promesse écrite dans le code : « je sais faire ceci », sans dire comment. Plusieurs classes peuvent tenir la même promesse.', s:'En Java : le mot-clé interface.'},
+    domaine:{t:'Domaine', d:'Le cœur de l’application : les règles du métier, écrites sans aucune technique (ni base de données, ni web, ni framework).', s:''},
+    port:{t:'Port', d:'Une prise déclarée par le domaine : une interface qui dit ce dont il a besoin ou ce qu’il offre.', s:'Port = la prise du mur. Elle existe avant qu’on sache quel appareil on va brancher.'},
+    adaptateur:{t:'Adaptateur', d:'Le code technique qui se branche sur un port : un contrôleur web, un accès à la base de données, un faux pour les tests.', s:'Adaptateur = le câble. On en change sans toucher au mur.'},
+    dependance:{t:'Règle de dépendance', d:'Les dépendances du code pointent toujours vers le centre. Le domaine ne connaît aucun adaptateur ; ce sont les adaptateurs qui le connaissent.', s:''},
+    injection:{t:'Injection de dépendances', d:'Au lieu qu’un objet crée lui-même ce dont il a besoin, on le lui donne de l’extérieur, à un seul endroit du programme.', s:'C’est là qu’on choisit quel câble va dans quelle prise.'},
+    framework:{t:'Framework', d:'Une grosse boîte à outils qui impose sa façon de faire, par exemple Spring Boot en Java.', s:'Dans l’hexagone, il reste dehors, avec les adaptateurs.'},
+    legacy:{t:'Legacy', d:'Un code ancien, souvent sans tests, qui tourne en production et que personne n’ose modifier.', s:'On le transforme petit à petit, en commençant par le figer avec des tests.'},
+    ddd:{t:'DDD', d:'Domain-Driven Design : concevoir le logiciel à partir du métier et de ses mots, avec les gens du métier.', s:''},
+    langage:{t:'Langage omniprésent', d:'Un seul vocabulaire, partagé par le métier et l’équipe, et utilisé jusque dans les noms du code.', s:''},
+    storming:{t:'Event Storming', d:'Un atelier où l’on colle au mur, dans l’ordre, tout ce qui se passe dans le métier, écrit au passé.', s:'« Commande passée », « Colis expédié »…'},
+    contexte:{t:'Contexte délimité', d:'Une zone du métier où chaque mot a un seul sens. Le même mot peut vouloir dire autre chose dans un autre contexte.', s:'En anglais : bounded context.'},
+    entite:{t:'Entité', d:'Un objet qui a une identité et qui la garde même si ses données changent.', s:'Toi, tu restes toi même si tu changes d’adresse.'},
+    vo:{t:'Value object', d:'Un objet défini seulement par sa valeur, sans identité. Il est valide dès sa construction et ne change plus.', s:'Un montant de 10 €, une adresse e-mail.'},
+    agregat:{t:'Agrégat', d:'Un groupe d’objets avec un chef. Pour modifier quoi que ce soit dedans, on passe par le chef, qui fait respecter les règles.', s:''},
+    evenement:{t:'Événement de domaine', d:'L’annonce d’un fait du métier qui vient de se passer, écrite au passé.', s:'Celui qui l’annonce ne sait pas qui va réagir.'},
+    uml:{t:'UML', d:'Un ensemble de dessins standard pour décrire un logiciel : composants, séquences, classes…', s:''},
+    adr:{t:'Décision d’architecture (ADR)', d:'Une courte fiche qui garde la trace d’un choix : le contexte, la décision, ce qu’elle coûte.', s:'Pour que dans six mois, on sache encore pourquoi.'}
+  };
+
+  const pop = $('pop');
+  let openTerm = null;
+  function showTerm(btn) {
+    const k = TERMS[btn.dataset.term || btn.dataset.t]; if (!k) return;
+    if (openTerm === btn) return hideTerm();
+    if (openTerm) openTerm.setAttribute('aria-expanded', 'false');
+    $('pop-t').textContent = k.t; $('pop-d').textContent = k.d; $('pop-s').textContent = k.s;
+    const r = btn.getBoundingClientRect(), w = pop.offsetWidth || 340;
+    pop.style.left = Math.min(Math.max(16, r.left), innerWidth - w - 16) + 'px';
+    pop.classList.add('on');
+    const h = pop.offsetHeight;
+    pop.style.top = (r.bottom + 10 + h > innerHeight ? Math.max(12, r.top - h - 10) : r.bottom + 10) + 'px';
+    btn.setAttribute('aria-expanded', 'true'); openTerm = btn;
+  }
+  function hideTerm() { pop.classList.remove('on'); if (openTerm) openTerm.setAttribute('aria-expanded', 'false'); openTerm = null; }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { e.preventDefault(); showTerm(t); }
+    else if (!e.target.closest('.pop')) hideTerm();
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') hideTerm(); });
+  addEventListener('scroll', () => openTerm && hideTerm(), {passive:true});
+
+  const rich = s => s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, '<button class="term" data-t="$1">$2</button>');
+  const chips = $('chips');
+  Object.entries(TERMS).forEach(([k, v]) => { const b = document.createElement('button'); b.className = 'term'; b.dataset.t = k; b.textContent = v.t; chips.appendChild(b); });
+
+  /* ---------- les notions du cours ---------- */
+  const PAGES = '../../notions/';
+  const CLE = 'etat-cours-architecture-hexagonale-ddd';
+  const NOTIONS = [
+    {id:'pourquoi',  court:'Pourquoi ranger ?',      nom:'Pourquoi l’architecture',             partie:0,  x:300, y:50,  lien:null, resume:'Pourquoi un code écrit « vite » finit par coûter cher, et ce que l’architecture rapporte.'},
+    {id:'couplage',  court:'Couplage, cohésion',     nom:'Couplage et cohésion',                partie:1,  x:300, y:140, lien:null, resume:'Mesurer si un module est bien découpé : peu de liens vers l’extérieur, un seul sujet.'},
+    {id:'couches',   court:'Les couches',            nom:'L’architecture en couches',           partie:2,  x:160, y:230, lien:null, resume:'Ranger le code en trois étages : écran, métier, technique.'},
+    {id:'solid',     court:'SOLID',                  nom:'SOLID, surtout l’inversion des dépendances', partie:3, x:440, y:230, lien:null, resume:'Dépendre d’une promesse (une interface), pas d’un outil précis.'},
+    {id:'ports',     court:'Ports et adaptateurs',   nom:'Ports et adaptateurs',                partie:4,  x:300, y:320, lien:null, resume:'Le domaine déclare ses prises (ports) ; la technique s’y branche (adaptateurs).'},
+    {id:'regle',     court:'Règle de dépendance',    nom:'La règle de dépendance',              partie:4,  x:300, y:410, lien:null, resume:'Les dépendances pointent vers le centre : le domaine ne connaît ni la base ni le web.'},
+    {id:'injection', court:'Injection',              nom:'L’injection de dépendances',          partie:5,  x:90, y:500, lien:null, resume:'Relier chaque port à son adaptateur, à un seul endroit du programme.'},
+    {id:'framework', court:'Framework autour',       nom:'Brancher un framework autour',        partie:5,  x:90, y:590, lien:null, resume:'Laisser Spring Boot faire les branchements sans qu’il entre dans le domaine.'},
+    {id:'tests',     court:'Stratégie de tests',     nom:'La stratégie de tests',               partie:6,  x:260, y:500, lien:null, resume:'Quel test pour quel anneau de l’hexagone, et des tests qui vérifient l’architecture.'},
+    {id:'legacy',    court:'Refactorer du legacy',   nom:'Refactorer du legacy',                partie:7,  x:260, y:590, lien:null, resume:'Transformer un vieux code petit à petit : figer, isoler, extraire.'},
+    {id:'langage',   court:'Langage omniprésent',    nom:'Le langage omniprésent',              partie:8,  x:700, y:50, lien:null, resume:'Les mêmes mots pour l’équipe et le métier, jusque dans le code.'},
+    {id:'storming',  court:'Event Storming',         nom:'L’Event Storming',                    partie:8,  x:560, y:140, lien:null, resume:'Un atelier au mur pour trouver, dans l’ordre, ce qui se passe dans le métier.'},
+    {id:'contextes', court:'Contextes délimités',    nom:'Les contextes délimités',             partie:8,  x:840, y:140, lien:null, resume:'Découper le métier en zones où chaque mot a un seul sens.'},
+    {id:'entites',   court:'Entités, valeurs',       nom:'Entités et value objects',            partie:9,  x:620, y:230, lien:null, resume:'Ce qui a une identité, et ce qui n’est qu’une valeur, valide dès sa construction.'},
+    {id:'agregats',  court:'Agrégats',               nom:'Les agrégats',                        partie:9,  x:620, y:320, lien:null, resume:'Le gardien des règles : on passe par lui pour modifier ce qu’il protège.'},
+    {id:'evenements',court:'Événements de domaine',  nom:'Les événements de domaine',           partie:9,  x:620, y:410, lien:null, resume:'Annoncer au passé ce qui vient de se passer dans le métier.'},
+    {id:'sequence',  court:'UML : séquence',         nom:'Lire un diagramme de séquence',       partie:10, x:470, y:500, lien:'diagramme-de-sequence/', resume:'Lire qui parle à qui, dans quel ordre, et qui attend qui.'},
+    {id:'composants',court:'UML : composants',       nom:'Le diagramme de composants',          partie:10, x:800, y:500, lien:null, resume:'Dessiner l’hexagone, ses ports et ses adaptateurs.'},
+    {id:'adr',       court:'Dossier et décisions',   nom:'Le dossier et les décisions d’architecture', partie:10, x:635, y:590, lien:null, resume:'Réunir diagrammes et décisions pour expliquer l’architecture à quelqu’un d’autre.'}
+  ];
+  /* [a, b] : a est nécessaire pour b */
+  const LIENS = [
+    ['pourquoi','couplage'], ['couplage','couches'], ['couplage','solid'], ['couches','ports'], ['solid','ports'],
+    ['ports','regle'], ['regle','injection'], ['injection','framework'], ['regle','tests'], ['tests','legacy'],
+    ['langage','storming'], ['langage','contextes'], ['storming','entites'], ['entites','agregats'], ['agregats','evenements'],
+    ['regle','sequence'], ['regle','composants'], ['contextes','composants'], ['sequence','adr'], ['composants','adr']
+  ];
+  const STEPS = [
+    {montre:['pourquoi'], t:'Tout part d’une question d’argent.',
+      d:'Un code écrit « vite » coûte de plus en plus cher à changer. L’[[archi|architecture]] est un investissement : un peu de soin au début, beaucoup moins de casse ensuite.',
+      r:'Une notion sans flèche qui arrive : tu peux commencer par elle.'},
+    {montre:['couplage'], t:'Mesurer si un code est bien découpé.',
+      d:'Deux idées : le [[couplage|couplage]] (à quel point les morceaux dépendent les uns des autres) et la [[cohesion|cohésion]] (à quel point un morceau ne fait qu’une chose).',
+      r:'La flèche descend : « pourquoi » est nécessaire pour comprendre ce qu’on mesure.'},
+    {montre:['couches','solid'], t:'Deux façons de ranger.',
+      d:'Les [[couches|couches]] rangent le code en trois étages. Les principes [[solid|SOLID]] ajoutent une règle clé : dépendre d’une [[interface|interface]], pas d’un outil précis.',
+      r:'Une notion peut ouvrir plusieurs chemins : deux flèches partent du couplage.'},
+    {montre:['ports'], t:'L’hexagone.',
+      d:'Le [[domaine|domaine]] au centre déclare des [[port|ports]], des prises qui disent ce dont il a besoin. Autour, des [[adaptateur|adaptateurs]] se branchent : le web, la base de données, les tests.',
+      r:'Deux flèches arrivent ici : il faut les couches et SOLID avant l’hexagone.'},
+    {montre:['regle'], t:'La règle de dépendance.',
+      d:'Les dépendances pointent toujours vers le centre. Le domaine ne connaît ni la base, ni le web, ni le [[framework|framework]] : ce sont eux qui le connaissent. C’est la [[dependance|règle de dépendance]].',
+      r:'Regarde combien de flèches partent de cette notion : c’est la plus utilisée du module.'},
+    {montre:['injection','framework'], t:'Brancher pour de vrai.',
+      d:'Il faut bien relier chaque port à son adaptateur : c’est l’[[injection|injection de dépendances]], faite à un seul endroit. Un framework comme Spring Boot peut s’en charger, à condition de rester dehors.',
+      r:'Deux notions en chaîne : on branche à la main avant de laisser un framework le faire.'},
+    {montre:['tests','legacy'], t:'Tester, puis réparer.',
+      d:'Le domaine ne dépend de rien : on le teste seul, sans base ni serveur. Ces tests servent ensuite de filet pour transformer un vieux code, le [[legacy|legacy]], sans le casser.',
+      r:'Les tests sont nécessaires pour refactorer : on ne touche à rien sans filet.'},
+    {montre:['langage','storming','contextes'], t:'Deuxième chemin : parler métier.',
+      d:'Le [[ddd|DDD]] commence par les mots : un [[langage|langage omniprésent]], un atelier d’[[storming|Event Storming]] pour trouver ce qui se passe, et des [[contexte|contextes délimités]] où chaque mot a un seul sens.',
+      r:'Ce chemin ne dépend pas de l’hexagone : tu peux le commencer en parallèle.'},
+    {montre:['entites','agregats','evenements'], t:'Le DDD dans le code.',
+      d:'Des [[entite|entités]] qui ont une identité, des [[vo|value objects]] valides dès leur construction, des [[agregat|agrégats]] qui gardent les règles, et des [[evenement|événements de domaine]] qui annoncent ce qui s’est passé.',
+      r:'Une chaîne : chaque notion s’appuie sur celle du dessus.'},
+    {montre:['sequence','composants'], t:'Dessiner pour expliquer.',
+      d:'Deux dessins [[uml|UML]] : le diagramme de composants montre l’hexagone et ses prises ; le diagramme de séquence raconte qui parle à qui, dans quel ordre.',
+      r:'Les deux chemins se rejoignent : pour dessiner, il faut l’hexagone et les contextes.'},
+    {montre:['adr'], t:'Garder la trace des choix.',
+      d:'Le dossier d’architecture réunit les diagrammes et les [[adr|décisions d’architecture]] : pourquoi on a choisi ceci plutôt que cela.',
+      r:'Fin de la carte. Clique maintenant sur chaque notion pour dire où tu en es.'}
+  ];
+  const PREDIRE_APRES = 3;   /* la question de prédiction bloque l’étape qui suit celle-ci ; null s’il n’y en a pas */
+  const PRED_WHY = 'Le domaine ne connaît personne : ce sont les adaptateurs qui le connaissent. Continue pour voir le nom de cette règle.';
+
+  /* ---------- l’état de chaque notion, gardé dans ce navigateur seulement ---------- */
+  let etat = {};
+  try { etat = JSON.parse(localStorage.getItem(CLE) || '{}') || {}; } catch (e) { etat = {}; }
+  const save = () => { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) {} };
+  const LABEL = {acquise:'acquise', fragile:'fragile', manquante:'manquante'};
+
+  /* ---------- dessin de la carte ---------- */
+  const NS = 'http://www.w3.org/2000/svg', W = 156, H = 46;
+  const el = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+  const byId = Object.fromEntries(NOTIONS.map(n => [n.id, n]));
+  const at = {}; STEPS.forEach((s, i) => s.montre.forEach(id => { at[id] = i; }));
+  NOTIONS.forEach(n => { if (!(n.id in at)) at[n.id] = -1; });
+
+  const nodeEls = {};
+  NOTIONS.forEach(n => {
+    const g = el('g', {class:'mnode', tabindex:'0', role:'button', 'aria-label':`${n.nom}, partie ${n.partie}`}, $('nodes'));
+    const inner = el('g', {class:'in'}, g);
+    el('rect', {x:n.x - W/2, y:n.y - H/2, width:W, height:H, rx:13}, inner);
+    el('text', {x:n.x, y:n.y - 3, class:'nm'}, inner).textContent = n.court;
+    el('text', {x:n.x, y:n.y + 13, class:'sb'}, inner).textContent = `Partie ${n.partie}` + (n.lien ? ' · page prête' : '');
+    g.addEventListener('click', () => select(n.id));
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); select(n.id); } });
+    nodeEls[n.id] = g;
+  });
+  const edgeEls = LIENS.filter(([a, b]) => byId[a] && byId[b]).map(([a, b]) => {
+    const A = byId[a], B = byId[b], y1 = A.y + H/2, y2 = B.y - H/2 - 4, my = (y1 + y2) / 2;
+    const p = el('path', {class:'edge', d:`M${A.x} ${y1} C${A.x} ${my} ${B.x} ${my} ${B.x} ${y2}`, 'marker-end':'url(#arr)'}, $('edges'));
+    requestAnimationFrame(() => { try { p.style.setProperty('--len', p.getTotalLength()); } catch (e) {} });
+    return {p, step: Math.max(at[a], at[b])};
+  });
+
+  /* ---------- pas à pas ---------- */
+  let cur = -1, timer = null, predicted = false, selected = null;
+  const dots = $('dots'); STEPS.forEach(() => dots.appendChild(document.createElement('i')));
+  const gate = () => PREDIRE_APRES !== null && cur === PREDIRE_APRES && !predicted;
+
+  function paintStates() {
+    NOTIONS.forEach(n => {
+      const g = nodeEls[n.id];
+      ['acquise', 'fragile', 'manquante'].forEach(s => g.classList.toggle('st-' + s, etat[n.id] === s));
+      g.classList.toggle('sel', selected === n.id);
+      const li = document.getElementById('li-' + n.id);
+      if (li) ['acquise', 'fragile', 'manquante'].forEach(s => li.classList.toggle('st-' + s, etat[n.id] === s));
+    });
+    tallyBilan();
+  }
+  function render(animate) {
+    NOTIONS.forEach(n => {
+      const g = nodeEls[n.id], i = at[n.id], ghost = i > cur;
+      g.classList.toggle('ghost', ghost); g.setAttribute('tabindex', ghost ? '-1' : '0');
+      g.classList.remove('now');
+      if (i === cur && i >= 0) { if (animate && !reduce) void g.getBBox(); g.classList.add('now'); }
+    });
+    edgeEls.forEach(e => {
+      e.p.classList.toggle('seen', e.step < cur); e.p.classList.toggle('now', e.step === cur && cur >= 0); e.p.classList.remove('draw');
+      if (e.step === cur && animate && !reduce) { void e.p.getBBox(); e.p.classList.add('draw'); }
+    });
+    [...dots.children].forEach((d, i) => { d.className = i < cur ? 'done' : i === cur ? 'now' : ''; });
+    $('stepcount').textContent = cur < 0 ? 'Début' : `Étape ${cur + 1} sur ${STEPS.length}`;
+    const s = STEPS[cur];
+    $('cap-title').textContent = s ? s.t : 'Prête ?';
+    $('cap-text').innerHTML = s ? rich(s.d) : 'Appuie sur « Suivant », ou sur la flèche droite du clavier.';
+    $('cap-read').hidden = !s; if (s) $('cap-read-text').innerHTML = rich(s.r);
+    $('predict').classList.toggle('on', gate());
+    $('prev').disabled = cur < 0;
+    $('next').disabled = cur >= STEPS.length - 1 || gate();
+    paintStates();
+  }
+  const go = (n, animate = true) => { cur = Math.max(-1, Math.min(STEPS.length - 1, n)); render(animate); };
+  function stop() { clearInterval(timer); timer = null; $('play').textContent = 'Lecture'; }
+  function next() { if (gate()) return stop(); if (cur < STEPS.length - 1) go(cur + 1); else stop(); }
+  function play() {
+    if (timer) return stop();
+    if (cur >= STEPS.length - 1) go(-1, false);
+    $('play').textContent = 'Pause'; next();
+    timer = setInterval(() => { next(); if (cur >= STEPS.length - 1 || gate()) stop(); }, 2800);
+  }
+  $('next').onclick = () => { stop(); next(); };
+  $('prev').onclick = () => { stop(); go(cur - 1); };
+  $('play').onclick = play;
+  addEventListener('keydown', e => {
+    if (document.body.classList.contains('mode-fiche')) return;
+    if (e.target.closest && e.target.closest('textarea')) return;
+    if (e.key === ' ' && e.target.closest && e.target.closest('button,[role="button"]')) return;
+    if (e.key === 'ArrowRight') { stop(); next(); }
+    else if (e.key === 'ArrowLeft') { stop(); go(cur - 1); }
+    else if (e.key === ' ') { e.preventDefault(); play(); }
+  });
+
+  /* ---------- une notion choisie : où j’en suis ---------- */
+  function select(id) {
+    const n = byId[id]; if (!n) return;
+    selected = id;
+    $('legend').hidden = true;
+    const info = $('info'); info.hidden = false; info.classList.remove('info'); void info.offsetWidth; info.classList.add('info');
+    $('i-part').textContent = `Partie ${n.partie}`;
+    $('i-nom').textContent = n.nom;
+    $('i-resume').textContent = n.resume;
+    $('i-lien').innerHTML = n.lien ? `<a href="${PAGES + n.lien}">Ouvrir la page de la notion →</a>` : '<span class="soon">bientôt</span>';
+    syncStateButtons(); paintStates();
+  }
+  function syncStateButtons() { document.querySelectorAll('.st').forEach(b => b.setAttribute('aria-pressed', String(etat[selected] === b.dataset.st))); }
+  document.querySelectorAll('.st').forEach(b => b.addEventListener('click', () => {
+    if (!selected) return;
+    if (etat[selected] === b.dataset.st) delete etat[selected]; else etat[selected] = b.dataset.st;
+    save(); syncStateButtons(); paintStates();
+  }));
+
+  /* ---------- la liste ordonnée ---------- */
+  const liste = $('liste');
+  NOTIONS.forEach((n, i) => {
+    const li = document.createElement('li'); li.id = 'li-' + n.id;
+    if (!reduce) li.style.transitionDelay = (i * 40) + 'ms';
+    li.innerHTML = `<span class="pn">${n.partie}</span><div><span class="nn"></span><span class="nr"></span></div><div class="act"></div>`;
+    li.querySelector('.nn').textContent = n.nom; li.querySelector('.nr').textContent = n.resume;
+    const act = li.querySelector('.act');
+    if (n.lien) { const a = document.createElement('a'); a.className = 'btn primary'; a.href = PAGES + n.lien; a.textContent = 'Ouvrir'; act.appendChild(a); }
+    else { const s = document.createElement('span'); s.className = 'soon'; s.textContent = 'bientôt'; act.appendChild(s); }
+    const m = document.createElement('button'); m.className = 'mark'; m.textContent = 'Où j’en suis';
+    m.onclick = () => { stop(); go(STEPS.length - 1, false); select(n.id); $('map').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'center'}); };
+    act.appendChild(m);
+    liste.appendChild(li);
+  });
+
+  /* ---------- prédiction ---------- */
+  let prediction = null;
+  const pfb = $('predict-fb');
+  $('predict').querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+    const ok = b.dataset.ok === '1';
+    if (prediction === null) prediction = ok ? 'juste' : 'fausse';
+    $('predict').querySelectorAll('.choice').forEach(x => x.classList.remove('right', 'wrong'));
+    b.classList.add(ok ? 'right' : 'wrong');
+    pfb.textContent = (ok ? 'Exact. ' : 'Pas tout à fait. ') + PRED_WHY;
+    if (ok) { predicted = true; render(false); $('next').focus(); }
+  }));
+
+  /* ---------- bilan ---------- */
+  const count = s => NOTIONS.filter(n => (etat[n.id] || null) === s).length;
+  function tallyBilan() {
+    const total = NOTIONS.length || 1;
+    [['acquise', count('acquise')], ['fragile', count('fragile')], ['manquante', count('manquante')], ['rien', count(null)]].forEach(([k, v]) => {
+      const b = $('n-' + k); if (b.textContent !== String(v)) { b.textContent = v; if (!reduce) { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); } }
+      if (k !== 'rien') $('b-' + k).style.width = (v / total * 100) + '%';
+    });
+  }
+  function texteBilan() {
+    const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
+    const lignes = [`Bilan · ${document.title} · ${date}`];
+    if (PREDIRE_APRES !== null) lignes.push(`Prédiction : ${prediction || 'non faite'}`);
+    NOTIONS.forEach(n => lignes.push(`${n.nom} : ${LABEL[etat[n.id]] || 'non marquée'}`));
+    return lignes.join('\n');
+  }
+  async function copierBilan() {
+    const txt = texteBilan(), msg = $('copie-msg'), ta = $('bilan-texte');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    if (!ok) { ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} }
+    msg.textContent = ok ? 'Copié. Colle-le à l’expert cours.' : 'Le texte est sélectionné ci-dessous : copie-le (⌘ C), puis colle-le à l’expert cours.';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+  }
+  window.copierBilan = copierBilan;
+  $('copier-bilan').onclick = copierBilan;
+
+  /* ---------- Cours / Fiche ---------- */
+  const seg = $('seg');
+  seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.mode; seg.dataset.mode = m;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.body.classList.toggle('mode-fiche', m === 'fiche');
+    hideTerm(); stop(); scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+    try { localStorage.setItem('mode-' + CLE, m); } catch (e) {}
+  }));
+  try { if (location.hash === '#fiche' || localStorage.getItem('mode-' + CLE) === 'fiche') seg.querySelector('[data-mode="fiche"]').click(); } catch (e) {}
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.08});
+  document.querySelectorAll('.reveal, .notions').forEach(s => io.observe(s));
+
+  render(false);
+})();
+</script>
+</body>
+</html>

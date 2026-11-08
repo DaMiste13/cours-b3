@@ -251,6 +251,20 @@ body.mode-fiche .fiche{display:block}
 .fiche li{margin:6px 0}
 .pitfall{color:var(--warn);font-weight:600}
 
+/* bilan : ce qui est copié pour l'expert */
+.tally{list-style:none;margin:0;padding:0}
+.tally li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--hairline);font-size:15px}
+.tally li:first-child{border-top:0;padding-top:0}
+.pill{font-size:13px;font-weight:600;border-radius:980px;padding:4px 12px;background:var(--hairline);color:var(--text-2);white-space:nowrap;transition:background .3s var(--ease),color .3s var(--ease)}
+.pill.juste{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.pill.fausse{background:var(--warn-soft);color:var(--warn)}
+.pill.bump{animation:bump .55s var(--spring)}
+@keyframes bump{from{transform:scale(.6);opacity:.2}to{transform:none;opacity:1}}
+.copied{margin:14px 0 0;font-size:15px;color:var(--ok);font-weight:600;min-height:1.4em;opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease),transform .45s var(--spring)}
+.copied.on{opacity:1;transform:none}
+.bilan-texte{display:block;width:100%;min-height:140px;margin-top:14px;border-radius:14px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);font:13.5px/1.6 "SF Mono",ui-monospace,Menlo,monospace;padding:14px 16px;resize:vertical}
+.bilan-texte[hidden]{display:none}
+
 footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color:var(--text-2);border-top:1px solid var(--hairline)}
 
 @media (prefers-reduced-motion:reduce){
@@ -338,7 +352,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
         </svg>
       </div>
 
-      <div class="predict" id="predict" role="group" aria-labelledby="predict-q">
+      <div class="predict" id="predict" role="group" aria-labelledby="predict-q" data-bilan="Prédiction">
         <p id="predict-q">Avant de continuer : ton cœur devient rouge avant ou après que l'autrice reçoit sa notification ?</p>
         <div class="choices">
           <button class="choice" data-ok="1">Avant, ou en même temps : l'app n'attend pas la notification</button>
@@ -403,7 +417,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
     <p class="eyebrow">Vérifie-toi</p>
     <h2 id="t-quiz">Trois questions, trente secondes.</h2>
     <div class="card" style="padding:0;margin-top:28px" id="quiz">
-      <div class="q">
+      <div class="q" data-bilan="Q1 Qui déclenche">
         <h3>Qui déclenche toute l'histoire ?</h3>
         <div class="choices">
           <button class="choice" data-ok="0">Le service Notifications</button>
@@ -412,7 +426,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
         </div>
         <div class="feedback" aria-live="polite" data-why="La première flèche, tout en haut, part de l'app. Pour lire un diagramme de séquence, on cherche toujours d'abord la flèche du haut : c'est le déclencheur."></div>
       </div>
-      <div class="q">
+      <div class="q" data-bilan="Q2 Pointe ouverte">
         <h3>Le service Likes envoie « PhotoAimée » avec une pointe ouverte. Qu'est-ce que ça veut dire ?</h3>
         <div class="choices">
           <button class="choice" data-ok="1">Il l'annonce et continue sans attendre</button>
@@ -420,7 +434,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
         </div>
         <div class="feedback" aria-live="polite" data-why="Pointe ouverte sur un trait plein : asynchrone. C'est pour ça que ton cœur devient rouge même si le service Notifications est lent ou en panne."></div>
       </div>
-      <div class="q">
+      <div class="q" data-bilan="Q3 Fin de l’histoire">
         <h3>Où se termine l'histoire de ton côté ?</h3>
         <div class="choices">
           <button class="choice" data-ok="0">Quand l'autrice reçoit la notification</button>
@@ -580,6 +594,20 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
     <p class="muted">Clique sur un mot pour revoir son explication. Ils rejoindront ton lexique dans Notion.</p>
     <div class="chips" id="chips"></div>
   </section>
+
+  <section class="reveal" aria-labelledby="t-bilan">
+    <p class="eyebrow">Ton bilan</p>
+    <h2 id="t-bilan">Ce que tu as réussi, prêt à coller.</h2>
+    <p class="muted">Ta première réponse à chaque question compte. Ce site n'enregistre rien : le bouton copie un court résumé, que tu colles à l'expert cours.</p>
+    <div class="card" style="margin-top:28px">
+      <ul class="tally" id="tally"></ul>
+      <div class="controls" style="margin-top:22px">
+        <button class="btn primary" id="copier-bilan">Copier mon bilan</button>
+      </div>
+      <p class="copied" id="copie-msg" aria-live="polite"></p>
+      <textarea class="bilan-texte" id="bilan-texte" readonly hidden aria-label="Texte du bilan"></textarea>
+    </div>
+  </section>
 </div>
 
 <div class="fiche">
@@ -655,7 +683,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   const pop = $('pop');
   let openTerm = null;
   function showTerm(btn) {
-    const k = TERMS[btn.dataset.term]; if (!k) return;
+    const k = TERMS[btn.dataset.term || btn.dataset.t]; if (!k) return;
     if (openTerm === btn) return hideTerm();
     if (openTerm) openTerm.setAttribute('aria-expanded', 'false');
     $('pop-t').textContent = k.t; $('pop-d').textContent = k.d; $('pop-s').textContent = k.s;
@@ -675,7 +703,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   addEventListener('keydown', e => { if (e.key === 'Escape') hideTerm(); });
   addEventListener('scroll', () => openTerm && hideTerm(), {passive:true});
 
-  const rich = s => s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, '<button class="term" data-term="$1">$2</button>');
+  const rich = s => s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g, '<button class="term" data-t="$1">$2</button>');
   const chips = $('chips');
   Object.entries(TERMS).forEach(([k, v]) => { const b = document.createElement('button'); b.className = 'term'; b.dataset.term = k; b.textContent = v.t; chips.appendChild(b); });
 
@@ -813,6 +841,35 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
   wire($('predict'), pfb, () => { predicted = true; render(false); $('next').focus(); });
   document.querySelectorAll('#quiz .q').forEach(q => wire(q, q.querySelector('.feedback')));
 
+  /* ---------- bilan : première réponse de chaque question ---------- */
+  const answers = new Map();
+  const bilanGroups = [...document.querySelectorAll('[data-bilan]')];
+  bilanGroups.forEach(g => {
+    const li = document.createElement('li'), lab = document.createElement('span'), pill = document.createElement('span');
+    lab.textContent = g.dataset.bilan; pill.className = 'pill'; pill.textContent = 'non faite';
+    li.append(lab, pill); $('tally').appendChild(li);
+    g.querySelectorAll('.choice').forEach(b => b.addEventListener('click', () => {
+      if (answers.has(g)) return;
+      const v = b.dataset.ok === '1' ? 'juste' : 'fausse';
+      answers.set(g, v); pill.textContent = v; pill.className = 'pill ' + v;
+      if (!reduce) { void pill.offsetWidth; pill.classList.add('bump'); }
+    }));
+  });
+  function texteBilan() {
+    const date = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
+    return [`Bilan · ${document.title} · ${date}`, ...bilanGroups.map(g => `${g.dataset.bilan} : ${answers.get(g) || 'non faite'}`)].join('\n');
+  }
+  async function copierBilan() {
+    const txt = texteBilan(), msg = $('copie-msg'), ta = $('bilan-texte');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    if (!ok) { ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); try { ok = document.execCommand('copy'); } catch (e) {} }
+    msg.textContent = ok ? 'Copié. Colle-le à l’expert cours.' : 'Le texte est sélectionné ci-dessous : copie-le (⌘ C), puis colle-le à l’expert cours.';
+    msg.classList.remove('on'); void msg.offsetWidth; msg.classList.add('on');
+  }
+  window.copierBilan = copierBilan;
+  $('copier-bilan').onclick = copierBilan;
+
   /* ---------- problème 1 : compteur par paquets ---------- */
   let real = 0, shown = 0, tick = null;
   const realEl = $('real'), shownEl = $('shown'), lane = $('lane'), ring = $('ring');
@@ -885,7 +942,7 @@ footer{max-width:980px;margin:0 auto;padding:30px 22px 60px;font-size:12px;color
     hideTerm(); scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
     try { localStorage.setItem('mode-diagramme-sequence', m); } catch (e) {}
   }));
-  try { if (localStorage.getItem('mode-diagramme-sequence') === 'fiche') seg.querySelector('[data-mode="fiche"]').click(); } catch (e) {}
+  try { if (location.hash === '#fiche' || localStorage.getItem('mode-diagramme-sequence') === 'fiche') seg.querySelector('[data-mode="fiche"]').click(); } catch (e) {}
 
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.08});
   document.querySelectorAll('.reveal').forEach(s => io.observe(s));
